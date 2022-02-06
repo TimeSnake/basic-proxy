@@ -1,0 +1,64 @@
+main: de.timesnake.basic.proxy.core.main.BasicProxy
+version: 1.7.2
+name: basic-proxy
+author: Mn
+depends: [ database-proxy ]
+
+commands:
+  perm:
+  permission:
+  alias:
+  al:
+  work:
+  netban:
+  nettempban:
+  nettmpban:
+  netkick:
+  netmute:
+  netunmute:
+  netunban:
+  netpardon:
+
+  ban:
+  tempban:
+  tmpban:
+  kick:
+  mute:
+  unmute:
+  unban:
+  pardon:
+
+  support:
+  ticket:
+  tickets:
+  supportmessages:
+  supportmessage:
+  supportmsg:
+  supportmsgs:
+
+  netmessages:
+
+  channelmsg:
+  channelmsgs:
+  channelmessages:
+  channelmessage:
+
+  shutdown:
+  autoshutdown:
+
+  databasemsg:
+  databasemsgs:
+  databasemessage:
+  databasemesseges:
+
+  permcheck:
+
+  rule:
+  rules:
+  regel:
+  regeln:
+
+  pid:
+
+  kickall:
+     

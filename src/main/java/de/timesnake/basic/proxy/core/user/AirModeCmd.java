@@ -5,9 +5,9 @@ import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.cmd.Arguments;
-import de.timesnake.library.basic.util.cmd.CommandListener;
-import de.timesnake.library.basic.util.cmd.ExCommand;
+import de.timesnake.library.extension.util.cmd.Arguments;
+import de.timesnake.library.extension.util.cmd.CommandListener;
+import de.timesnake.library.extension.util.cmd.ExCommand;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import java.util.List;

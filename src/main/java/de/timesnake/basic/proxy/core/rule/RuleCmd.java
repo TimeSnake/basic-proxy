@@ -4,9 +4,10 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Sender;
-import de.timesnake.library.basic.util.cmd.Arguments;
-import de.timesnake.library.basic.util.cmd.CommandListener;
-import de.timesnake.library.basic.util.cmd.ExCommand;
+import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.cmd.Arguments;
+import de.timesnake.library.extension.util.cmd.CommandListener;
+import de.timesnake.library.extension.util.cmd.ExCommand;
 
 import java.util.List;
 
@@ -18,11 +19,11 @@ public class RuleCmd implements CommandListener<Sender, Argument> {
         if (args.isLengthEquals(0, false)) {
             sender.sendMessage("");
             sender.sendPluginMessage(ChatColor.PERSONAL + "" + ChatColor.BOLD + "Version: " + ChatColor.VALUE + Network.getRuleManager().getVersion());
-            sender.sendPluginMessage(Network.getChat().getLongLineSeparator());
+            sender.sendPluginMessage(Chat.getLongLineSeparator());
             for (RuleSection section : Network.getRuleManager().getSections()) {
                 sender.sendPluginMessage(ChatColor.PERSONAL + "" + section.getNumber() + " " + ChatColor.VALUE + section.getName());
             }
-            sender.sendPluginMessage(Network.getChat().getLongLineSeparator());
+            sender.sendPluginMessage(Chat.getLongLineSeparator());
             sender.sendMessageCommandHelp("Open section", "rule <number>");
             return;
         }
@@ -43,9 +44,9 @@ public class RuleCmd implements CommandListener<Sender, Argument> {
         }
 
         sender.sendMessage("");
-        sender.sendPluginMessage(Network.getChat().getLongLineSeparator());
+        sender.sendPluginMessage(Chat.getLongLineSeparator());
         sender.sendPluginMessage(ChatColor.PERSONAL + "" + ChatColor.BOLD + "" + section.getNumber() + " " + ChatColor.VALUE + section.getName());
-        sender.sendPluginMessage(Network.getChat().getLongLineSeparator());
+        sender.sendPluginMessage(Chat.getLongLineSeparator());
         for (RuleParagraph paragraph : section.getParagraphs()) {
             for (String part : paragraph.getParts()) {
                 sender.sendPluginMessage(ChatColor.PERSONAL + paragraph.getName() + ChatColor.VALUE + " " + part);

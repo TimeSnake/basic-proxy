@@ -10,6 +10,7 @@ import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.extension.util.chat.Chat;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -184,7 +185,7 @@ public class PermissionManager {
         }
 
         if (!(rank > 0)) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Invalid rank (rank: >0) " + Network.getChat().getMessageCode("H", 110, Plugin.PERMISSION));
+            sender.sendPluginMessage(ChatColor.WARNING + "Invalid rank (rank: >0) " + Chat.getMessageCode("H", 110, Plugin.PERMISSION));
         }
 
         Database.getGroups().addPermGroup(groupName.toLowerCase(), rank, prefix, chatColor.getName());

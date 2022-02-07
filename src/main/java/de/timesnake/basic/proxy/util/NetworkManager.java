@@ -154,7 +154,7 @@ public class NetworkManager implements ChannelServerListener, ChannelRegisterLis
 
 
     public void broadcastMessage(Plugin plugin, String msg) {
-        ProxyServer.getInstance().broadcast(new TextComponent(getChat().getSenderPlugin(plugin) + msg));
+        ProxyServer.getInstance().broadcast(new TextComponent(de.timesnake.library.extension.util.chat.Chat.getSenderPlugin(plugin) + msg));
     }
 
 

@@ -1,5 +1,5 @@
 package de.timesnake.basic.proxy.util.chat;
 
-public class Chat extends de.timesnake.library.basic.util.chat.Chat {
+public class Chat implements de.timesnake.library.extension.util.chat.Chat {
 
 }

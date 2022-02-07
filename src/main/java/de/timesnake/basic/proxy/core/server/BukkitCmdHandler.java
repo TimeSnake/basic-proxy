@@ -7,9 +7,10 @@ import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.database.util.object.Status;
-import de.timesnake.library.basic.util.cmd.Arguments;
-import de.timesnake.library.basic.util.cmd.CommandListener;
-import de.timesnake.library.basic.util.cmd.ExCommand;
+import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.cmd.Arguments;
+import de.timesnake.library.extension.util.cmd.CommandListener;
+import de.timesnake.library.extension.util.cmd.ExCommand;
 
 import java.util.List;
 
@@ -117,11 +118,11 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
     public void handleServerCmd(Sender sender, Server server) {
         boolean isStart = server.start();
         if (!isStart) {
-            sender.sendMessage(Network.getChat().getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while starting server " + ChatColor.VALUE + server.getName());
+            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while starting server " + ChatColor.VALUE + server.getName());
             return;
         }
 
-        sender.sendMessage(Network.getChat().getSenderPlugin(Plugin.NETWORK) + ChatColor.PERSONAL + "Started server " + ChatColor.VALUE + server.getName());
+        sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.PERSONAL + "Started server " + ChatColor.VALUE + server.getName());
         if (!sender.isConsole(false)) {
             Network.printText(Plugin.NETWORK, "Started server " + server.getName());
         }

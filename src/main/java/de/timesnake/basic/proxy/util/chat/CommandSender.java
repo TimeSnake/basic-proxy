@@ -2,9 +2,9 @@ package de.timesnake.basic.proxy.util.chat;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.command.ConsoleCommandSender;
 
 public class CommandSender implements de.timesnake.library.extension.util.cmd.CommandSender {
 
@@ -36,7 +36,7 @@ public class CommandSender implements de.timesnake.library.extension.util.cmd.Co
 
     @Override
     public boolean isConsole() {
-        return this.cmdSender instanceof ConsoleCommandSender;
+        return this.cmdSender.equals(ProxyServer.getInstance().getConsole());
     }
 
     @Override

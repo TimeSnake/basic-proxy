@@ -9,6 +9,7 @@ import de.timesnake.channel.api.message.ChannelUserMessage;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.extension.util.chat.Chat;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -32,7 +33,7 @@ public class Punishments {
                 broadcastMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() + ChatColor.WARNING + " was unbanned");
             }
         } else {
-            Network.printText(Plugin.PUNISH, "§4This player (" + uuid.toString() + ") is not banned " + Network.getChat().getMessageCode("H", 101, Plugin.PUNISH));
+            Network.printText(Plugin.PUNISH, "§4This player (" + uuid.toString() + ") is not banned " + Chat.getMessageCode("H", 101, Plugin.PUNISH));
         }
 
     }
@@ -44,7 +45,7 @@ public class Punishments {
             if (type != null) {
                 if (!type.equals(Type.Punishment.BAN) && !type.equals(Type.Punishment.TEMP_BAN)) {
 
-                    sender.sendPluginMessage(ChatColor.WARNING + "This player is not banned " + Network.getChat().getMessageCode("H", 101, Plugin.PUNISH));
+                    sender.sendPluginMessage(ChatColor.WARNING + "This player is not banned " + Chat.getMessageCode("H", 101, Plugin.PUNISH));
                 } else {
                     user.getPunishment().delete();
 
@@ -53,7 +54,7 @@ public class Punishments {
                     broadcastMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() + ChatColor.WARNING + " was unbanned");
                 }
             } else {
-                broadcastMessage(ChatColor.WARNING + "This player is not banned " + Network.getChat().getMessageCode("H", 101, Plugin.PUNISH));
+                broadcastMessage(ChatColor.WARNING + "This player is not banned " + Chat.getMessageCode("H", 101, Plugin.PUNISH));
             }
         }
 
@@ -67,7 +68,7 @@ public class Punishments {
             } else if (!type.equals(Type.Punishment.BAN)) {
                 banPlayerChecked(sender, user, reason);
             } else {
-                broadcastMessage(ChatColor.WARNING + "This player is already banned " + Network.getChat().getMessageCode("H", 102, Plugin.PUNISH));
+                broadcastMessage(ChatColor.WARNING + "This player is already banned " + Chat.getMessageCode("H", 102, Plugin.PUNISH));
             }
         }
 
@@ -97,7 +98,7 @@ public class Punishments {
             } else if (!type.equals(Type.Punishment.BAN)) {
                 tempBanPlayerChecked(sender, user, date, reason);
             } else {
-                broadcastMessage(ChatColor.WARNING + "This player is already banned " + Network.getChat().getMessageCode("H", 102, Plugin.PUNISH));
+                broadcastMessage(ChatColor.WARNING + "This player is already banned " + Chat.getMessageCode("H", 102, Plugin.PUNISH));
             }
         }
 
@@ -114,7 +115,7 @@ public class Punishments {
                 }
 
                 if (type.equals(Type.Punishment.BAN)) {
-                    sender.sendPluginMessage(ChatColor.WARNING + "This player is already banned " + Network.getChat().getMessageCode("H", 102, Plugin.PUNISH));
+                    sender.sendPluginMessage(ChatColor.WARNING + "This player is already banned " + Chat.getMessageCode("H", 102, Plugin.PUNISH));
                 }
             }
 
@@ -160,7 +161,7 @@ public class Punishments {
 
                 broadcastMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() + ChatColor.WARNING + " was muted with reason: " + ChatColor.VALUE + reason);
             } else {
-                broadcastMessage(ChatColor.WARNING + "Player is already punished " + Network.getChat().getMessageCode("H", 102, Plugin.PUNISH));
+                broadcastMessage(ChatColor.WARNING + "Player is already punished " + Chat.getMessageCode("H", 102, Plugin.PUNISH));
             }
         }
 
@@ -176,7 +177,7 @@ public class Punishments {
 
                 broadcastMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() + ChatColor.WARNING + " was unmuted");
             } else {
-                sender.sendMessage(ChatColor.WARNING + "This Player is already unmuted " + Network.getChat().getMessageCode("H", 104, Plugin.PUNISH));
+                sender.sendMessage(ChatColor.WARNING + "This Player is already unmuted " + Chat.getMessageCode("H", 104, Plugin.PUNISH));
             }
         }
 
@@ -228,6 +229,6 @@ public class Punishments {
     }
 
     private static void broadcastMessage(String msg) {
-        Network.broadcastMessage(Network.getChat().getSenderPlugin(Plugin.PUNISH) + msg);
+        Network.broadcastMessage(Chat.getSenderPlugin(Plugin.PUNISH) + msg);
     }
 }

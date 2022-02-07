@@ -6,7 +6,7 @@ import de.timesnake.library.basic.util.chat.Plugin;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-public class Sender extends de.timesnake.library.basic.util.cmd.Sender {
+public class Sender extends de.timesnake.library.extension.util.cmd.Sender {
 
     public Sender(CommandSender cmdSender, Plugin plugin) {
         super(cmdSender, plugin);

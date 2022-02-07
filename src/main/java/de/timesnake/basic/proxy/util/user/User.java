@@ -17,6 +17,7 @@ import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.extension.util.chat.Chat;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -29,7 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class User implements de.timesnake.library.basic.util.player.User, ChannelUserListener {
+public class User implements de.timesnake.library.extension.util.player.User, ChannelUserListener {
 
     private final DbUser dbUser;
     private final ProxiedPlayer player;
@@ -192,7 +193,7 @@ public class User implements de.timesnake.library.basic.util.player.User, Channe
 
     @SuppressWarnings("deprecation")
     public void sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin plugin, String message) {
-        this.getPlayer().sendMessage(Network.getChat().getSenderPlugin(plugin) + message);
+        this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin) + message);
     }
 
     public UUID getUniqueId() {

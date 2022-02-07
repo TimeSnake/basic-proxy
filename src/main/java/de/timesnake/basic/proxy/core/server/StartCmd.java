@@ -11,9 +11,10 @@ import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbLoungeServer;
-import de.timesnake.library.basic.util.cmd.Arguments;
-import de.timesnake.library.basic.util.cmd.CommandListener;
-import de.timesnake.library.basic.util.cmd.ExCommand;
+import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.cmd.Arguments;
+import de.timesnake.library.extension.util.cmd.CommandListener;
+import de.timesnake.library.extension.util.cmd.ExCommand;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -274,12 +275,12 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         }
 
         if (gameServer == null) {
-            sender.sendMessage(Network.getChat().getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All game servers are in use!");
+            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All game servers are in use!");
             return;
         }
 
         if (loungeServer == null) {
-            sender.sendMessage(Network.getChat().getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All lounge servers are in use!");
+            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All lounge servers are in use!");
             return;
         }
 

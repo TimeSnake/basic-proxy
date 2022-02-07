@@ -7,9 +7,9 @@ import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.channel.api.message.ChannelUserMessage;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.cmd.Arguments;
-import de.timesnake.library.basic.util.cmd.CommandListener;
-import de.timesnake.library.basic.util.cmd.ExCommand;
+import de.timesnake.library.extension.util.cmd.Arguments;
+import de.timesnake.library.extension.util.cmd.CommandListener;
+import de.timesnake.library.extension.util.cmd.ExCommand;
 
 import java.util.List;
 

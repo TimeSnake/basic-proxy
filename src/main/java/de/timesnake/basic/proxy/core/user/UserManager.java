@@ -14,6 +14,7 @@ import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.extension.util.chat.Chat;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.Title;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -183,7 +184,7 @@ public class UserManager implements Listener {
     }
 
     private void sendJoinMessages(ProxiedPlayer player, User user) {
-        player.sendMessage(new TextComponent(new TextComponent(Network.getChat().getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "You accepted the network rules!")));
+        player.sendMessage(new TextComponent(new TextComponent(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "You accepted the network rules!")));
 
         if (user.agreedDataProtection()) {
             user.sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin.NETWORK, ChatColor.WARNING + "You accepted our data protection declaration (dpd)");
@@ -193,7 +194,7 @@ public class UserManager implements Listener {
         }
 
         if (player.hasPermission("support.opentickets")) {
-            player.sendMessage(new TextComponent(Network.getChat().getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + "§l" + Database.getSupport().getTickets().size() + ChatColor.PUBLIC + " open tickets"));
+            player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + "§l" + Database.getSupport().getTickets().size() + ChatColor.PUBLIC + " open tickets"));
         }
 
 
@@ -218,23 +219,23 @@ public class UserManager implements Listener {
             }
 
             if (open > 0) {
-                player.sendMessage(new TextComponent(Network.getChat().getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + open + ChatColor.PERSONAL + " of your ticket(s) is/are open."));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + open + ChatColor.PERSONAL + " of your ticket(s) is/are open."));
             }
 
             if (inProcess > 0) {
-                player.sendMessage(new TextComponent(Network.getChat().getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + inProcess + ChatColor.PERSONAL + " of your ticket(s) is/are in process."));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + inProcess + ChatColor.PERSONAL + " of your ticket(s) is/are in process."));
             }
 
             if (solved > 0) {
-                player.sendMessage(new TextComponent(Network.getChat().getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved + ChatColor.PERSONAL + " of your ticket(s) is/are solved."));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved + ChatColor.PERSONAL + " of your ticket(s) is/are solved."));
             }
 
             if (admin > 0) {
-                player.sendMessage(new TextComponent(Network.getChat().getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved + ChatColor.PERSONAL + " of your ticket(s) is/are forwarded to " + "an admin."));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved + ChatColor.PERSONAL + " of your ticket(s) is/are forwarded to " + "an admin."));
             }
 
             if (open + inProcess + solved + admin > 0) {
-                player.sendMessage(new TextComponent(Network.getChat().getSenderPlugin(Plugin.SUPPORT) + ChatColor.PERSONAL + "Use " + ChatColor.VALUE + "/ticket(s) " + ChatColor.PUBLIC + "to manage your tickets"));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.PERSONAL + "Use " + ChatColor.VALUE + "/ticket(s) " + ChatColor.PUBLIC + "to manage your tickets"));
             }
         }
     }

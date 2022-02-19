@@ -2,8 +2,8 @@ package de.timesnake.basic.proxy.core.server;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.object.Type;
+import de.timesnake.library.basic.util.Status;
 import net.md_5.bungee.api.event.ServerKickEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;

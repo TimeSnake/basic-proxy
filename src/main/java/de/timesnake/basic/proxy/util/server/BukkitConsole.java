@@ -1,7 +1,8 @@
 package de.timesnake.basic.proxy.util.server;
 
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.channel.api.message.ChannelServerMessage;
+import de.timesnake.channel.util.message.ChannelServerMessage;
+import de.timesnake.channel.util.message.MessageType;
 
 import java.io.IOException;
 
@@ -25,11 +26,11 @@ public abstract class BukkitConsole {
     }
 
     public void stop() {
-        Network.getChannel().sendMessage(this.getPort(), ChannelServerMessage.getCommandMessage(this.getPort(), "stop"));
+        Network.getChannel().sendMessage(this.getPort(), new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, "stop"));
     }
 
     public void execute(String cmd) {
-        Network.getChannel().sendMessage(this.getPort(), ChannelServerMessage.getCommandMessage(this.getPort(), cmd));
+        Network.getChannel().sendMessage(this.getPort(), new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND,  cmd));
     }
 
     public String getFolderPath() {

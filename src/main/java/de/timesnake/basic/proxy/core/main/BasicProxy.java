@@ -17,8 +17,7 @@ import de.timesnake.basic.proxy.core.user.AirModeCmd;
 import de.timesnake.basic.proxy.core.user.AliasCmd;
 import de.timesnake.basic.proxy.core.user.ChatManager;
 import de.timesnake.basic.proxy.util.NetworkManager;
-import de.timesnake.channel.api.message.ChannelServerMessage;
-import de.timesnake.channel.main.NetworkChannel;
+import de.timesnake.channel.core.NetworkChannel;
 import de.timesnake.database.util.Database;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -79,7 +78,7 @@ public class BasicProxy extends Plugin {
         pm.registerListener(this, new ChatManager());
         pm.registerListener(this, new FallbackListener());
 
-        NetworkManager.getInstance().getChannel().addServerListener(new ChannelCmdHandler(), ChannelServerMessage.MessageType.RESTART, ChannelServerMessage.MessageType.COMMAND);
+        NetworkManager.getInstance().getChannel().addListener(new ChannelCmdHandler());
     }
 
     public void onDisable() {

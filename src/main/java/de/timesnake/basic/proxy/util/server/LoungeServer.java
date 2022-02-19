@@ -1,7 +1,7 @@
 package de.timesnake.basic.proxy.util.server;
 
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.server.DbLoungeServer;
+import de.timesnake.library.basic.util.Status;
 
 public class LoungeServer extends TaskServer {
 

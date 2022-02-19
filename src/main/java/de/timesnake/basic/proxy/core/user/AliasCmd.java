@@ -4,7 +4,8 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Sender;
-import de.timesnake.channel.api.message.ChannelUserMessage;
+import de.timesnake.channel.util.message.ChannelUserMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.extension.util.cmd.Arguments;
@@ -78,7 +79,7 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                 }
                 sender.sendPluginMessage(msg + ChatColor.PERSONAL + " from " + ChatColor.VALUE + user.getName() + ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
 
-                Network.getChannel().sendMessage(ChannelUserMessage.getAliasMessage(user.getUniqueId()));
+                Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
                 break;
 
             case "suffix":
@@ -91,7 +92,7 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                 }
                 sender.sendPluginMessage(msg + ChatColor.PERSONAL + " from " + ChatColor.VALUE + user.getName() + ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
 
-                Network.getChannel().sendMessage(ChannelUserMessage.getAliasMessage(user.getUniqueId()));
+                Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
                 break;
 
             case "nick":
@@ -104,7 +105,7 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                 }
                 sender.sendPluginMessage(msg + ChatColor.PERSONAL + " from " + ChatColor.VALUE + user.getName() + ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
 
-                Network.getChannel().sendMessage(ChannelUserMessage.getAliasMessage(user.getUniqueId()));
+                Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
                 break;
 
             default:

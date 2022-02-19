@@ -8,9 +8,9 @@ import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbLoungeServer;
+import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
@@ -102,7 +102,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             this.handleStartTempGame(sender, args, game);
         } else {
             sender.sendPluginMessage(ChatColor.WARNING + "Please use the /start server command to start a non temp " + "game server");
-			/*GameServer gameServer = null;
+			GameServer gameServer = null;
 			for (Server server1 : Network.getServers()) {
 				if (server1.getType().equals(Type.Server.GAME)
 						&& (server1.getStatus() == null || server1.getStatus().equals(Status.Server.OFFLINE))
@@ -117,8 +117,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 			}
 
 			gameServer.setTask(gameType);
-			gameServer.setKitsEnabled(areKitsEnabled);
-			maxPlayers = null;
+			Integer maxPlayers = null;
 
 			if (args.isLengthEquals(3, false)
 					&& args.get(2).isInt(true)) {
@@ -134,7 +133,6 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 				sender.sendPluginMessage(ChatColor.WARNING+"No default max-players value found");
 			}
 
-			 */
         }
     }
 
@@ -259,7 +257,6 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         TempGameServer gameServer = null;
 
         for (Server s : Network.getServers()) {
-            String name = s.getName();
             Status.Server status = s.getStatus();
             if (s.getType().equals(Type.Server.LOUNGE)) {
                 if (status == null || status.equals(Status.Server.OFFLINE)) {

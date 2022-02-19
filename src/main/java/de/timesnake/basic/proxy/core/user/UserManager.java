@@ -7,13 +7,14 @@ import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.channel.api.message.ChannelServerMessage;
+import de.timesnake.channel.util.message.ChannelServerMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.chat.Chat;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.Title;
@@ -79,7 +80,7 @@ public class UserManager implements Listener {
         }
 
         Network.printText(Plugin.NETWORK, "Players online " + Network.getUsers().size());
-        Network.getChannel().sendMessage(ChannelServerMessage.getOnlinePlayersMessage(Network.getPort(), Network.getUsers().size()));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
     }
 
     @EventHandler
@@ -152,7 +153,7 @@ public class UserManager implements Listener {
         });
 
         Network.removeUser(p);
-        Network.getChannel().sendMessage(ChannelServerMessage.getOnlinePlayersMessage(Network.getPort(), Network.getUsers().size()));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
     }
 
     @EventHandler

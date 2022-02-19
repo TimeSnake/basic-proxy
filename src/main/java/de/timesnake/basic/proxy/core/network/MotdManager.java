@@ -2,8 +2,8 @@ package de.timesnake.basic.proxy.core.network;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.object.Type;
+import de.timesnake.library.basic.util.Status;
 import net.md_5.bungee.api.ServerPing;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.event.ProxyPingEvent;

@@ -4,12 +4,13 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
-import de.timesnake.channel.api.message.ChannelGroupMessage;
+import de.timesnake.channel.util.message.ChannelGroupMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.chat.Chat;
 
 import java.util.Arrays;
@@ -220,7 +221,7 @@ public class PermissionManager {
 
         Database.getGroups().removePermGroup(group);
         sender.sendPluginMessage(ChatColor.PERSONAL + "Group " + ChatColor.VALUE + group.getName() + ChatColor.PERSONAL + " deleted");
-        Network.getChannel().sendMessage(ChannelGroupMessage.getPermissionMessage(groupName));
+        Network.getChannel().sendMessage(new ChannelGroupMessage<>(groupName, MessageType.Group.PERMISSION));
 
     }
 
@@ -278,7 +279,7 @@ public class PermissionManager {
     }
 
     private void sendMessageAddedPermission(Sender sender, String name, String permission, Status.Permission mode, String... servers) {
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Added permission " + ChatColor.VALUE + permission + ChatColor.PERSONAL + " to " + ChatColor.VALUE + name + ChatColor.PERSONAL + " with mode " + ChatColor.VALUE + mode.getDatabaseValue() + ChatColor.PERSONAL + " on server(s): " + ChatColor.VALUE + Arrays.toString(servers));
+        sender.sendPluginMessage(ChatColor.PERSONAL + "Added permission " + ChatColor.VALUE + permission + ChatColor.PERSONAL + " to " + ChatColor.VALUE + name + ChatColor.PERSONAL + " with mode " + ChatColor.VALUE + mode.getName() + ChatColor.PERSONAL + " on server(s): " + ChatColor.VALUE + Arrays.toString(servers));
     }
 
     private void sendMessageRemovedPermission(Sender sender, String name, String permission) {

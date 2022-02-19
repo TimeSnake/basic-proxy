@@ -2,10 +2,10 @@ package de.timesnake.basic.proxy.core.channel;
 
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.channel.main.NetworkChannel;
+import de.timesnake.channel.core.NetworkChannel;
 import de.timesnake.channel.proxy.channel.Channel;
 import de.timesnake.channel.proxy.listener.ChannelTimeOutListener;
-import de.timesnake.database.util.object.Status;
+import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.Plugin;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;

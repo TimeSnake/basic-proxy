@@ -3,7 +3,8 @@ package de.timesnake.basic.proxy.core.group;
 import de.timesnake.basic.proxy.core.permission.Permission;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.channel.api.message.ChannelGroupMessage;
+import de.timesnake.channel.util.message.ChannelGroupMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import net.md_5.bungee.api.ChatColor;
@@ -104,7 +105,7 @@ public class Group {
         }
         this.permissions = permissions;
 
-        Network.getChannel().sendMessage(ChannelGroupMessage.getPermissionMessage(this.name));
+        Network.getChannel().sendMessage(new ChannelGroupMessage<>(this.name, MessageType.Group.PERMISSION));
         System.out.println("[BasicSystem] Updated permissions for group " + this.name + " from database");
 
         for (DbPermGroup g : this.database.getGroupsInherit()) {

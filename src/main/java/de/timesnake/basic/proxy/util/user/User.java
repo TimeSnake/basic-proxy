@@ -6,17 +6,20 @@ import de.timesnake.basic.proxy.core.permission.Permission;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.CommandSender;
-import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
-import de.timesnake.channel.api.message.ChannelUserMessage;
-import de.timesnake.channel.listener.ChannelUserListener;
+import de.timesnake.channel.util.listener.ChannelHandler;
+import de.timesnake.channel.util.listener.ChannelListener;
+import de.timesnake.channel.util.listener.ListenerType;
+import de.timesnake.channel.util.message.ChannelUserMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.extension.util.chat.Chat;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -24,13 +27,10 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
 import java.time.Duration;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class User implements de.timesnake.library.extension.util.player.User, ChannelUserListener {
+public class User implements de.timesnake.library.extension.util.player.User, ChannelListener {
 
     private final DbUser dbUser;
     private final ProxiedPlayer player;
@@ -85,7 +85,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.group.addUser(this);
         this.updatePermissions();
 
-        Network.getChannel().addUserListener(this, this.getUniqueId());
+        Network.getChannel().addListener(this, () -> Collections.singleton(this.getUniqueId()));
     }
 
     public DbUser getDbUser() {
@@ -102,7 +102,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     }
 
     public void quit() {
-        Network.getChannel().removeUserListener(this);
+        Network.getChannel().removeListener(this);
     }
 
     public Group getGroup() {
@@ -123,7 +123,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
             this.group.addUser(this);
         }
 
-        Network.getChannel().sendMessage(ChannelUserMessage.getGroupMessage(this.getUniqueId(), this.group.getName()));
+        Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.GROUP, this.group.getName()));
         this.updatePermissions();
     }
 
@@ -174,7 +174,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         return nameChat;
     }
 
-    public Sender getAsSender(Plugin plugin) {
+    public Sender getAsSender(de.timesnake.library.basic.util.chat.Plugin plugin) {
         return new Sender(new CommandSender(player), plugin);
     }
 
@@ -272,8 +272,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
             Network.runTaskLater(this::loadPermissions, Duration.ZERO);
 
-            Network.getChannel().sendMessage(ChannelUserMessage.getPermissionMessage(this.getUniqueId()));
-            Network.printText(Plugin.PERMISSION, "Updated permissions for user " + this.getName() + " from database");
+            Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.PERMISSION));
+            Network.printText(de.timesnake.basic.proxy.util.chat.Plugin.PERMISSION, "Updated permissions for user " + this.getName() + " from database");
         });
     }
 
@@ -394,7 +394,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
      * @param cmd Command without slash
      */
     public void executeCommand(String cmd) {
-        Network.getChannel().sendMessage(ChannelUserMessage.getCommandMessage(this.getUniqueId(), cmd));
+        Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.COMMAND, cmd));
     }
 
     //dataProtection
@@ -456,29 +456,22 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     }
 
-    @Override
-    public void onUserMessage(ChannelUserMessage msg) {
-        ChannelUserMessage.MessageType type = msg.getType();
-        if (type.equals(ChannelUserMessage.MessageType.SERVICE)) {
+    @ChannelHandler(type = {ListenerType.USER_SERVICE, ListenerType.USER_PERMISSION, ListenerType.USER_SWITCH_NAME, ListenerType.USER_SWITCH_PORT}, filtered = true)
+    public void onUserMessage(ChannelUserMessage<?> msg) {
+        MessageType.User<?> type = (MessageType.User<?>) msg.getMessageType();
+        if (type.equals(MessageType.User.SERVICE)) {
             this.service = this.dbUser.isService();
-        } else if (type.equals(ChannelUserMessage.MessageType.PERMISSION)) {
+        } else if (type.equals(MessageType.User.PERMISSION)) {
             this.updatePermissions();
-        } else if (type.equals(ChannelUserMessage.MessageType.SWITCH)) {
-            Integer port = null;
-            try {
-                port = Integer.valueOf((String) msg.getValue());
-            } catch (NumberFormatException ignored) {
-            }
-            if (port != null) {
-                Network.sendUserToServer(this, port);
-            } else {
-                Network.sendUserToServer(this, (String) msg.getValue());
-            }
+        } else if (type.equals(MessageType.User.SWITCH_NAME)) {
+            Network.sendUserToServer(this, (String) msg.getValue());
+        } else if (type.equals(MessageType.User.SWITCH_PORT)) {
+            Network.sendUserToServer(this, (Integer) msg.getValue());
         }
     }
 
     public void playSound(ChannelUserMessage.Sound sound) {
-        Network.getChannel().sendMessage(ChannelUserMessage.getSoundMessage(this.getUniqueId(), sound));
+        Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.SOUND, sound));
     }
 
 }

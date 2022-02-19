@@ -7,8 +7,11 @@ import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.channel.api.message.ChannelSupportMessage;
-import de.timesnake.channel.listener.ChannelSupportListener;
+import de.timesnake.channel.util.listener.ChannelHandler;
+import de.timesnake.channel.util.listener.ChannelListener;
+import de.timesnake.channel.util.listener.ListenerType;
+import de.timesnake.channel.util.message.ChannelSupportMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
@@ -22,7 +25,7 @@ import net.md_5.bungee.event.EventHandler;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class SupportManager implements ChannelSupportListener, CommandListener<Sender, Argument>, Listener {
+public class SupportManager implements ChannelListener, CommandListener<Sender, Argument>, Listener {
 
     private final HashMap<Integer, Tuple<Integer, ScheduledTask>> lockedTicketsById = new HashMap<>();
 
@@ -30,43 +33,43 @@ public class SupportManager implements ChannelSupportListener, CommandListener<S
 
     public SupportManager() {
         Network.getCommandHandler().addCommand(BasicProxy.getPlugin(), ProxyServer.getInstance().getPluginManager(), "supportmsg", List.of("supportmessage", "supportmessages", "supportmsgs", "smsg"), this, Plugin.SUPPORT);
-        Network.getChannel().addSupportListener(this);
+        Network.getChannel().addListener(this);
         Network.registerListener(this);
     }
 
-    @Override
-    public void onSupportMessage(ChannelSupportMessage msg) {
-        if (msg.getType().equals(ChannelSupportMessage.MessageType.TICKET_LOCK)) {
+    @ChannelHandler(type = ListenerType.SUPPORT)
+    public void onSupportMessage(ChannelSupportMessage<?> msg) {
+        if (msg.getMessageType().equals(MessageType.Support.TICKET_LOCK)) {
             Integer port = msg.getPort();
-            Integer id = Integer.parseInt(msg.getValue());
+            Integer id = (Integer) msg.getValue();
             Tuple<Integer, ScheduledTask> value = this.lockedTicketsById.get(id);
             if (value != null && !value.getA().equals(port)) {
-                Network.getChannel().sendMessage(ChannelSupportMessage.getTicketRejctMessage(port, id));
+                Network.getChannel().sendMessage(new ChannelSupportMessage<>(port, MessageType.Support.REJECT, id));
             } else {
                 ScheduledTask task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), () -> this.lockedTicketsById.remove(id), 3, TimeUnit.MINUTES);
 
                 this.lockedTicketsById.put(id, new Tuple<>(port, task));
             }
-        } else if (msg.getType().equals(ChannelSupportMessage.MessageType.SUBMIT)) {
+        } else if (msg.getMessageType().equals(MessageType.Support.SUBMIT)) {
             Integer port = msg.getPort();
-            Integer id = Integer.parseInt(msg.getValue());
+            Integer id = (Integer) msg.getValue();
 
             Tuple<Integer, ScheduledTask> tuple = this.lockedTicketsById.get(id);
 
             if (tuple == null || tuple.getA() == null || !tuple.getA().equals(port)) {
-                Network.getChannel().sendMessage(ChannelSupportMessage.getTicketRejctMessage(port, id));
+                Network.getChannel().sendMessage(new ChannelSupportMessage<>(port, MessageType.Support.REJECT, id));
                 return;
             }
 
-            Network.getChannel().sendMessage(ChannelSupportMessage.getTicketAcceptMessage(port, id));
+            Network.getChannel().sendMessage(new ChannelSupportMessage<>(port, MessageType.Support.ACCEPT, id));
 
             ScheduledTask task = this.lockedTicketsById.remove(id).getB();
 
             if (task != null) {
                 task.cancel();
             }
-        } else if (msg.getType().equals(ChannelSupportMessage.MessageType.CREATION)) {
-            int id = Integer.parseInt(msg.getValue());
+        } else if (msg.getMessageType().equals(MessageType.Support.CREATION)) {
+            Integer id = (Integer) msg.getValue();
 
             for (UUID uuid : this.ticketListeners) {
                 User user = Network.getUser(uuid);

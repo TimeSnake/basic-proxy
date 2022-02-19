@@ -5,7 +5,8 @@ import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.channel.api.message.ChannelUserMessage;
+import de.timesnake.channel.util.message.ChannelUserMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.user.DbUser;
@@ -155,7 +156,7 @@ public class Punishments {
             Type.Punishment type = user.getPunishment().getType();
             if (type == null) {
                 user.setPunishment(Type.Punishment.MUTE, new Date(), sender.getName(), reason, "ALL");
-                Network.getChannel().sendMessage(user.getServer().getPort(), ChannelUserMessage.getPunishMessage(user.getUniqueId()));
+                Network.getChannel().sendMessage(user.getServer().getPort(), new ChannelUserMessage(user.getUniqueId(), MessageType.User.PUNISH));
                 String name = user.getName();
                 sender.sendPluginMessage(ChatColor.PERSONAL + "You muted " + ChatColor.VALUE + name + ChatColor.PUBLIC + " with reason: " + ChatColor.VALUE + reason);
 
@@ -172,7 +173,7 @@ public class Punishments {
             Type.Punishment type = user.getPunishment().getType();
             if (type.equals(Type.Punishment.MUTE)) {
                 user.getPunishment().delete();
-                Network.getChannel().sendMessage(user.getServer().getPort(), ChannelUserMessage.getPunishMessage(user.getUniqueId()));
+                Network.getChannel().sendMessage(user.getServer().getPort(), new ChannelUserMessage(user.getUniqueId(), MessageType.User.PUNISH));
                 sender.sendPluginMessage(ChatColor.PERSONAL + "You unmuted " + ChatColor.VALUE + user.getName());
 
                 broadcastMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() + ChatColor.WARNING + " was unmuted");

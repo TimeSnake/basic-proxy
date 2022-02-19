@@ -1,7 +1,6 @@
 package de.timesnake.basic.proxy.util;
 
 import de.timesnake.basic.proxy.core.channel.ChannelPingPong;
-import de.timesnake.basic.proxy.core.channel.ChannelRegisterHandler;
 import de.timesnake.basic.proxy.core.file.Config;
 import de.timesnake.basic.proxy.core.file.ServerConfig;
 import de.timesnake.basic.proxy.core.group.Group;
@@ -20,18 +19,20 @@ import de.timesnake.basic.proxy.util.chat.CommandHandler;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.channel.api.message.ChannelServerMessage;
-import de.timesnake.channel.api.message.ChannelServerMessage.MessageType;
-import de.timesnake.channel.listener.ChannelServerListener;
-import de.timesnake.channel.main.NetworkChannel;
+import de.timesnake.channel.core.NetworkChannel;
 import de.timesnake.channel.proxy.channel.Channel;
-import de.timesnake.channel.proxy.listener.ChannelRegisterListener;
+import de.timesnake.channel.util.listener.ChannelHandler;
+import de.timesnake.channel.util.listener.ChannelListener;
+import de.timesnake.channel.util.listener.ListenerType;
+import de.timesnake.channel.util.message.ChannelListenerMessage;
+import de.timesnake.channel.util.message.ChannelServerMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbGameServer;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.database.util.server.DbTempGameServer;
+import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.basic.util.server.Task;
 import net.md_5.bungee.api.ProxyServer;
@@ -45,7 +46,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class NetworkManager implements ChannelServerListener, ChannelRegisterListener, Network {
+public class NetworkManager implements ChannelListener, Network {
 
     private static final NetworkManager instance = new NetworkManager();
 
@@ -82,8 +83,6 @@ public class NetworkManager implements ChannelServerListener, ChannelRegisterLis
 
     private final ChannelPingPong channelPingPong = new ChannelPingPong();
 
-    private ChannelRegisterHandler channelRegisterHandler;
-
     private final CmdFile cmdFile = new CmdFile();
 
     private RuleManager ruleManager;
@@ -100,11 +99,7 @@ public class NetworkManager implements ChannelServerListener, ChannelRegisterLis
 
         this.userManager = new UserManager();
 
-        getChannel().addServerListener(this, ChannelServerMessage.MessageType.STATUS);
-        getChannel().addServerListener(this, ChannelServerMessage.MessageType.PERMISSION);
-        getChannel().addRegisterListener(this);
-
-        this.channelRegisterHandler = new ChannelRegisterHandler();
+        this.getChannel().addListener(this);
 
         Config.onEnable();
         String guestGroupName = Config.getGuestGroupName();
@@ -415,17 +410,17 @@ public class NetworkManager implements ChannelServerListener, ChannelRegisterLis
         BasicProxy.getPlugin().getProxy().getScheduler().runAsync(BasicProxy.getPlugin(), task::run);
     }
 
-    @Override
-    public void onServerMessage(ChannelServerMessage msg) {
-        MessageType type = msg.getType();
-        if (type.equals(MessageType.PERMISSION)) {
+    @ChannelHandler(type = {ListenerType.SERVER_PERMISSION, ListenerType.SERVER_STATUS})
+    public void onServerMessage(ChannelServerMessage<?> msg) {
+        MessageType<?> type = msg.getMessageType();
+        if (type.equals(MessageType.Server.PERMISSION)) {
 
             for (User user : getUsers()) {
                 if (user.getServer().getPort().equals(msg.getPort())) {
                     user.updatePermissions();
                 }
             }
-        } else if (type.equals(MessageType.STATUS)) {
+        } else if (type.equals(MessageType.Server.STATUS)) {
             Server server = this.getServer(msg.getPort());
             server.updateStatus();
 
@@ -437,16 +432,16 @@ public class NetworkManager implements ChannelServerListener, ChannelRegisterLis
                 }
             }
 
-            if (msg.getValue() != null && Status.Server.getByDatabaseValue(msg.getValue()).equals(Status.Server.OFFLINE)) {
+            if (msg.getValue() != null && msg.getValue().equals(Status.Server.OFFLINE)) {
                 getServer(msg.getPort()).setStatus(Status.Server.OFFLINE, true);
             }
         }
     }
 
-    @Override
-    public void onChannelRegisterMessage(int port, boolean isRegistering) {
-        if (!isRegistering) {
-            Server server = this.getServer(port);
+    @ChannelHandler(type = ListenerType.LISTENER_UNREGISTER)
+    public void onChannelRegisterMessage(ChannelListenerMessage<?> msg) {
+        if (msg.getMessageType().equals(MessageType.Listener.UNREGISTER)) {
+            Server server = this.getServer(msg.getSenderPort());
             server.setStatus(Status.Server.OFFLINE, true);
             this.printText(Plugin.NETWORK, "Updated status from server " + server.getName() + " to offline");
         }

@@ -1,8 +1,8 @@
 package de.timesnake.basic.proxy.util.server;
 
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.server.DbGameServer;
+import de.timesnake.library.basic.util.Status;
 
 public class GameServer extends TaskServer {
 

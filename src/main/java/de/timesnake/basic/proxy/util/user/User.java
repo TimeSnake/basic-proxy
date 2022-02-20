@@ -458,7 +458,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     @ChannelHandler(type = {ListenerType.USER_SERVICE, ListenerType.USER_PERMISSION, ListenerType.USER_SWITCH_NAME, ListenerType.USER_SWITCH_PORT}, filtered = true)
     public void onUserMessage(ChannelUserMessage<?> msg) {
-        MessageType.User<?> type = (MessageType.User<?>) msg.getMessageType();
+        MessageType<?> type = msg.getMessageType();
         if (type.equals(MessageType.User.SERVICE)) {
             this.service = this.dbUser.isService();
         } else if (type.equals(MessageType.User.PERMISSION)) {

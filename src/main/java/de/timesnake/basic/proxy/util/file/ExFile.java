@@ -102,6 +102,11 @@ public class ExFile {
         return this.config.getDouble(path);
     }
 
+    public long getLong(String path) {
+        this.load();
+        return this.config.getLong(path);
+    }
+
 
     public boolean remove(String path) {
         this.load();

@@ -43,6 +43,11 @@ public abstract class Server extends BukkitConsole {
         return name;
     }
 
+    @Override
+    public String getServerTask() {
+        return this.type.getDatabaseValue();
+    }
+
     public int getMaxPlayers() {
         return maxPlayers;
     }

@@ -8,7 +8,6 @@ import java.io.IOException;
 
 public abstract class BukkitConsole {
 
-    public static final String START_FILE = "start.sh";
     private final String folderPath;
 
     public BukkitConsole(String folderPath) {
@@ -17,7 +16,7 @@ public abstract class BukkitConsole {
 
     public boolean start() {
         try {
-            Runtime.getRuntime().exec("konsole --separate --workdir " + this.folderPath + " -e " + this.folderPath + "/start.sh");
+            Runtime.getRuntime().exec("konsole --separate --workdir " + this.folderPath + " -e " + this.folderPath + "/start.sh " + this.getServerTask());
             return true;
         } catch (IOException var2) {
             var2.printStackTrace();
@@ -30,7 +29,7 @@ public abstract class BukkitConsole {
     }
 
     public void execute(String cmd) {
-        Network.getChannel().sendMessage(this.getPort(), new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND,  cmd));
+        Network.getChannel().sendMessage(this.getPort(), new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, cmd));
     }
 
     public String getFolderPath() {
@@ -38,4 +37,6 @@ public abstract class BukkitConsole {
     }
 
     public abstract Integer getPort();
+
+    public abstract String getServerTask();
 }

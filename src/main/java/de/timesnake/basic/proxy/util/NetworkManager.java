@@ -122,7 +122,7 @@ public class NetworkManager implements ChannelListener, Network {
             this.printText(Plugin.PROXY, "Loaded group: " + groupName);
         }
 
-        serverConfig = new ServerConfig("plugins/basic-proxy");
+        serverConfig = new ServerConfig();
         serverConfig.loadServers();
 
         maxPlayersLobby = serverConfig.getMaxPlayersLobby();

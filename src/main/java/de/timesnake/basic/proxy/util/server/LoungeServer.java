@@ -28,4 +28,9 @@ public class LoungeServer extends TaskServer {
             ((DbLoungeServer) super.database).setTask(null);
         }
     }
+
+    @Override
+    public String getServerTask() {
+        return this.getType().getDatabaseValue();
+    }
 }

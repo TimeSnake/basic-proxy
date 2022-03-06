@@ -24,6 +24,9 @@ public class ExFile {
         } else file.delete();
     }
 
+    public static String toPath(String... sections) {
+        return String.join(".", sections);
+    }
 
     protected final File configFile;
     protected Configuration config;

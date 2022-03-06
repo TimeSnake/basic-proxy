@@ -1,145 +1,63 @@
 package de.timesnake.basic.proxy.core.file;
 
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.server.GameServer;
+import de.timesnake.basic.proxy.util.chat.Plugin;
+import de.timesnake.basic.proxy.util.file.ExFile;
+import de.timesnake.database.util.object.Type;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.config.Configuration;
-import net.md_5.bungee.config.ConfigurationProvider;
-import net.md_5.bungee.config.YamlConfiguration;
 
-import java.io.File;
-import java.io.IOException;
+public class ServerConfig extends ExFile {
 
-public class ServerConfig {
-    private File serverConfigFile;
-    private Configuration serverConfig;
-
-    public ServerConfig(String path) {
-        File dir = new File(path);
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-
-        this.serverConfigFile = new File(path + "/serverconfig.yml");
-
-        if (!serverConfigFile.exists()) {
-            try {
-                serverConfigFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return;
-            }
-        }
-
-        load();
-
-        if (!serverConfig.contains("maxplayers.lobby")) {
-            serverConfig.set("maxplayers.lobby", 20);
-        }
-        if (!serverConfig.contains("maxplayers.build")) {
-            serverConfig.set("maxplayers.build", 20);
-        }
-
-        for (ServerInfo serverInfo : ProxyServer.getInstance().getServersCopy().values()) {
-            if (!serverConfig.contains("servers." + serverInfo.getName() + ".port")) {
-                serverConfig.set("servers." + serverInfo.getName() + ".port", serverInfo.getAddress().getPort());
-            }
-
-            if (!serverConfig.contains("servers." + serverInfo.getName() + ".type")) {
-                serverConfig.set("servers." + serverInfo.getName() + ".type", "type");
-            }
-
-            if (!serverConfig.contains("servers." + serverInfo.getName() + ".task")) {
-                serverConfig.set("servers." + serverInfo.getName() + ".task", "notask");
-            }
-
-            if (!serverConfig.contains("servers." + serverInfo.getName() + ".folderPath")) {
-                serverConfig.set("servers." + serverInfo.getName() + ".folderPath", "nopath");
-            }
-        }
-
-        for (String serverName : serverConfig.getStringList("servers")) {
-            if (ProxyServer.getInstance().getServerInfo(serverName) == null) {
-                if (serverConfig.contains("servers." + serverName + ".port")) {
-                    serverConfig.set("servers." + serverName + ".port", null);
-                }
-
-                if (serverConfig.contains("servers." + serverName + ".type")) {
-                    serverConfig.set("servers." + serverName + ".type", "");
-                }
-
-                if (serverConfig.contains("servers." + serverName + ".task")) {
-                    serverConfig.set("servers." + serverName + ".task", "");
-                }
-                if (serverConfig.contains("servers." + serverName + ".folderPath")) {
-                    serverConfig.set("servers." + serverName + ".folderPath", "");
-                }
-            }
-        }
-
-        save();
-    }
-
-    public void load() {
-        try {
-            serverConfig = ConfigurationProvider.getProvider(YamlConfiguration.class).load(serverConfigFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void save() {
-        try {
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(serverConfig, serverConfigFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    public ServerConfig() {
+        super("basic-proxy", "server_config");
     }
 
     public void loadServers() {
-        load();
+        this.load();
 
         for (ServerInfo server : ProxyServer.getInstance().getServersCopy().values()) {
             String serverName = server.getName().toLowerCase();
-            switch (serverConfig.getString("servers." + serverName + ".type").toLowerCase()) {
-                case "tempgame":
-                    Network.addTempGame(serverConfig.getInt("servers." + serverName + ".port"), serverName, serverConfig.getString("servers." + serverName + ".task").toLowerCase(), serverConfig.getString("servers." + serverName + ".folderPath"));
-                    System.out.println("[BasicSystem][ServerConfig] Loaded server " + serverName + " successfully");
-                    break;
-                case "lounge":
-                    Network.addLounge(serverConfig.getInt("servers." + serverName + ".port"), serverName, serverConfig.getString("servers." + serverName + ".folderPath"));
-                    System.out.println("[BasicSystem][ServerConfig] Loaded server " + serverName + " successfully");
-                    break;
-                case "game":
-                    Network.addGame(serverConfig.getInt("servers." + serverName + ".port"), serverName, serverConfig.getString("servers." + serverName + ".task").toLowerCase(), serverConfig.getString("servers." + serverName + ".folderPath"));
-                    System.out.println("[BasicSystem][ServerConfig] Loaded server " + serverName + "successfully");
-                    break;
-                case "build":
-                    Network.addBuild(serverConfig.getInt("servers." + serverName + ".port"), serverName, serverConfig.getString("servers." + serverName + ".folderPath"));
-                    System.out.println("[BasicSystem][ServerConfig] Loaded server " + serverName + "successfully");
-                    break;
-                case "lobby":
-                    Network.addLobby(serverConfig.getInt("servers." + serverName + ".port"), serverName, serverConfig.getString("servers." + serverName + ".folderPath"));
-                    System.out.println("[BasicSystem][ServerConfig] Loaded server " + serverName + " successfully");
-                    break;
-                default:
-                    System.out.println("[BasicSystem][ServerConfig] Error while reading server-config " + "(" + serverName + ")");
+            String path = ExFile.toPath("servers", serverName);
+            int port = super.getInt(ExFile.toPath(path, "port"));
+            String typeString = super.getString(ExFile.toPath(path, "type"));
+            String task = super.getString(ExFile.toPath(path, "task")).toLowerCase();
+            String folder = super.getString(ExFile.toPath(path, "folder"));
+
+
+            Type.Server<?> type = Type.Server.getByDatabaseValue(typeString.toLowerCase());
+
+            if (type == null) {
+                Network.printWarning(Plugin.NETWORK, "Error while reading server-config " + "(" + serverName + ")", "ServerConfig");
+                continue;
+            }
+
+            if (Type.Server.TEMP_GAME.equals(type)) {
+                Network.addTempGame(port, serverName, task, folder);
+                Network.printText(Plugin.NETWORK, "Loaded server " + serverName, "ServerConfig");
+            } else if (Type.Server.LOUNGE.equals(type)) {
+                Network.addLounge(port, serverName, folder);
+                Network.printText(Plugin.NETWORK, "Loaded server " + serverName, "ServerConfig");
+            } else if (Type.Server.GAME.equals(type)) {
+                Network.addGame(port, serverName, task, folder);
+                Network.printText(Plugin.NETWORK, "Loaded server " + serverName, "ServerConfig");
+            } else if (Type.Server.BUILD.equals(type)) {
+                Network.addBuild(port, serverName, folder);
+                Network.printText(Plugin.NETWORK, "Loaded server " + serverName, "ServerConfig");
+            } else if (Type.Server.LOBBY.equals(type)) {
+                Network.addLobby(port, serverName, folder);
+                Network.printText(Plugin.NETWORK, "Loaded server " + serverName, "ServerConfig");
+            } else {
+                Network.printWarning(Plugin.NETWORK, "Error while reading server-config " + "(" + serverName + ")", "ServerConfig");
             }
         }
     }
 
-    public String getServerTask(GameServer server) {
-        return serverConfig.getString("servers." + server.getName() + ".task").toLowerCase();
-    }
-
     public Integer getMaxPlayersLobby() {
-        return serverConfig.getInt("maxplayers.lobby");
+        return super.getInt("max_players.lobby");
     }
 
     public Integer getMaxPlayersBuild() {
-        return serverConfig.getInt("maxplayers.build");
+        return super.getInt("max_players.build");
     }
 }

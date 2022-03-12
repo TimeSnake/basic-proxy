@@ -29,9 +29,7 @@ import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
-import de.timesnake.database.util.server.DbGameServer;
 import de.timesnake.database.util.server.DbServer;
-import de.timesnake.database.util.server.DbTempGameServer;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.basic.util.server.Task;
@@ -240,60 +238,31 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
     public void addLobby(int port, String name, String folderPath) {
-        if (!Database.getServers().containsServer(Type.Server.LOBBY, port)) {
-            Database.getServers().addLobby(port, name, Status.Server.OFFLINE);
-        } else {
-            Database.getServers().getServer(Type.Server.LOBBY, port).setStatus(Status.Server.OFFLINE);
-        }
-
+        Database.getServers().addLobby(port, name, Status.Server.OFFLINE, folderPath);
         servers.put(port, new LobbyServer(Database.getServers().getServer(Type.Server.LOBBY, port), folderPath));
     }
 
 
     public void addGame(int port, String name, String task, String folderPath) {
-        if (!Database.getServers().containsServer(Type.Server.GAME, port)) {
-            Database.getServers().addGame(port, name, task, Status.Server.OFFLINE);
-        } else {
-            DbGameServer server = Database.getServers().getServer(Type.Server.GAME, port);
-            server.setStatus(Status.Server.OFFLINE);
-            server.setTask(task);
-        }
-
+        Database.getServers().addGame(port, name, task, Status.Server.OFFLINE, folderPath);
         servers.put(port, new GameServer(Database.getServers().getServer(Type.Server.GAME, port), folderPath));
     }
 
 
     public void addLounge(int port, String name, String folderPath) {
-        if (!Database.getServers().containsServer(Type.Server.LOUNGE, port)) {
-            Database.getServers().addLounge(port, name, Status.Server.OFFLINE);
-        } else {
-            Database.getServers().getServer(Type.Server.LOUNGE, port).setStatus(Status.Server.OFFLINE);
-        }
-
+        Database.getServers().addLounge(port, name, Status.Server.OFFLINE, folderPath);
         servers.put(port, new LoungeServer(Database.getServers().getServer(Type.Server.LOUNGE, port), folderPath));
     }
 
 
     public void addTempGame(int port, String name, String task, String folderPath) {
-        if (!Database.getServers().containsServer(Type.Server.TEMP_GAME, port)) {
-            Database.getServers().addTempGame(port, name, task, Status.Server.OFFLINE);
-        } else {
-            DbTempGameServer server = Database.getServers().getServer(port);
-            server.setStatus(Status.Server.OFFLINE);
-            server.setTaskSynchronized(task);
-        }
-
+        Database.getServers().addTempGame(port, name, task, Status.Server.OFFLINE, folderPath);
         servers.put(port, new TempGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port), folderPath));
     }
 
 
-    public void addBuild(int port, String name, String folderPath) {
-        if (!Database.getServers().containsServer(Type.Server.BUILD, port)) {
-            Database.getServers().addBuild(port, name, Status.Server.OFFLINE);
-        } else {
-            Database.getServers().getServer(Type.Server.BUILD, port).setStatus(Status.Server.OFFLINE);
-        }
-
+    public void addBuild(int port, String name, String task, String folderPath) {
+        Database.getServers().addBuild(port, name, task, Status.Server.OFFLINE, folderPath);
         servers.put(port, new BuildServer(Database.getServers().getServer(Type.Server.BUILD, port), folderPath));
     }
 

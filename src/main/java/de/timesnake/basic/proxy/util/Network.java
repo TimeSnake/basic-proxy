@@ -108,8 +108,8 @@ public interface Network {
         NetworkManager.getInstance().addTempGame(port, name, task, folderPath);
     }
 
-    static void addBuild(int port, String name, String folderPath) {
-        NetworkManager.getInstance().addBuild(port, name, folderPath);
+    static void addBuild(int port, String name, String task, String folderPath) {
+        NetworkManager.getInstance().addBuild(port, name, task, folderPath);
     }
 
     static void sendUserToServer(User user, String server, String message) {

@@ -77,7 +77,7 @@ public abstract class Server extends BukkitConsole {
                     Network.printWarning(Plugin.NETWORK, "Failed to start server " + this.getName());
                     this.setStatus(Status.Server.OFFLINE, true);
                 }
-            }, 3, TimeUnit.MINUTES);
+            }, 2, TimeUnit.MINUTES);
         }
 
     }

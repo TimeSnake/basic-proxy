@@ -21,7 +21,7 @@ public class ServerConfig extends ExFile {
             String path = ExFile.toPath("servers", serverName);
             int port = super.getInt(ExFile.toPath(path, "port"));
             String typeString = super.getString(ExFile.toPath(path, "type"));
-            String task = super.getString(ExFile.toPath(path, "task")).toLowerCase();
+            String task = super.getString(ExFile.toPath(path, "task"));
             String folder = super.getString(ExFile.toPath(path, "folder"));
 
 
@@ -42,7 +42,7 @@ public class ServerConfig extends ExFile {
                 Network.addGame(port, serverName, task, folder);
                 Network.printText(Plugin.NETWORK, "Loaded server " + serverName, "ServerConfig");
             } else if (Type.Server.BUILD.equals(type)) {
-                Network.addBuild(port, serverName, folder);
+                Network.addBuild(port, serverName, task, folder);
                 Network.printText(Plugin.NETWORK, "Loaded server " + serverName, "ServerConfig");
             } else if (Type.Server.LOBBY.equals(type)) {
                 Network.addLobby(port, serverName, folder);

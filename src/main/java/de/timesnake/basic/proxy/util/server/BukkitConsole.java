@@ -25,11 +25,12 @@ public abstract class BukkitConsole {
     }
 
     public void stop() {
-        Network.getChannel().sendMessage(this.getPort(), new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, "stop"));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, "stop"
+        ));
     }
 
     public void execute(String cmd) {
-        Network.getChannel().sendMessage(this.getPort(), new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, cmd));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, cmd));
     }
 
     public String getFolderPath() {

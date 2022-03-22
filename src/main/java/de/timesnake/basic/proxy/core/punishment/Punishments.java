@@ -156,7 +156,8 @@ public class Punishments {
             Type.Punishment type = user.getPunishment().getType();
             if (type == null) {
                 user.setPunishment(Type.Punishment.MUTE, new Date(), sender.getName(), reason, "ALL");
-                Network.getChannel().sendMessage(user.getServer().getPort(), new ChannelUserMessage(user.getUniqueId(), MessageType.User.PUNISH));
+                Network.getChannel().sendMessageToServer(user.getServer().getPort(),
+                        new ChannelUserMessage(user.getUniqueId(), MessageType.User.PUNISH));
                 String name = user.getName();
                 sender.sendPluginMessage(ChatColor.PERSONAL + "You muted " + ChatColor.VALUE + name + ChatColor.PUBLIC + " with reason: " + ChatColor.VALUE + reason);
 
@@ -173,7 +174,8 @@ public class Punishments {
             Type.Punishment type = user.getPunishment().getType();
             if (type.equals(Type.Punishment.MUTE)) {
                 user.getPunishment().delete();
-                Network.getChannel().sendMessage(user.getServer().getPort(), new ChannelUserMessage(user.getUniqueId(), MessageType.User.PUNISH));
+                Network.getChannel().sendMessageToServer(user.getServer().getPort(),
+                        new ChannelUserMessage(user.getUniqueId(), MessageType.User.PUNISH));
                 sender.sendPluginMessage(ChatColor.PERSONAL + "You unmuted " + ChatColor.VALUE + user.getName());
 
                 broadcastMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() + ChatColor.WARNING + " was unmuted");

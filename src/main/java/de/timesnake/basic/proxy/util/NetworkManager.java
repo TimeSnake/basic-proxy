@@ -408,9 +408,9 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
     @ChannelHandler(type = ListenerType.LISTENER_UNREGISTER)
-    public void onChannelRegisterMessage(ChannelListenerMessage<?> msg) {
-        if (msg.getMessageType().equals(MessageType.Listener.UNREGISTER)) {
-            Server server = this.getServer(msg.getSenderPort());
+    public void onChannelRegisterMessage(ChannelListenerMessage<Integer> msg) {
+        if (msg.getMessageType().equals(MessageType.Listener.UNREGISTER_SERVER)) {
+            Server server = this.getServer(msg.getValue());
             server.setStatus(Status.Server.OFFLINE, true);
             this.printText(Plugin.NETWORK, "Updated status from server " + server.getName() + " to offline");
         }

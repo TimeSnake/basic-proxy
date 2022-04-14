@@ -24,7 +24,7 @@ public class PreUser {
     private final DbUser dbUser;
 
     private final boolean service;
-    private final String nameChat;
+    private final String chatName;
 
     private final boolean airMode;
 
@@ -97,7 +97,7 @@ public class PreUser {
             chatName = group.getPrefixColor() + group.getPrefix() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', this.getNick());
         }
 
-        this.nameChat = chatName;
+        this.chatName = chatName;
 
         this.dataProtectionAgreement = dbLocalUser.getDataProtectionAgreement();
 
@@ -134,8 +134,8 @@ public class PreUser {
         return service;
     }
 
-    public String getNameChat() {
-        return nameChat;
+    public String getChatName() {
+        return chatName;
     }
 
     public boolean isAirMode() {

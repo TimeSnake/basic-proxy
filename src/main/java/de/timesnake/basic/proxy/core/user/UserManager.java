@@ -13,6 +13,7 @@ import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.support.DbTicket;
+import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.chat.Chat;
@@ -38,6 +39,7 @@ import java.util.concurrent.Future;
 public class UserManager implements Listener {
 
     private final ConcurrentHashMap<String, Future<PreUser>> preUsers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Future<String>> prePunishment = new ConcurrentHashMap<>();
 
     public UserManager() {
         Network.registerListener(this);
@@ -54,11 +56,30 @@ public class UserManager implements Listener {
                 return null;
             }
         }));
+
+        this.prePunishment.put(name,
+                BasicProxy.getPlugin().getExecutorService().submit(() -> checkIsPlayerPunished(name)));
     }
 
     @EventHandler
     public void onPostLogin(PostLoginEvent e) {
         ProxiedPlayer p = e.getPlayer();
+
+        Future<String> prePunishmentFuture = this.prePunishment.get(p.getName());
+
+        String punishment;
+        try {
+            punishment = prePunishmentFuture.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            ex.printStackTrace();
+            return;
+        }
+
+        if (punishment != null) {
+            p.disconnect(new TextComponent(punishment));
+        }
+
+
         DbUser dbUser = Database.getUsers().getUser(p.getUniqueId());
 
         Network.runTaskAsync(() -> this.checkDatabase(p, dbUser));
@@ -76,7 +97,7 @@ public class UserManager implements Listener {
         Network.runTaskAsync(() -> this.sendJoinMessages(p, user));
 
         for (User userOnline : Network.getNetworkMessageListeners()) {
-            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getName() + ChatColor.PUBLIC + " joined the network");
+            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getName() + ChatColor.PUBLIC + " joined");
         }
 
         Network.printText(Plugin.NETWORK, "Players online " + Network.getUsers().size());
@@ -115,10 +136,6 @@ public class UserManager implements Listener {
                 }
             });
 
-            Type.Punishment type = user.getPunishment().getType();
-            if (type != null) {
-                checkIsPlayerPunished(uuid, user, type, e);
-            }
         } else {
             if (Network.isWork()) {
                 e.setCancelReason(new TextComponent("§cService-Work    Wartungsarbeiten"));
@@ -148,12 +165,15 @@ public class UserManager implements Listener {
 
         Network.runTaskAsync(() -> {
             for (User userOnline : Network.getNetworkMessageListeners()) {
-                userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getName() + ChatColor.PUBLIC + " left the network");
+                userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getName() +
+                        ChatColor.PUBLIC + " left");
             }
         });
 
         Network.removeUser(p);
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(),
+                MessageType.Server.ONLINE_PLAYERS,
+                Network.getUsers().size()));
     }
 
     @EventHandler
@@ -162,6 +182,10 @@ public class UserManager implements Listener {
         Server server = e.getServer();
         User user = Network.getUser(p);
 
+        if (user == null) {
+            return;
+        }
+
         ServerInfo serverInfo = server.getInfo();
         user.setServer(serverInfo.getName());
         if (Database.getServers().getServer(serverInfo.getAddress().getPort()).getType().equals(Type.Server.LOBBY)) {
@@ -169,7 +193,8 @@ public class UserManager implements Listener {
         }
 
         for (User userOnline : Network.getNetworkMessageListeners()) {
-            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + user.getChatName() + ChatColor.PUBLIC + " connected to " + ChatColor.VALUE + e.getServer().getInfo().getName());
+            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + user.getChatName() +
+                    ChatColor.PUBLIC + " connected to " + ChatColor.VALUE + e.getServer().getInfo().getName());
         }
 
     }
@@ -185,17 +210,21 @@ public class UserManager implements Listener {
     }
 
     private void sendJoinMessages(ProxiedPlayer player, User user) {
-        player.sendMessage(new TextComponent(new TextComponent(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "You accepted the network rules!")));
+        player.sendMessage(new TextComponent(new TextComponent(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING +
+                "You accepted the network rules!")));
 
         if (user.agreedDataProtection()) {
-            user.sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin.NETWORK, ChatColor.WARNING + "You accepted our data protection declaration (dpd)");
-            user.sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin.NETWORK, ChatColor.WARNING + "Type " + ChatColor.VALUE + "/dpd disagree" + ChatColor.WARNING + " to deny our dpd");
+            user.sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin.NETWORK, ChatColor.WARNING +
+                    "You accepted our data protection declaration (dpd)");
+            user.sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin.NETWORK, ChatColor.WARNING +
+                    "Type " + ChatColor.VALUE + "/dpd disagree" + ChatColor.WARNING + " to deny our dpd");
         } else {
             user.forceDataProtectionAgreement();
         }
 
         if (player.hasPermission("support.opentickets")) {
-            player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + "§l" + Database.getSupport().getTickets().size() + ChatColor.PUBLIC + " open tickets"));
+            player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + "§l" +
+                    Database.getSupport().getTickets().size() + ChatColor.PUBLIC + " open tickets"));
         }
 
 
@@ -220,23 +249,29 @@ public class UserManager implements Listener {
             }
 
             if (open > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + open + ChatColor.PERSONAL + " of your ticket(s) is/are open."));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + open +
+                        ChatColor.PERSONAL + " of your ticket(s) is/are open."));
             }
 
             if (inProcess > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + inProcess + ChatColor.PERSONAL + " of your ticket(s) is/are in process."));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + inProcess +
+                        ChatColor.PERSONAL + " of your ticket(s) is/are in process."));
             }
 
             if (solved > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved + ChatColor.PERSONAL + " of your ticket(s) is/are solved."));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved +
+                        ChatColor.PERSONAL + " of your ticket(s) is/are solved."));
             }
 
             if (admin > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved + ChatColor.PERSONAL + " of your ticket(s) is/are forwarded to " + "an admin."));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved +
+                        ChatColor.PERSONAL + " of your ticket(s) is/are forwarded to " + "an admin."));
             }
 
             if (open + inProcess + solved + admin > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.PERSONAL + "Use " + ChatColor.VALUE + "/ticket(s) " + ChatColor.PUBLIC + "to manage your tickets"));
+                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.PERSONAL + "Use" +
+                        " " +
+                        ChatColor.VALUE + "/ticket(s) " + ChatColor.PUBLIC + "to manage your tickets"));
             }
         }
     }
@@ -263,24 +298,41 @@ public class UserManager implements Listener {
         title.send(p);
     }
 
-    public void checkIsPlayerPunished(UUID uuid, DbUser user, Type.Punishment type, LoginEvent e) {
+    public String checkIsPlayerPunished(String name) {
+
+        DbUser user = Database.getUsers().getUser(name);
+
+        DbPunishment punishment = user.getPunishment();
+        Type.Punishment type = punishment.getType();
+
+        if (punishment == null || type == null) {
+            return null;
+        }
+
         if (type.equals(Type.Punishment.BAN)) {
-            e.setCancelReason(new TextComponent(ChatColor.WARNING + "You were permanently banned." + "\n" + ChatColor.WARNING + "reason: " + ChatColor.VALUE + user.getPunishment().getReason() + "\n" + ChatColor.PUBLIC + "For more info use our discord: " + ChatColor.VALUE + de.timesnake.library.basic.util.server.Server.DISCORD_LINK + "\nor contact us by email: " + de.timesnake.library.basic.util.server.Server.SUPPORT_EMAIL));
-            e.setCancelled(true);
+            return ChatColor.WARNING + "You were permanently banned." + "\n" +
+                    ChatColor.WARNING + "reason: " + ChatColor.VALUE + user.getPunishment().getReason() + "\n" +
+                    ChatColor.PUBLIC + "For more info use our discord: " + ChatColor.VALUE +
+                    de.timesnake.library.basic.util.server.Server.DISCORD_LINK + "\nor contact us by email: " +
+                    de.timesnake.library.basic.util.server.Server.SUPPORT_EMAIL;
+
         } else if (type.equals(Type.Punishment.TEMP_BAN)) {
             Date dateSystem = new Date();
             Date date = user.getPunishment().getDate();
             DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             String dateString = df.format(date);
             if (date.before(dateSystem)) {
-                Punishments.unbanPlayer(uuid);
-                e.setCancelReason(new TextComponent(new TextComponent(ChatColor.WARNING + "You are unbanned, please " + "reconnect " + "in a few moments")));
-                e.setCancelled(false);
-                Network.printText(de.timesnake.library.basic.util.chat.Plugin.NETWORK, "Player (" + uuid + ") joined the network");
+                Punishments.unbanPlayer(user.getUniqueId());
+                return null;
             } else {
-                e.setCancelReason(new TextComponent(new TextComponent(ChatColor.WARNING + "You are banned " + ChatColor.WARNING + "\nuntil " + ChatColor.VALUE + dateString + ChatColor.PUBLIC + "." + ChatColor.WARNING + "\nReason: " + ChatColor.VALUE + user.getPunishment().getReason() + ChatColor.PUBLIC + "\nFor more info use our discord: " + de.timesnake.library.basic.util.server.Server.DISCORD_LINK + "\nor contact us by email: " + de.timesnake.library.basic.util.server.Server.SUPPORT_EMAIL)));
-                e.setCancelled(true);
+                return ChatColor.WARNING + "You are banned " + ChatColor.WARNING + "\n" +
+                        "until " + ChatColor.VALUE + dateString + ChatColor.PUBLIC + "." + ChatColor.WARNING + "\n" +
+                        "Reason: " + ChatColor.VALUE + user.getPunishment().getReason() + ChatColor.PUBLIC + "\n" +
+                        "For more info use our discord: " + de.timesnake.library.basic.util.server.Server.DISCORD_LINK + "\n" +
+                        "or contact us by email: " + de.timesnake.library.basic.util.server.Server.SUPPORT_EMAIL;
             }
         }
+
+        return null;
     }
 }

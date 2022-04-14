@@ -424,7 +424,7 @@ public class NetworkManager implements ChannelListener, Network {
             sb.append("]");
         }
         sb.append(" ").append(text);
-        System.out.println(sb.toString());
+        System.out.println(sb);
     }
 
     public final void printWarning(Plugin plugin, String warning, String... subPlugins) {

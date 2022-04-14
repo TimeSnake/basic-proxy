@@ -27,7 +27,11 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class User implements de.timesnake.library.extension.util.player.User, ChannelListener {
@@ -35,7 +39,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     private final DbUser dbUser;
     private final ProxiedPlayer player;
     private boolean service;
-    private String nameChat;
+    private final Set<Permission> databasePermissions = ConcurrentHashMap.newKeySet();
 
     private boolean airMode;
 
@@ -58,9 +62,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     private String nick;
 
     private float coins;
-
-    private final Set<Permission> databasePermissions = new HashSet<>();
-    private final Set<Permission> permissions = new HashSet<>();
+    private final Set<Permission> permissions = ConcurrentHashMap.newKeySet();
+    private String chatName;
 
     private ScheduledTask dpdInfoTask;
 
@@ -68,7 +71,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.player = player;
 
         if (user == null) {
-            Database.getUsers().addUser(player.getUniqueId(), player.getName(), Network.getGuestGroup().getName(), null);
+            Database.getUsers().addUser(player.getUniqueId(), player.getName(), Network.getGuestGroup().getName(),
+                    null);
             user = new PreUser(this.player.getName());
         }
 
@@ -79,7 +83,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.nick = user.getNick();
         this.group = user.getGroup();
         this.service = user.isService();
-        this.nameChat = user.getNameChat();
+        this.chatName = user.getChatName();
         this.dataProtectionAgreement = user.getDataProtectionAgreement();
 
         this.group.addUser(this);
@@ -171,7 +175,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     }
 
     public String getChatName() {
-        return nameChat;
+        return chatName;
     }
 
     public Sender getAsSender(de.timesnake.library.basic.util.chat.Plugin plugin) {

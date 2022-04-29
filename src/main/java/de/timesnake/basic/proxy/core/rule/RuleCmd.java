@@ -18,7 +18,8 @@ public class RuleCmd implements CommandListener<Sender, Argument> {
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         if (args.isLengthEquals(0, false)) {
             sender.sendMessage("");
-            sender.sendPluginMessage(ChatColor.PERSONAL + "" + ChatColor.BOLD + "Version: " + ChatColor.VALUE + Network.getRuleManager().getVersion());
+            sender.sendPluginMessage(ChatColor.PERSONAL + "" + ChatColor.BOLD + "Version: " +
+                    ChatColor.VALUE + Network.getRuleManager().getVersion());
             sender.sendPluginMessage(Chat.getLongLineSeparator());
             for (RuleSection section : Network.getRuleManager().getSections()) {
                 sender.sendPluginMessage(ChatColor.PERSONAL + "" + section.getNumber() + " " + ChatColor.VALUE + section.getName());
@@ -45,7 +46,8 @@ public class RuleCmd implements CommandListener<Sender, Argument> {
 
         sender.sendMessage("");
         sender.sendPluginMessage(Chat.getLongLineSeparator());
-        sender.sendPluginMessage(ChatColor.PERSONAL + "" + ChatColor.BOLD + "" + section.getNumber() + " " + ChatColor.VALUE + section.getName());
+        sender.sendPluginMessage(ChatColor.PERSONAL + "" + ChatColor.BOLD + "" + section.getNumber() + " " +
+                ChatColor.VALUE + section.getName());
         sender.sendPluginMessage(Chat.getLongLineSeparator());
         for (RuleParagraph paragraph : section.getParagraphs()) {
             for (String part : paragraph.getParts()) {

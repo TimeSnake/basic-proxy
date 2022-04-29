@@ -61,15 +61,14 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
     public static void setAlias(Sender sender, DbUser user, Argument type, Argument name) {
         String msg;
         switch (type.getString()) {
-
-            case "info":
-                sender.sendPluginMessage(ChatColor.PERSONAL + "Player: " + ChatColor.VALUE + user.getName() + ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
+            case "info" -> {
+                sender.sendPluginMessage(ChatColor.PERSONAL + "Player: " + ChatColor.VALUE + user.getName() +
+                        ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
                 sender.sendPluginMessage(ChatColor.PERSONAL + "Prefix: " + ChatColor.VALUE + user.getPrefix());
                 sender.sendPluginMessage(ChatColor.PERSONAL + "Suffix: " + ChatColor.VALUE + user.getSuffix());
                 sender.sendPluginMessage(ChatColor.PERSONAL + "Nick: " + ChatColor.VALUE + user.getNick());
-                break;
-
-            case "prefix":
+            }
+            case "prefix" -> {
                 if (name == null) {
                     user.setPrefix(null);
                     msg = ChatColor.PERSONAL + "Reset prefix";
@@ -77,12 +76,11 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                     user.setPrefix(name.getString());
                     msg = ChatColor.PERSONAL + "Updated prefix to " + ChatColor.VALUE + name;
                 }
-                sender.sendPluginMessage(msg + ChatColor.PERSONAL + " from " + ChatColor.VALUE + user.getName() + ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
-
+                sender.sendPluginMessage(msg + ChatColor.PERSONAL + " from " + ChatColor.VALUE + user.getName() +
+                        ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
                 Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
-                break;
-
-            case "suffix":
+            }
+            case "suffix" -> {
                 if (name == null) {
                     user.setSuffix(null);
                     msg = ChatColor.PERSONAL + "Reset suffix";
@@ -90,12 +88,11 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                     user.setSuffix(name.getString());
                     msg = ChatColor.PERSONAL + "Updated suffix to " + ChatColor.VALUE + name;
                 }
-                sender.sendPluginMessage(msg + ChatColor.PERSONAL + " from " + ChatColor.VALUE + user.getName() + ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
-
+                sender.sendPluginMessage(msg + ChatColor.PERSONAL + " from " + ChatColor.VALUE + user.getName() +
+                        ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
                 Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
-                break;
-
-            case "nick":
+            }
+            case "nick" -> {
                 if (name == null) {
                     user.setNick(null);
                     msg = ChatColor.PERSONAL + "Reset nick";
@@ -103,15 +100,15 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                     user.setNick(name.getString());
                     msg = ChatColor.PERSONAL + "Updated nick to " + ChatColor.VALUE + name;
                 }
-                sender.sendPluginMessage(msg + ChatColor.PERSONAL + " from " + ChatColor.VALUE + user.getName() + ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
-
+                sender.sendPluginMessage(msg + ChatColor.PERSONAL + " from " + ChatColor.VALUE + user.getName() +
+                        ChatColor.QUICK_INFO + " (" + user.getUniqueId().toString() + ")");
                 Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
-                break;
-
-            default:
-                sender.sendMessageCommandHelp("Set alias for player", "alias [player] " + "<prefix/suffix/nick> [value]");
+            }
+            default -> {
+                sender.sendMessageCommandHelp("Set alias for player", "alias [player] " + "<prefix/suffix/nick> " +
+                        "[value]");
                 sender.sendMessageCommandHelp("Get alias from player", "alias [player] info");
-                break;
+            }
         }
     }
 

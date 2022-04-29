@@ -40,9 +40,7 @@ public class Group {
 
         int size = String.valueOf(this.rank).length();
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 4 - size; i++) {
-            sb.append("0");
-        }
+        sb.append("0".repeat(Math.max(0, 4 - size)));
         this.tablistName = sb.append(this.rank).append("a").toString();
     }
 

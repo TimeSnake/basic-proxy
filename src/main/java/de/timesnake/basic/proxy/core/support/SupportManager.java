@@ -32,7 +32,9 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
     private final Set<UUID> ticketListeners = new HashSet<>();
 
     public SupportManager() {
-        Network.getCommandHandler().addCommand(BasicProxy.getPlugin(), ProxyServer.getInstance().getPluginManager(), "supportmsg", List.of("supportmessage", "supportmessages", "supportmsgs", "smsg"), this, Plugin.SUPPORT);
+        Network.getCommandHandler().addCommand(BasicProxy.getPlugin(), ProxyServer.getInstance().getPluginManager(),
+                "supportmsg", List.of("supportmessage", "supportmessages", "supportmsgs", "smsg"), this,
+                Plugin.SUPPORT);
         Network.getChannel().addListener(this);
         Network.registerListener(this);
     }
@@ -46,7 +48,8 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
             if (value != null && !value.getA().equals(port)) {
                 Network.getChannel().sendMessage(new ChannelSupportMessage<>(port, MessageType.Support.REJECT, id));
             } else {
-                ScheduledTask task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), () -> this.lockedTicketsById.remove(id), 3, TimeUnit.MINUTES);
+                ScheduledTask task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(),
+                        () -> this.lockedTicketsById.remove(id), 3, TimeUnit.MINUTES);
 
                 this.lockedTicketsById.put(id, new Tuple<>(port, task));
             }

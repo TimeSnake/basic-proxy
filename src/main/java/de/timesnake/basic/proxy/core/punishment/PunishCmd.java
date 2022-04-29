@@ -60,10 +60,13 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
                 if (sender.hasPermission("punish.nettempban", 16)) {
                     if (args.isLengthHigherEquals(3, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
-                            Punishments.tempBanPlayer(sender, args.get(0).toDbUser(), args.get(1).getString(), args.toMessage(2));
+                            Punishments.tempBanPlayer(sender, args.get(0).toDbUser(), args.get(1).getString(),
+                                    args.toMessage(2));
                         }
                     } else {
-                        sender.sendMessageCommandHelp("Temp-ban a player", "nettempban <player> " + "<duration> <reason> \n" + ChatColor.QUICK_INFO + "duration:" + " 1year;1month;1day;1hour;1min;1sec");
+                        sender.sendMessageCommandHelp("Temp-ban a player", "nettempban <player> " +
+                                "<duration> <reason> \n" + ChatColor.QUICK_INFO + "duration:" +
+                                " 1year;1month;1day;1hour;1min;1sec");
                     }
                 }
                 break;
@@ -107,7 +110,10 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
             return Network.getCommandHandler().getPlayerNames();
         }
 
-        if (length == 2 && (args.getString(0).equalsIgnoreCase("tempban") || args.getString(0).equalsIgnoreCase("tmpban") || args.getString(0).equalsIgnoreCase("nettempban") || args.getString(0).equalsIgnoreCase("nettmpban"))) {
+        if (length == 2 && (args.getString(0).equalsIgnoreCase("tempban")
+                || args.getString(0).equalsIgnoreCase("tmpban")
+                || args.getString(0).equalsIgnoreCase("nettempban")
+                || args.getString(0).equalsIgnoreCase("nettmpban"))) {
             return List.of("1year;1month;1day;1hour;1min;1sec");
         }
         return null;

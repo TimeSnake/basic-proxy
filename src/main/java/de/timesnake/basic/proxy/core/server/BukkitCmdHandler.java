@@ -41,7 +41,10 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
                 this.stopAllServers();
                 sender.sendPluginMessage(ChatColor.PERSONAL + "All servers stopped");
             } else {
-                sender.sendPluginMessage(ChatColor.WARNING + "Only commands " + ChatColor.VALUE + "start " + ChatColor.WARNING + "and " + ChatColor.VALUE + "stop " + ChatColor.WARNING + " are allowed on " + "the all servers command");
+                sender.sendPluginMessage(ChatColor.WARNING + "Only commands " + ChatColor.VALUE + "start " +
+                        ChatColor.WARNING + "and " + ChatColor.VALUE + "stop " + ChatColor.WARNING + " are allowed on" +
+                        " " +
+                        "the all servers command");
             }
 
         } else if (args.get(0).isServerName(true)) {
@@ -58,7 +61,8 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
             Server server = args.get(0).toServer();
             String bukkitCmd = args.toMessage(1);
             server.execute(bukkitCmd);
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Executed command on server " + ChatColor.VALUE + server.getName() + ChatColor.PERSONAL + ": " + bukkitCmd);
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Executed command on server " + ChatColor.VALUE +
+                    server.getName() + ChatColor.PERSONAL + ": " + bukkitCmd);
         }
     }
 
@@ -69,14 +73,16 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
 
     public void startServer(Sender sender, Arguments<Argument> args) {
         if (Network.getServer(args.get(1).toLowerCase()) == null) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + args.get(1).toLowerCase() + ChatColor.WARNING + " doesn't exist!");
+            sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + args.get(1).toLowerCase() +
+                    ChatColor.WARNING + " doesn't exist!");
             return;
         }
 
         Server server = Network.getServer(args.get(1).toLowerCase());
 
         if (server.getStatus().equals(Status.Server.OFFLINE)) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + args.get(1).toLowerCase() + ChatColor.WARNING + " is already online!");
+            sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + args.get(1).toLowerCase() +
+                    ChatColor.WARNING + " is already online!");
             return;
         }
 
@@ -109,20 +115,25 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
         }
 
         if (server.getStatus().equals(Status.Server.SERVICE)) {
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Changed status of server " + ChatColor.VALUE + server.getName() + ChatColor.PERSONAL + " to service");
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Changed status of server " + ChatColor.VALUE +
+                    server.getName() + ChatColor.PERSONAL + " to service");
         } else {
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Changed status of server " + ChatColor.VALUE + server.getName() + ChatColor.PERSONAL + " to online");
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Changed status of server " + ChatColor.VALUE +
+                    server.getName() + ChatColor.PERSONAL + " to online");
         }
     }
 
     public void handleServerCmd(Sender sender, Server server) {
         boolean isStart = server.start();
         if (!isStart) {
-            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while starting server " + ChatColor.VALUE + server.getName());
+            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while starting " +
+                    "server " +
+                    ChatColor.VALUE + server.getName());
             return;
         }
 
-        sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.PERSONAL + "Started server " + ChatColor.VALUE + server.getName());
+        sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.PERSONAL + "Started server " +
+                ChatColor.VALUE + server.getName());
         if (!sender.isConsole(false)) {
             Network.printText(Plugin.NETWORK, "Started server " + server.getName());
         }

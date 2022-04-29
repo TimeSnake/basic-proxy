@@ -15,8 +15,7 @@ public class PermissionCheck implements Listener {
 
     @EventHandler
     public void onPermissionCheck(PermissionCheckEvent e) {
-        if (e.getSender() instanceof ProxiedPlayer) {
-            ProxiedPlayer p = (ProxiedPlayer) e.getSender();
+        if (e.getSender() instanceof ProxiedPlayer p) {
             String perm = e.getPermission();
             if (Network.getUser(p) != null) {
 

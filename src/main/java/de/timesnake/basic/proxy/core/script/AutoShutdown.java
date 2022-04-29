@@ -27,16 +27,20 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     private boolean enabled = true;
 
     private int requiredVotes = 1;
-    private Set<UUID> votedUsers = new HashSet<>();
+    private final Set<UUID> votedUsers = new HashSet<>();
 
     private ScheduledTask task;
 
     public AutoShutdown() {
-        NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(), BasicProxy.getPlugin().getProxy().getPluginManager(), "shutdown", this, Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
+                BasicProxy.getPlugin().getProxy().getPluginManager(), "shutdown", this, Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(), BasicProxy.getPlugin().getProxy().getPluginManager(), "autoshutdown", this, Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
+                BasicProxy.getPlugin().getProxy().getPluginManager(), "autoshutdown", this, Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(), BasicProxy.getPlugin().getProxy().getPluginManager(), "hello", List.of("hallo", "hi", "helo"), this, Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
+                BasicProxy.getPlugin().getProxy().getPluginManager(), "hello", List.of("hallo", "hi", "helo"),
+                this, Plugin.NETWORK);
     }
 
     public void start() {
@@ -51,17 +55,21 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     }
 
     public void infoShutdown() {
-        Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lWrite " + ChatColor.VALUE + "/hello" + ChatColor.WARNING + " to keep the server online.");
+        Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lWrite " + ChatColor.VALUE + "/hello" +
+                ChatColor.WARNING + " to keep the server online.");
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lThe server will shutdown in 5 minutes ");
         task.cancel();
-        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::warnShutdown, 4, TimeUnit.MINUTES);
+        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::warnShutdown, 4,
+                TimeUnit.MINUTES);
     }
 
     public void warnShutdown() {
-        Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lWrite " + ChatColor.VALUE + "/hello" + ChatColor.WARNING + " to keep the server online.");
+        Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lWrite " + ChatColor.VALUE + "/hello" +
+                ChatColor.WARNING + " to keep the server online.");
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lThe server will shutdown in 1 minute ");
         task.cancel();
-        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::beginShutdown, 1, TimeUnit.MINUTES);
+        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::beginShutdown, 1,
+                TimeUnit.MINUTES);
     }
 
     private void beginShutdown() {
@@ -107,7 +115,8 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
                 if (this.votedUsers.size() >= this.requiredVotes) {
                     this.cancelShutdown();
                 } else {
-                    Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "Against Server shutdown: " + ChatColor.VALUE + this.votedUsers.size() + " / " + this.requiredVotes);
+                    Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "Against Server shutdown: " +
+                            ChatColor.VALUE + this.votedUsers.size() + " / " + this.requiredVotes);
                 }
             }
         } else if (cmd.getName().equalsIgnoreCase("shutdown")) {
@@ -124,7 +133,8 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
 
                     this.enabled = false;
 
-                    sender.sendPluginMessage(ChatColor.PERSONAL + "Updated shutdown votes to " + ChatColor.VALUE + this.requiredVotes);
+                    sender.sendPluginMessage(ChatColor.PERSONAL + "Updated shutdown votes to " +
+                            ChatColor.VALUE + this.requiredVotes);
                 }
 
                 if (this.enabled) {

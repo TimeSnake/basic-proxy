@@ -16,7 +16,8 @@ public abstract class BukkitConsole {
 
     public boolean start() {
         try {
-            Runtime.getRuntime().exec("konsole --separate --workdir " + this.folderPath + " -e " + this.folderPath + "/start.sh " + this.getServerTask());
+            Runtime.getRuntime().exec("konsole --separate --workdir " + this.folderPath + " -e " +
+                    this.folderPath + "/start.sh " + this.getServerTask());
             return true;
         } catch (IOException var2) {
             var2.printStackTrace();

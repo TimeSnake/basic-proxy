@@ -16,7 +16,6 @@ import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -30,34 +29,29 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         if (args.isLengthHigherEquals(2, true)) {
             Integer maxPlayers;
             switch (args.get(0).toLowerCase()) {
-                case "server":
-
+                case "server" -> {
                     String serverName = args.get(1).toLowerCase();
                     Server server = Network.getServer(serverName);
-
                     if (!sender.hasPermission("network.start.server", 46)) {
                         return;
                     }
-
                     if (server == null) {
-                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName + ChatColor.WARNING + " doesn't exist!");
+                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
+                                ChatColor.WARNING + " doesn't exist!");
                         return;
                     }
-
                     Status.Server status = server.getStatus();
-
                     if (!(status == null || status.equals(Status.Server.OFFLINE))) {
-                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName + ChatColor.WARNING + " is already online!");
+                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
+                                ChatColor.WARNING + " is already online!");
                         return;
                     }
-
                     if (status != null && status.equals(Status.Server.STARTING)) {
-                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName + ChatColor.WARNING + " is already starting!");
+                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
+                                ChatColor.WARNING + " is already starting!");
                         return;
                     }
-
                     maxPlayers = null;
-
                     if (args.isLengthEquals(3, false) && args.get(2).isInt(false)) {
                         maxPlayers = args.get(2).toInt();
                     } else if (server instanceof GameServer && !(server instanceof BuildServer)) {
@@ -68,22 +62,19 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                     } else if (server.getType().equals(Type.Server.BUILD)) {
                         maxPlayers = Network.getMaxPlayersBuild();
                     }
-
                     if (maxPlayers != null) {
                         server.setMaxPlayers(maxPlayers);
                         Network.getBukkitCmdHandler().handleServerCmd(sender, server);
                     } else {
                         sender.sendPluginMessage(ChatColor.WARNING + "No default max-players value found");
                     }
-                    break;
-                case "game":
-
+                }
+                case "game" -> {
                     if (!sender.hasPermission("network.start.game", 47)) {
                         return;
                     }
-
                     this.handleStartGame(sender, args);
-                    break;
+                }
             }
         }
     }
@@ -92,7 +83,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         String gameType = args.get(1).toLowerCase();
 
         // check game
-        DbGame game = Database.getGames().getGame(gameType);
+        DbGame game = Database.getGames().getGame(gameType).toLocal();
         if (!game.exists()) {
             sender.sendMessageGameNotExist(gameType);
             return;
@@ -102,36 +93,36 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             this.handleStartTempGame(sender, args, game);
         } else {
             sender.sendPluginMessage(ChatColor.WARNING + "Please use the /start server command to start a non temp " + "game server");
-			GameServer gameServer = null;
-			for (Server server1 : Network.getServers()) {
-				if (server1.getType().equals(Type.Server.GAME)
-						&& (server1.getStatus() == null || server1.getStatus().equals(Status.Server.OFFLINE))
-						&& ((GameServer) server1).getTask().equals(gameType)) {
-					gameServer = (GameServer) server1;
-				}
-			}
+            GameServer gameServer = null;
+            for (Server server1 : Network.getServers()) {
+                if (server1.getType().equals(Type.Server.GAME)
+                        && (server1.getStatus() == null || server1.getStatus().equals(Status.Server.OFFLINE))
+                        && ((GameServer) server1).getTask().equals(gameType)) {
+                    gameServer = (GameServer) server1;
+                }
+            }
 
-			if (gameServer == null) {
-				sender.sendPluginMessage(ChatColor.WARNING +"All game servers are in use!");
-				return;
-			}
+            if (gameServer == null) {
+                sender.sendPluginMessage(ChatColor.WARNING + "All game servers are in use!");
+                return;
+            }
 
-			gameServer.setTask(gameType);
-			Integer maxPlayers = null;
+            gameServer.setTask(gameType);
+            Integer maxPlayers = null;
 
-			if (args.isLengthEquals(3, false)
-					&& args.get(2).isInt(true)) {
-				maxPlayers = args.get(2).toInt();
-			} else if (Database.getGames().containsGame(gameType)) {
-				maxPlayers = Database.getGames().getGame(gameType).getMaxPlayers();
-			}
+            if (args.isLengthEquals(3, false)
+                    && args.get(2).isInt(true)) {
+                maxPlayers = args.get(2).toInt();
+            } else if (Database.getGames().containsGame(gameType)) {
+                maxPlayers = Database.getGames().getGame(gameType).getMaxPlayers();
+            }
 
-			if (maxPlayers != null) {
-				gameServer.setMaxPlayers(maxPlayers);
-				Network.getBukkitCmdHandler().handleServerCmd(sender, gameServer);
-			} else {
-				sender.sendPluginMessage(ChatColor.WARNING+"No default max-players value found");
-			}
+            if (maxPlayers != null) {
+                gameServer.setMaxPlayers(maxPlayers);
+                Network.getBukkitCmdHandler().handleServerCmd(sender, gameServer);
+            } else {
+                sender.sendPluginMessage(ChatColor.WARNING + "No default max-players value found");
+            }
 
         }
     }
@@ -150,12 +141,14 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         boolean kitsEnabled = args.getArgumentByString("kits") != null;
 
         if (gameKitAvailability.equals(Type.Availability.FORBIDDEN) && kitsEnabled) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING + " forbid kits");
+            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
+                    " forbid kits");
             return;
         }
 
         if (gameKitAvailability.equals(Type.Availability.REQUIRED) && !kitsEnabled) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING + " require kits");
+            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
+                    " require kits");
             return;
         }
 
@@ -163,32 +156,15 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         boolean mapsEnabled = args.getArgumentByString("maps") != null;
 
         if (gameMapAvailability.equals(Type.Availability.FORBIDDEN) && mapsEnabled) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING + " forbid maps");
+            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
+                    " forbid maps");
             return;
         }
 
         if (gameMapAvailability.equals(Type.Availability.REQUIRED) && !mapsEnabled) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING + " require maps");
+            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
+                    " require maps");
             return;
-        }
-
-        // team amount
-        int teamAmount = Collections.max(gameTeamAmounts);
-        Argument teamsArg = args.getArgumentByStringPart("teams=");
-        if (teamsArg != null) {
-            String teams = teamsArg.getString().replace("teams=", "");
-            try {
-                teamAmount = Integer.parseInt(teams);
-            } catch (NumberFormatException e) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Invalid team amount");
-                return;
-            }
-
-            if (!gameTeamAmounts.contains(teamAmount)) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Invalid team amount");
-                sender.sendPluginMessage(ChatColor.PERSONAL + "Available team amounts: " + ChatColor.VALUE + Arrays.toString(gameTeamAmounts.toArray()).replace("[", "").replace("]", ""));
-                return;
-            }
         }
 
         // check player amount
@@ -204,15 +180,19 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             }
 
             if (maxServerPlayers > gameMaxPlayers) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Too large max players amount for game " + ChatColor.VALUE + gameName + ChatColor.WARNING + ", max is " + ChatColor.VALUE + gameMaxPlayers);
+                sender.sendPluginMessage(ChatColor.WARNING + "Too large max players amount for game " +
+                        ChatColor.VALUE + gameName + ChatColor.WARNING + ", max is " + ChatColor.VALUE + gameMaxPlayers);
                 return;
             }
 
             if (maxServerPlayers < gameMinPlayers) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Too small max players amount for game " + ChatColor.VALUE + gameName + ChatColor.WARNING + ", min is " + ChatColor.VALUE + gameMinPlayers);
+                sender.sendPluginMessage(ChatColor.WARNING + "Too small max players amount for game " +
+                        ChatColor.VALUE + gameName + ChatColor.WARNING + ", min is " + ChatColor.VALUE + gameMinPlayers);
                 return;
             }
         }
+
+        Integer teamAmount = null;
 
         // check players per team
         Integer playersPerTeam = null;
@@ -226,12 +206,32 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                 return;
             }
 
-            int minPerTeam = (int) Math.ceil(maxServerPlayers / ((double) teamAmount));
-            if (playersPerTeam > minPerTeam) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Too small players-per-team amount for game " + ChatColor.VALUE + gameName + ChatColor.WARNING + ", min is " + ChatColor.VALUE + minPerTeam);
-                return;
+            teamAmount = (int) Math.ceil(maxServerPlayers / ((double) playersPerTeam));
+        }
+
+        // team amount
+
+        if (teamAmount == null) {
+            teamAmount = Collections.max(gameTeamAmounts);
+            Argument teamsArg = args.getArgumentByStringPart("teams=");
+            if (teamsArg != null) {
+                String teams = teamsArg.getString().replace("teams=", "");
+                try {
+                    teamAmount = Integer.parseInt(teams);
+                } catch (NumberFormatException e) {
+                    sender.sendPluginMessage(ChatColor.WARNING + "Invalid team amount");
+                    return;
+                }
+
+                if (!gameTeamAmounts.contains(teamAmount)) {
+                    sender.sendPluginMessage(ChatColor.WARNING + "Invalid team amount");
+                    sender.sendPluginMessage(ChatColor.PERSONAL + "Available team amounts: " + ChatColor.VALUE +
+                            Chat.listToString(gameTeamAmounts));
+                    return;
+                }
             }
         }
+
 
         boolean teamMerging = argMaxPerTeam != null && args.getArgumentByString("merge") != null;
 
@@ -240,12 +240,14 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         }
 
         if (gameMergeTeams.equals(Type.Availability.FORBIDDEN) && teamMerging) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING + " forbid team merging");
+            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
+                    " forbid team merging");
             return;
         }
 
         if (gameMergeTeams.equals(Type.Availability.REQUIRED) && !teamMerging) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING + " require team merging");
+            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
+                    " require team merging");
             return;
         }
 
@@ -263,7 +265,8 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                     loungeServer = ((LoungeServer) s);
                 }
             } else if (s.getType().equals(Type.Server.TEMP_GAME)) {
-                if ((status == null || status.equals(Status.Server.OFFLINE)) && ((TempGameServer) s).getTask() != null && (((TempGameServer) s).getTask().equalsIgnoreCase(gameName))) {
+                if ((status == null || status.equals(Status.Server.OFFLINE)) && ((TempGameServer) s).getTask() != null
+                        && (((TempGameServer) s).getTask().equalsIgnoreCase(gameName))) {
                     if (((TempGameServer) s).getTwinServer() == null || ((TempGameServer) s).getTwinServer().exists()) {
                         gameServer = ((TempGameServer) s);
                     }
@@ -272,12 +275,14 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         }
 
         if (gameServer == null) {
-            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All game servers are in use!");
+            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All game servers are in " +
+                    "use!");
             return;
         }
 
         if (loungeServer == null) {
-            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All lounge servers are in use!");
+            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All lounge servers are in " +
+                    "use!");
             return;
         }
 

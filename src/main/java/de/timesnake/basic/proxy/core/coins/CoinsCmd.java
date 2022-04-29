@@ -23,24 +23,26 @@ public class CoinsCmd implements CommandListener<Sender, Argument> {
                     if (args.get(2).isFloat(true)) {
                         float coins = args.get(2).toFloat();
                         switch (args.get(1).toLowerCase()) {
-                            case "add":
+                            case "add" -> {
                                 user.addCoins(coins);
-                                sender.sendPluginMessage(ChatColor.PERSONAL + "Added " + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s) to " + user.getChatName());
-                                break;
-                            case "remove":
+                                sender.sendPluginMessage(ChatColor.PERSONAL + "Added " + ChatColor.VALUE + coins +
+                                        ChatColor.PERSONAL + " timecoin(s) to " + user.getChatName());
+                            }
+                            case "remove" -> {
                                 user.removeCoins(coins);
-                                sender.sendPluginMessage(ChatColor.PERSONAL + "Removed " + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s) from " + user.getChatName());
-                                break;
-                            case "set":
+                                sender.sendPluginMessage(ChatColor.PERSONAL + "Removed " + ChatColor.VALUE + coins +
+                                        ChatColor.PERSONAL + " timecoin(s) from " + user.getChatName());
+                            }
+                            case "set" -> {
                                 user.setCoins(coins);
-                                sender.sendPluginMessage(ChatColor.PERSONAL + "Set balance to " + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s) for " + user.getChatName());
-                                break;
-                            case "reset":
+                                sender.sendPluginMessage(ChatColor.PERSONAL + "Set balance to " + ChatColor.VALUE + coins +
+                                        ChatColor.PERSONAL + " timecoin(s) for " + user.getChatName());
+                            }
+                            case "reset" -> {
                                 user.setCoins(0);
-                                sender.sendPluginMessage(ChatColor.PERSONAL + "Set balance to " + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s) for " + user.getChatName());
-                                break;
-                            default:
-
+                                sender.sendPluginMessage(ChatColor.PERSONAL + "Set balance to " + ChatColor.VALUE + coins +
+                                        ChatColor.PERSONAL + " timecoin(s) for " + user.getChatName());
+                            }
                         }
                     }
                 }
@@ -57,7 +59,7 @@ public class CoinsCmd implements CommandListener<Sender, Argument> {
             return List.of("add", "remove", "set", "reset");
         }
         if (args.getLength() == 3) {
-            return List.of("0", "1", "10");
+            return List.of("0", "1", "10", "100");
         }
         return null;
     }

@@ -3,7 +3,6 @@ package de.timesnake.basic.proxy.core.main;
 import de.timesnake.basic.proxy.core.channel.ChannelBroadcastCmd;
 import de.timesnake.basic.proxy.core.channel.ChannelCmdHandler;
 import de.timesnake.basic.proxy.core.coins.CoinsCmd;
-import de.timesnake.basic.proxy.core.database.DatabaseBroadcastCmd;
 import de.timesnake.basic.proxy.core.infomessage.NetworkMsgCmd;
 import de.timesnake.basic.proxy.core.network.MotdManager;
 import de.timesnake.basic.proxy.core.network.ServiceWorkCmd;
@@ -60,8 +59,6 @@ public class BasicProxy extends Plugin {
         NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "timecoins", new CoinsCmd(), de.timesnake.basic.proxy.util.chat.Plugin.TIME_COINS);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "channelmsg", List.of("channelmsgs", "channelmessage", "channelmessages"), new ChannelBroadcastCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
-
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "databasemessage", List.of("databasemsg", "databasemsgs", "databasemessages"), new DatabaseBroadcastCmd(), de.timesnake.basic.proxy.util.chat.Plugin.DATABASE);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "permcheck", new PermissionTest(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
 

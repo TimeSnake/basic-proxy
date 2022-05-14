@@ -9,11 +9,20 @@ import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
+import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
+import net.md_5.bungee.event.EventHandler;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -22,7 +31,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class AutoShutdown implements CommandListener<Sender, Argument> {
+public class AutoShutdown implements CommandListener<Sender, Argument>, Listener {
+
+    public static final int START_TIME = 15;
+    private static final int PLAYER_TIME_0 = 5;
+    private static final int PLAYER_TIME_1 = 30;
 
     private boolean enabled = true;
 
@@ -43,21 +56,45 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
                 this, Plugin.NETWORK);
     }
 
-    public void start() {
+    @EventHandler
+    public void onPlayerJoin(PostLoginEvent e) {
+        if (Network.getUsers().size() > 0) {
+            this.start(PLAYER_TIME_1);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDisconnect(PlayerDisconnectEvent e) {
+        if (Network.getUsers().size() == 0) {
+            this.start(PLAYER_TIME_0);
+        }
+    }
+
+    public void start(int time) {
+        if (this.task != null) {
+            this.task.cancel();
+        }
+
         if (enabled) {
             Network.printText(Plugin.SYSTEM, "AutoShutdown started");
-            if (Network.getUsers().size() == 0) {
-                task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::infoShutdown, 10, TimeUnit.MINUTES);
-            } else {
-                task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::infoShutdown, 15, TimeUnit.MINUTES);
-            }
+            task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::infoShutdown, time
+                    , TimeUnit.MINUTES);
         }
     }
 
     public void infoShutdown() {
-        Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lWrite " + ChatColor.VALUE + "/hello" +
-                ChatColor.WARNING + " to keep the server online.");
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lThe server will shutdown in 5 minutes ");
+
+        TextComponent text = new TextComponent(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING +
+                "§lWrite " + ChatColor.VALUE + ChatColor.UNDERLINE + "/hello" + ChatColor.WARNING + " to keep the " +
+                "server online.");
+        text.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/hello"));
+        text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("Click to execute /hello")));
+
+        for (User user : Network.getUsers()) {
+            user.getPlayer().sendMessage(text);
+        }
+
         task.cancel();
         task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::warnShutdown, 4,
                 TimeUnit.MINUTES);
@@ -92,6 +129,17 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
                 e.printStackTrace();
             }
         }, 30, TimeUnit.SECONDS);
+    }
+
+    private void cancelShutdown() {
+        if (this.task != null) {
+            this.task.cancel();
+            this.votedUsers.clear();
+            Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "Shutdown cancelled");
+            if (enabled) {
+                this.start(Network.getUsers().size() > 0 ? PLAYER_TIME_1 : PLAYER_TIME_0);
+            }
+        }
     }
 
     @Override
@@ -149,7 +197,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
                 } else {
                     this.enabled = true;
                     this.votedUsers.clear();
-                    this.start();
+                    this.start(Network.getUsers().size() > 0 ? PLAYER_TIME_1 : PLAYER_TIME_0);
                     sender.sendPluginMessage(ChatColor.PERSONAL + "Enabled auto-shutdown");
                 }
             }
@@ -157,19 +205,8 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
 
     }
 
-    private void cancelShutdown() {
-        if (this.task != null) {
-            this.task.cancel();
-            this.votedUsers.clear();
-            Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "Shutdown cancelled");
-            if (enabled) {
-                this.start();
-            }
-        }
-    }
-
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        return null;
+        return List.of();
     }
 }

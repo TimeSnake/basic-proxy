@@ -134,7 +134,7 @@ public class NetworkManager implements ChannelListener, Network {
         this.supportManager = new SupportManager();
 
         this.autoShutdown = new AutoShutdown();
-        this.autoShutdown.start();
+        this.autoShutdown.start(AutoShutdown.START_TIME);
 
         this.cmdFile.onEnable();
         this.cmdFile.executeStartCommands();

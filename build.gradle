@@ -23,8 +23,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.timesnake:library-extension:1.0-SNAPSHOT'
     implementation 'de.timesnake:library-basic:1.0-SNAPSHOT'
+    implementation 'de.timesnake:library-extension:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:channel-proxy:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:database-proxy:1.0-SNAPSHOT'
     compileOnly 'io.github.waterfallmc:waterfall-api:1.18-R0.1-SNAPSHOT'
@@ -49,9 +49,18 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+task buildFatJar(type: Jar) {
+    baseName = rootProject.name
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+jar.finalizedBy(buildFatJar)
+
 task copyJarToPlugins(type: Copy) {
     from jar
     into "../../plugins"
 }
 
+copyJarToPlugins.dependsOn(buildFatJar)
 jar.finalizedBy(copyJarToPlugins)

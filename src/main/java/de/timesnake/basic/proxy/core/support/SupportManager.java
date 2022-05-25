@@ -78,7 +78,8 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
                 User user = Network.getUser(uuid);
 
                 if (user != null) {
-                    user.sendPluginMessage(Plugin.SUPPORT, ChatColor.WARNING + "New ticket: " + ChatColor.VALUE + "ID " + id);
+                    user.sendPluginMessage(Plugin.SUPPORT, ChatColor.WARNING + "New ticket: " + ChatColor.VALUE + "ID" +
+                            " " + id);
                 }
             }
         }

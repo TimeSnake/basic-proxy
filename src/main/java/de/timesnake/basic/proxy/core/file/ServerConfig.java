@@ -28,7 +28,8 @@ public class ServerConfig extends ExFile {
             Type.Server<?> type = Type.Server.getByDatabaseValue(typeString.toLowerCase());
 
             if (type == null) {
-                Network.printWarning(Plugin.NETWORK, "Error while reading server-config " + "(" + serverName + ")", "ServerConfig");
+                Network.printWarning(Plugin.NETWORK, "Error while reading server-config " + "(" + serverName + ")",
+                        "ServerConfig");
                 continue;
             }
 
@@ -48,7 +49,8 @@ public class ServerConfig extends ExFile {
                 Network.addLobby(port, serverName, folder);
                 Network.printText(Plugin.NETWORK, "Loaded server " + serverName, "ServerConfig");
             } else {
-                Network.printWarning(Plugin.NETWORK, "Error while reading server-config " + "(" + serverName + ")", "ServerConfig");
+                Network.printWarning(Plugin.NETWORK, "Error while reading server-config " + "(" + serverName + ")",
+                        "ServerConfig");
             }
         }
     }

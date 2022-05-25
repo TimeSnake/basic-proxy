@@ -47,49 +47,32 @@ import java.util.concurrent.TimeUnit;
 public class NetworkManager implements ChannelListener, Network {
 
     private static final NetworkManager instance = new NetworkManager();
-
-    public static NetworkManager getInstance() {
-        return instance;
-    }
-
-    private boolean isWork = false;
-
     private final HashMap<String, Group> groups = new HashMap<>();
-    private Group guestGroup;
-
     private final ConcurrentHashMap<UUID, User> users = new ConcurrentHashMap<>();
-
     private final ArrayList<User> networkMessageListeners = new ArrayList<>();
     private final ArrayList<User> privateMessageListeners = new ArrayList<>();
     private final ArrayList<User> supportMessageListeners = new ArrayList<>();
     private final HashMap<Integer, Server> servers = new HashMap<>();
-
+    private final CommandHandler commandHandler = new CommandHandler();
+    private final PermissionManager permissionManager = new PermissionManager();
+    private final BukkitCmdHandler bukkitCmdHandler = new BukkitCmdHandler();
+    private final ChannelPingPong channelPingPong = new ChannelPingPong();
+    private final CmdFile cmdFile = new CmdFile();
+    public Chat chat;
+    public ServerConfig serverConfig;
+    private boolean isWork = false;
+    private Group guestGroup;
     private Integer maxPlayersLobby = 20;
     private Integer maxPlayersBuild = 20;
-
     private UserManager userManager;
-
-    private final CommandHandler commandHandler = new CommandHandler();
-
-    public Chat chat;
-
-    public ServerConfig serverConfig;
-
-    private final PermissionManager permissionManager = new PermissionManager();
-
-    private final BukkitCmdHandler bukkitCmdHandler = new BukkitCmdHandler();
-
-    private final ChannelPingPong channelPingPong = new ChannelPingPong();
-
-    private final CmdFile cmdFile = new CmdFile();
-
     private RuleManager ruleManager;
-
     private AutoShutdown autoShutdown;
-
     private SupportManager supportManager;
-
     private int onlineLobbys = 0;
+
+    public static NetworkManager getInstance() {
+        return instance;
+    }
 
     public void onEnable() {
 
@@ -278,7 +261,8 @@ public class NetworkManager implements ChannelListener, Network {
 
 
     public void sendUserToServer(User user, Integer port) {
-        user.getPlayer().connect(ProxyServer.getInstance().getServerInfo(this.getServer(port).getName()), Reason.PLUGIN);
+        user.getPlayer().connect(ProxyServer.getInstance().getServerInfo(this.getServer(port).getName()),
+                Reason.PLUGIN);
     }
 
 
@@ -372,7 +356,8 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
     public void runTaskLater(Task task, Duration delay) {
-        BasicProxy.getPlugin().getProxy().getScheduler().schedule(BasicProxy.getPlugin(), task::run, delay.getNano(), TimeUnit.NANOSECONDS);
+        BasicProxy.getPlugin().getProxy().getScheduler().schedule(BasicProxy.getPlugin(), task::run, delay.getNano(),
+                TimeUnit.NANOSECONDS);
     }
 
     public void runTaskAsync(Task task) {

@@ -30,6 +30,10 @@ public class BasicProxy extends Plugin {
     public static final String DATA_PROTECTION_VERSION = "2.0";
     private static BasicProxy plugin;
 
+    public static BasicProxy getPlugin() {
+        return plugin;
+    }
+
     @Override
     public void onEnable() {
         BasicProxy.plugin = this;
@@ -39,36 +43,57 @@ public class BasicProxy extends Plugin {
 
         PluginManager pm = ProxyServer.getInstance().getPluginManager();
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "permission", List.of("perm", "perms"), new PermissionCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PERMISSION);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "permission", List.of("perm", "perms"),
+                new PermissionCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PERMISSION);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "alias", new AliasCmd(), de.timesnake.basic.proxy.util.chat.Plugin.ALIAS);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "alias", new AliasCmd(),
+                de.timesnake.basic.proxy.util.chat.Plugin.ALIAS);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "work", new ServiceWorkCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "ban", List.of("netban"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "tempban", List.of("nettempban", "tmpban", "nettmpmban"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "unban", List.of("netunban", "pardon"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "mute", List.of("netmute"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "unmute", List.of("netunmute"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "kick", List.of("netkick"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "work", new ServiceWorkCmd(),
+                de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "ban", List.of("netban"),
+                new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "tempban", List.of("nettempban",
+                "tmpban", "nettmpmban"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "unban", List.of("netunban", "pardon"),
+                new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "mute", List.of("netmute"),
+                new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "unmute", List.of("netunmute"),
+                new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "kick", List.of("netkick"),
+                new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "start", new StartCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "cmd", new BukkitCmdHandler(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "start", new StartCmd(),
+                de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "cmd", new BukkitCmdHandler(),
+                de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "netmessages", List.of("netmsg", "networkmsg", "networkmessages", "networkmessage", "netmsgs"), new NetworkMsgCmd(), de.timesnake.basic.proxy.util.chat.Plugin.SUPPORT);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "netmessages", List.of("netmsg",
+                        "networkmsg", "networkmessages", "networkmessage", "netmsgs"), new NetworkMsgCmd(),
+                de.timesnake.basic.proxy.util.chat.Plugin.SUPPORT);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "timecoins", new CoinsCmd(), de.timesnake.basic.proxy.util.chat.Plugin.TIME_COINS);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "timecoins", new CoinsCmd(),
+                de.timesnake.basic.proxy.util.chat.Plugin.TIME_COINS);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "channelmsg", List.of("channelmsgs", "channelmessage", "channelmessages"), new ChannelBroadcastCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "channelmsg", List.of("channelmsgs",
+                        "channelmessage", "channelmessages"), new ChannelBroadcastCmd(),
+                de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "permcheck", new PermissionTest(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "permcheck", new PermissionTest(),
+                de.timesnake.library.basic.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "air", List.of("airmode", "am"), new AirModeCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "air", List.of("airmode", "am"),
+                new AirModeCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "rule", List.of("rules", "regeln", "regel"), new RuleCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "rule", List.of("rules", "regeln",
+                "regel"), new RuleCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "pid", new PidCmd(), de.timesnake.basic.proxy.util.chat.Plugin.SYSTEM);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "pid", new PidCmd(),
+                de.timesnake.basic.proxy.util.chat.Plugin.SYSTEM);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "kickall", new KickAllCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, pm, "kickall", new KickAllCmd(),
+                de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
         pm.registerListener(this, new MotdManager());
         pm.registerListener(this, new PermissionCheck());
@@ -81,9 +106,5 @@ public class BasicProxy extends Plugin {
     public void onDisable() {
         NetworkChannel.stop();
         Database.getInstance().closeWithBackups();
-    }
-
-    public static BasicProxy getPlugin() {
-        return plugin;
     }
 }

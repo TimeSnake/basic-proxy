@@ -18,7 +18,8 @@ import java.util.UUID;
 
 public class PermissionManager {
 
-    public void addPlayerPermission(Sender sender, DbUser user, String permission, Status.Permission mode, String... servers) {
+    public void addPlayerPermission(Sender sender, DbUser user, String permission, Status.Permission mode,
+                                    String... servers) {
 
         if (!sender.hasPermission("permission.player.add", 20)) {
             return;
@@ -124,7 +125,8 @@ public class PermissionManager {
         UUID uuid = user.getUniqueId();
     }
 
-    public void addGroupPermission(Sender sender, String groupName, String permission, Status.Permission mode, String... servers) {
+    public void addGroupPermission(Sender sender, String groupName, String permission, Status.Permission mode,
+                                   String... servers) {
         if (!sender.hasPermission("permission.group.add", 24)) {
             return;
         }
@@ -175,7 +177,8 @@ public class PermissionManager {
 
     }
 
-    public void createGroup(Sender sender, String groupName, int rank, String prefix, net.md_5.bungee.api.ChatColor chatColor) {
+    public void createGroup(Sender sender, String groupName, int rank, String prefix,
+                            net.md_5.bungee.api.ChatColor chatColor) {
         if (!sender.hasPermission("permission.group.create", 26)) {
             return;
         }
@@ -289,7 +292,8 @@ public class PermissionManager {
                 ChatColor.VALUE + permission);
     }
 
-    private void sendMessageAddedPermission(Sender sender, String name, String permission, Status.Permission mode, String... servers) {
+    private void sendMessageAddedPermission(Sender sender, String name, String permission, Status.Permission mode,
+                                            String... servers) {
         sender.sendPluginMessage(ChatColor.PERSONAL + "Added permission " + ChatColor.VALUE + permission +
                 ChatColor.PERSONAL + " to " + ChatColor.VALUE + name + ChatColor.PERSONAL + " with mode " +
                 ChatColor.VALUE + mode.getName() + ChatColor.PERSONAL + " on server(s): " + ChatColor.VALUE +

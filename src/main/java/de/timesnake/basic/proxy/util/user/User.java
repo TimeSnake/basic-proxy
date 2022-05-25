@@ -38,31 +38,23 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     private final DbUser dbUser;
     private final ProxiedPlayer player;
-    private boolean service;
     private final Set<Permission> databasePermissions = ConcurrentHashMap.newKeySet();
-
+    private final Set<Permission> permissions = ConcurrentHashMap.newKeySet();
+    private boolean service;
     private boolean airMode;
-
     private DataProtectionAgreement dataProtectionAgreement;
-
     private String lastChatMessage = "";
-
     private boolean isListeningNetworkMessages = false;
     private boolean isListeningPrivateMessages = false;
     private boolean isListeningSupportMessages = false;
-
     private Server server;
     private Server serverLast;
     private Server lobby;
-
     private Group group;
-
     private String prefix;
     private String suffix;
     private String nick;
-
     private float coins;
-    private final Set<Permission> permissions = ConcurrentHashMap.newKeySet();
     private String chatName;
 
     private ScheduledTask dpdInfoTask;
@@ -127,7 +119,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
             this.group.addUser(this);
         }
 
-        Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.GROUP, this.group.getName()));
+        Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.GROUP,
+                this.group.getName()));
         this.updatePermissions();
     }
 
@@ -277,7 +270,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
             Network.runTaskLater(this::loadPermissions, Duration.ZERO);
 
             Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.PERMISSION));
-            Network.printText(de.timesnake.basic.proxy.util.chat.Plugin.PERMISSION, "Updated permissions for user " + this.getName() + " from database");
+            Network.printText(de.timesnake.basic.proxy.util.chat.Plugin.PERMISSION,
+                    "Updated permissions for user " + this.getName() + " from database");
         });
     }
 
@@ -366,26 +360,28 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     //coins
 
-    public void setCoins(float coins) {
-        this.coins = coins;
-        this.dbUser.setCoins(coins);
-        this.sendPluginMessage(Plugin.TIME_COINS, ChatColor.PERSONAL + "Balance changed to " + ChatColor.VALUE + coins);
-    }
-
     public void addCoins(float coins) {
         this.coins += coins;
         this.dbUser.addCoins(coins);
-        this.sendPluginMessage(Plugin.TIME_COINS, ChatColor.PERSONAL + "Added " + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s)");
+        this.sendPluginMessage(Plugin.TIME_COINS,
+                ChatColor.PERSONAL + "Added " + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s)");
     }
 
     public void removeCoins(float coins) {
         this.coins -= coins;
         this.dbUser.removeCoins(coins);
-        this.sendPluginMessage(Plugin.TIME_COINS, ChatColor.PERSONAL + "Removed" + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s)");
+        this.sendPluginMessage(Plugin.TIME_COINS,
+                ChatColor.PERSONAL + "Removed" + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s)");
     }
 
     public float getCoins() {
         return this.coins;
+    }
+
+    public void setCoins(float coins) {
+        this.coins = coins;
+        this.dbUser.setCoins(coins);
+        this.sendPluginMessage(Plugin.TIME_COINS, ChatColor.PERSONAL + "Balance changed to " + ChatColor.VALUE + coins);
     }
 
     public void connect(ServerInfo serverInfo) {
@@ -451,8 +447,10 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     public void forceDataProtectionAgreement() {
         this.dpdInfoTask = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), () -> {
             this.sendPluginMessage(Plugin.NETWORK, ChatColor.WARNING + "Please accept our data protection declaration");
-            this.sendPluginMessage(Plugin.NETWORK, ChatColor.WARNING + "Type " + ChatColor.VALUE + "/dpd agree" + ChatColor.PERSONAL + " to accept");
-            this.sendPluginMessage(Plugin.NETWORK, ChatColor.WARNING + "Type " + ChatColor.VALUE + "/dpd disagree" + ChatColor.PERSONAL + " to deny");
+            this.sendPluginMessage(Plugin.NETWORK,
+                    ChatColor.WARNING + "Type " + ChatColor.VALUE + "/dpd agree" + ChatColor.PERSONAL + " to accept");
+            this.sendPluginMessage(Plugin.NETWORK,
+                    ChatColor.WARNING + "Type " + ChatColor.VALUE + "/dpd disagree" + ChatColor.PERSONAL + " to deny");
             if (!this.getPlayer().isConnected()) {
                 this.dpdInfoTask.cancel();
             }
@@ -460,7 +458,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     }
 
-    @ChannelHandler(type = {ListenerType.USER_SERVICE, ListenerType.USER_PERMISSION, ListenerType.USER_SWITCH_NAME, ListenerType.USER_SWITCH_PORT}, filtered = true)
+    @ChannelHandler(type = {ListenerType.USER_SERVICE, ListenerType.USER_PERMISSION, ListenerType.USER_SWITCH_NAME,
+            ListenerType.USER_SWITCH_PORT}, filtered = true)
     public void onUserMessage(ChannelUserMessage<?> msg) {
         MessageType<?> type = msg.getMessageType();
         if (type.equals(MessageType.User.SERVICE)) {

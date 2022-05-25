@@ -16,48 +16,6 @@ import java.util.List;
 
 public class AliasCmd implements CommandListener<Sender, Argument> {
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        if (args.isLengthHigherEquals(1, true)) {
-            if (Database.getUsers().containsUser(args.get(0).getString())) {
-                if (sender.hasPermission("alias.other", 48)) {
-                    if (args.isLengthEquals(3, false)) {
-                        AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), args.get(2));
-                    } else {
-                        AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), null);
-                    }
-                }
-            } else if (args.get(0).equalsIgnoreCase("help")) {
-                sender.sendMessageCommandHelp("Set alias for player", "alias [player] " + "<prefix/suffix/nick> [value]");
-                sender.sendMessageCommandHelp("Get alias from player", "alias [player] info");
-            } else if (sender.isPlayer(true)) {
-                if (args.isLengthEquals(2, false)) {
-                    AliasCmd.setAlias(sender, sender.getDbUser(), args.get(0), args.get(1));
-                } else {
-                    AliasCmd.setAlias(sender, sender.getDbUser(), args.get(0), null);
-                }
-            } else {
-                sender.sendMessageCommandHelp("For help", "alias help");
-            }
-        } else {
-            sender.sendMessageCommandHelp("For help", "alias help");
-        }
-
-    }
-
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        int length = args.getLength();
-        if (length == 1) {
-            return Network.getCommandHandler().getPlayerNames();
-        }
-
-        if (length == 2) {
-            return List.of("info", "prefix", "suffix", "nick");
-        }
-        return null;
-    }
-
     public static void setAlias(Sender sender, DbUser user, Argument type, Argument name) {
         String msg;
         switch (type.getString()) {
@@ -110,6 +68,49 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                 sender.sendMessageCommandHelp("Get alias from player", "alias [player] info");
             }
         }
+    }
+
+    @Override
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+        if (args.isLengthHigherEquals(1, true)) {
+            if (Database.getUsers().containsUser(args.get(0).getString())) {
+                if (sender.hasPermission("alias.other", 48)) {
+                    if (args.isLengthEquals(3, false)) {
+                        AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), args.get(2));
+                    } else {
+                        AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), null);
+                    }
+                }
+            } else if (args.get(0).equalsIgnoreCase("help")) {
+                sender.sendMessageCommandHelp("Set alias for player", "alias [player] " + "<prefix/suffix/nick> " +
+                        "[value]");
+                sender.sendMessageCommandHelp("Get alias from player", "alias [player] info");
+            } else if (sender.isPlayer(true)) {
+                if (args.isLengthEquals(2, false)) {
+                    AliasCmd.setAlias(sender, sender.getDbUser(), args.get(0), args.get(1));
+                } else {
+                    AliasCmd.setAlias(sender, sender.getDbUser(), args.get(0), null);
+                }
+            } else {
+                sender.sendMessageCommandHelp("For help", "alias help");
+            }
+        } else {
+            sender.sendMessageCommandHelp("For help", "alias help");
+        }
+
+    }
+
+    @Override
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+        int length = args.getLength();
+        if (length == 1) {
+            return Network.getCommandHandler().getPlayerNames();
+        }
+
+        if (length == 2) {
+            return List.of("info", "prefix", "suffix", "nick");
+        }
+        return null;
     }
 
 }

@@ -30,13 +30,18 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
                 }
             } else if (args.get(0).equalsIgnoreCase("help")) {
                 sender.sendMessageCommandHelp("Set user permission", "perm user <user> add/remove> " + "<permission>");
-                sender.sendMessageCommandHelp("Set user permgroup", "perm user <user> " + "setgroup/removegroup <group>");
-                sender.sendMessageCommandHelp("Create permgroup", "perm group <group> create <rank> " + "<prefix> <chatcolor>");
+                sender.sendMessageCommandHelp("Set user permgroup", "perm user <user> " + "setgroup/removegroup " +
+                        "<group>");
+                sender.sendMessageCommandHelp("Create permgroup", "perm group <group> create <rank> " + "<prefix> " +
+                        "<chatcolor>");
                 sender.sendMessageCommandHelp("Delete permgroup", "perm group <group> delete");
                 sender.sendMessageCommandHelp("Set group prefix", "perm group <group> setprefix " + "<prefix>");
-                sender.sendMessageCommandHelp("Set group chatcolor", "perm group <group> setcolorchat " + "<chatcolor>");
-                sender.sendMessageCommandHelp("Add/Remove permission from group", "perm group <group> " + "add/remove <permission> <mode>");
-                sender.sendMessageCommandHelp("Set/Remove inheritance", "perm group <group> " + "setinherit/removeinherit <group>");
+                sender.sendMessageCommandHelp("Set group chatcolor", "perm group <group> setcolorchat " + "<chatcolor" +
+                        ">");
+                sender.sendMessageCommandHelp("Add/Remove permission from group", "perm group <group> " + "add/remove" +
+                        " <permission> <mode>");
+                sender.sendMessageCommandHelp("Set/Remove inheritance", "perm group <group> " + "setinherit" +
+                        "/removeinherit <group>");
                 sender.sendMessageCommandHelp("Reload permissions", "perm reload");
             } else {
                 sender.sendMessageUseHelp("perm help");
@@ -56,7 +61,8 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
                 switch (args.getString(2).toLowerCase()) {
                     case "add":
                         if (args.isLengthHigherEquals(5, true) && args.get(4).isPermissionStatus(true)) {
-                            Network.getPermissionHandler().addPlayerPermission(sender, user, args.get(3).toLowerCase(), args.get(4).toPermissionStatus());
+                            Network.getPermissionHandler().addPlayerPermission(sender, user,
+                                    args.get(3).toLowerCase(), args.get(4).toPermissionStatus());
                         }
                         break;
                     case "remove":
@@ -82,9 +88,11 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
             switch (args.getString(2).toLowerCase()) {
                 case "create":
                     if (args.isLengthEquals(6, true) && args.get(3).isInt(true) && args.get(5).isChatColor(true)) {
-                        Network.getPermissionHandler().createGroup(sender, groupName, args.get(3).toInt(), args.getString(4), args.get(5).toChatColor());
+                        Network.getPermissionHandler().createGroup(sender, groupName, args.get(3).toInt(),
+                                args.getString(4), args.get(5).toChatColor());
                     } else {
-                        sender.sendMessageCommandHelp("Create permgroup", "perm group <group> create" + " <rank> <prefix> <chatcolor>");
+                        sender.sendMessageCommandHelp("Create permgroup", "perm group <group> create" + " <rank> " +
+                                "<prefix> <chatcolor>");
                     }
                     break;
                 case "delete":
@@ -92,7 +100,8 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
                     break;
                 case "add":
                     if (args.isLengthHigherEquals(5, true) && args.get(4).isPermissionStatus(true)) {
-                        Network.getPermissionHandler().addGroupPermission(sender, groupName, args.get(3).toLowerCase(), args.get(4).toPermissionStatus());
+                        Network.getPermissionHandler().addGroupPermission(sender, groupName,
+                                args.get(3).toLowerCase(), args.get(4).toPermissionStatus());
                     }
                     break;
                 case "remove":
@@ -142,7 +151,8 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
                 return List.of("add", "remove", "setgroup", "removegroup");
             }
             if (length == 4) {
-                if (args.getString(2).equalsIgnoreCase("setgroup") || args.getString(2).equalsIgnoreCase("removegroup")) {
+                if (args.getString(2).equalsIgnoreCase("setgroup") || args.getString(2).equalsIgnoreCase("removegroup"
+                )) {
                     return Network.getCommandHandler().getGroupNames();
                 }
             }
@@ -154,11 +164,13 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
                 return Network.getCommandHandler().getGroupNames();
             }
             if (length == 3) {
-                return List.of("add", "remove", "create", "delete", "setinherit", "removeinherit", "setprefix", "setchatcolor");
+                return List.of("add", "remove", "create", "delete", "setinherit", "removeinherit", "setprefix",
+                        "setchatcolor");
             }
 
             if (length == 4) {
-                if (args.getString(3).equalsIgnoreCase("setinherit") || args.getString(3).equalsIgnoreCase("removeinherit")) {
+                if (args.getString(3).equalsIgnoreCase("setinherit") || args.getString(3).equalsIgnoreCase(
+                        "removeinherit")) {
                     return Network.getCommandHandler().getGroupNames();
                 }
             }

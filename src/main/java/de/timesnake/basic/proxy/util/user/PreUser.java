@@ -91,10 +91,12 @@ public class PreUser {
                 chatSuffix = this.getSuffix();
             }
 
-            chatName = group.getPrefixColor() + group.getPrefix() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', chatPrefix) + ChatColor.RESET + this.getName() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', chatSuffix) + ChatColor.RESET;
+            chatName =
+                    group.getPrefixColor() + group.getPrefix() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', chatPrefix) + ChatColor.RESET + this.getName() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', chatSuffix) + ChatColor.RESET;
         } else {
             group = Network.getMemberGroup();
-            chatName = group.getPrefixColor() + group.getPrefix() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', this.getNick());
+            chatName =
+                    group.getPrefixColor() + group.getPrefix() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', this.getNick());
         }
 
         this.chatName = chatName;

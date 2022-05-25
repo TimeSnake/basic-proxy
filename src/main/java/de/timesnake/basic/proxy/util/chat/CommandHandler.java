@@ -21,55 +21,17 @@ public class CommandHandler {
 
     private final HashMap<String, ExCommand<Sender, Argument>> commands = new HashMap<>();
 
-    public void addCommand(net.md_5.bungee.api.plugin.Plugin mainClass, PluginManager pm, String cmd, CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
+    public void addCommand(net.md_5.bungee.api.plugin.Plugin mainClass, PluginManager pm, String cmd,
+                           CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
         this.commands.put(cmd, new ExCommand<>(cmd, listener, basicPlugin));
         pm.registerCommand(mainClass, new Command(cmd));
     }
 
-    public void addCommand(net.md_5.bungee.api.plugin.Plugin mainClass, PluginManager pm, String cmd, List<String> aliases, CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
+    public void addCommand(net.md_5.bungee.api.plugin.Plugin mainClass, PluginManager pm, String cmd,
+                           List<String> aliases, CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
         this.commands.put(cmd, new ExCommand<>(cmd, listener, basicPlugin));
         String[] aliasArray = new String[aliases.size()];
         pm.registerCommand(mainClass, new Command(cmd, aliases.toArray(aliasArray)));
-    }
-
-    private class Command extends net.md_5.bungee.api.plugin.Command implements TabExecutor {
-
-        public Command(String name) {
-            super(name);
-        }
-
-        @Override
-        public void execute(net.md_5.bungee.api.CommandSender cmdSender, String[] args) {
-            if (commands.containsKey(super.getName())) {
-                ExCommand<Sender, Argument> basicCmd = commands.get(super.getName());
-                Sender sender = new Sender(new CommandSender(cmdSender), basicCmd.getPlugin());
-                LinkedList<Argument> extendedArgs = new LinkedList<>();
-                for (String arg : args) {
-                    extendedArgs.addLast(new Argument(sender, arg));
-                }
-                basicCmd.getListener().onCommand(sender, basicCmd, new Arguments<>(sender, extendedArgs));
-            }
-        }
-
-        @Override
-        public Iterable<String> onTabComplete(net.md_5.bungee.api.CommandSender cmdSender, String[] args) {
-            if (commands.containsKey(super.getName())) {
-                ExCommand<Sender, Argument> basicCmd = commands.get(super.getName());
-                Sender sender = new Sender(new CommandSender(cmdSender), basicCmd.getPlugin());
-                LinkedList<Argument> extendedArgs = new LinkedList<>();
-                for (String arg : args) {
-                    extendedArgs.add(new Argument(sender, arg));
-                }
-                List<String> tab = basicCmd.getListener().getTabCompletion(basicCmd, new Arguments<>(sender, extendedArgs));
-                return tab != null ? tab : List.of();
-            }
-            return null;
-        }
-
-        public Command(String name, String[] aliases) {
-            super(name, null, aliases);
-        }
-
     }
 
     public List<String> getPlayerNames() {
@@ -101,5 +63,46 @@ public class CommandHandler {
 
     public List<String> getGameNames() {
         return new ArrayList<>(Database.getGames().getGamesName());
+    }
+
+    private class Command extends net.md_5.bungee.api.plugin.Command implements TabExecutor {
+
+        public Command(String name) {
+            super(name);
+        }
+
+        public Command(String name, String[] aliases) {
+            super(name, null, aliases);
+        }
+
+        @Override
+        public void execute(net.md_5.bungee.api.CommandSender cmdSender, String[] args) {
+            if (commands.containsKey(super.getName())) {
+                ExCommand<Sender, Argument> basicCmd = commands.get(super.getName());
+                Sender sender = new Sender(new CommandSender(cmdSender), basicCmd.getPlugin());
+                LinkedList<Argument> extendedArgs = new LinkedList<>();
+                for (String arg : args) {
+                    extendedArgs.addLast(new Argument(sender, arg));
+                }
+                basicCmd.getListener().onCommand(sender, basicCmd, new Arguments<>(sender, extendedArgs));
+            }
+        }
+
+        @Override
+        public Iterable<String> onTabComplete(net.md_5.bungee.api.CommandSender cmdSender, String[] args) {
+            if (commands.containsKey(super.getName())) {
+                ExCommand<Sender, Argument> basicCmd = commands.get(super.getName());
+                Sender sender = new Sender(new CommandSender(cmdSender), basicCmd.getPlugin());
+                LinkedList<Argument> extendedArgs = new LinkedList<>();
+                for (String arg : args) {
+                    extendedArgs.add(new Argument(sender, arg));
+                }
+                List<String> tab = basicCmd.getListener().getTabCompletion(basicCmd, new Arguments<>(sender,
+                        extendedArgs));
+                return tab != null ? tab : List.of();
+            }
+            return null;
+        }
+
     }
 }

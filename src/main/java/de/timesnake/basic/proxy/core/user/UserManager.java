@@ -101,7 +101,8 @@ public class UserManager implements Listener {
         }
 
         Network.printText(Plugin.NETWORK, "Players online " + Network.getUsers().size());
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(),
+                MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
     }
 
     @EventHandler
@@ -125,7 +126,8 @@ public class UserManager implements Listener {
 
                     DbPermGroup group = user.getPermGroup();
 
-                    while (Database.getGroups().containsGroup(group.getName()) && !group.hasPermission("network.work.join")) {
+                    while (Database.getGroups().containsGroup(group.getName()) && !group.hasPermission("network.work" +
+                            ".join")) {
                         group = group.getInheritance();
                         if (group == null) {
                             e.setCancelReason(new TextComponent("§cService-Work    Wartungsarbeiten"));

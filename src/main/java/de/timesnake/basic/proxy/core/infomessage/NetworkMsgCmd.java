@@ -12,11 +12,6 @@ import java.util.List;
 
 public class NetworkMsgCmd implements CommandListener<Sender, Argument> {
 
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        handleNetworkMessageCmd(sender, args);
-
-    }
-
     public static void handleNetworkMessageCmd(Sender sender, Arguments<Argument> args) {
         if (sender.hasPermission("network.message", 9)) {
             if (sender.isPlayer(true)) {
@@ -32,6 +27,11 @@ public class NetworkMsgCmd implements CommandListener<Sender, Argument> {
             }
 
         }
+    }
+
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+        handleNetworkMessageCmd(sender, args);
+
     }
 
     @Override

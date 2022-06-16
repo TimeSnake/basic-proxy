@@ -36,12 +36,9 @@ public class AutoShutdown implements CommandListener<Sender, Argument>, Listener
     public static final int START_TIME = 15;
     private static final int PLAYER_TIME_0 = 5;
     private static final int PLAYER_TIME_1 = 30;
-
-    private boolean enabled = true;
-
-    private int requiredVotes = 1;
     private final Set<UUID> votedUsers = new HashSet<>();
-
+    private boolean enabled = true;
+    private int requiredVotes = 1;
     private ScheduledTask task;
 
     public AutoShutdown() {

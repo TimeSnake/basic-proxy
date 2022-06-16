@@ -38,8 +38,16 @@ public class Punishment {
         return this.byName;
     }
 
+    public void setByName(String byName) {
+        this.byName = byName;
+    }
+
     public String getReason() {
         return this.reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     public UUID getUuid() {
@@ -48,13 +56,5 @@ public class Punishment {
 
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
-    }
-
-    public void setByName(String byName) {
-        this.byName = byName;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
     }
 }

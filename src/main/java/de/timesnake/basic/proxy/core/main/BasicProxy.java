@@ -28,11 +28,11 @@ public class BasicProxy extends Plugin {
 
 
     public static final String DATA_PROTECTION_VERSION = "2.0";
-    private static BasicProxy plugin;
 
     public static BasicProxy getPlugin() {
         return plugin;
     }
+    private static BasicProxy plugin;
 
     @Override
     public void onEnable() {

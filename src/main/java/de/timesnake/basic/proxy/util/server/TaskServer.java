@@ -15,14 +15,14 @@ public abstract class TaskServer extends Server {
         return this.task;
     }
 
-    @Override
-    public String getServerTask() {
-        return this.getTask();
-    }
-
     public void setTask(String task) {
         this.task = task;
         ((DbTaskServer) super.database).setTask(task);
+    }
+
+    @Override
+    public String getServerTask() {
+        return this.getTask();
     }
 
     public void setTaskSynchronized(String task) {

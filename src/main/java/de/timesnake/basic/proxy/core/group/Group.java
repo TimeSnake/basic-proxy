@@ -19,11 +19,10 @@ public class Group {
     private final String name;
     private final DbPermGroup database;
     private final Integer rank;
-    private String prefix;
-    private ChatColor prefixColor;
     private final String tablistName;
     private final Set<User> users = new HashSet<>();
-
+    private String prefix;
+    private ChatColor prefixColor;
     private List<Permission> permissions = new ArrayList<>();
 
     public Group(String name) throws GroupNotInDatabaseException {

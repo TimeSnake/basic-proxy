@@ -6,12 +6,12 @@ import de.timesnake.library.basic.util.Status;
 
 public class TempGameServer extends PvPServer {
 
-    private DbLoungeServer twinServer;
     protected boolean kitsEnabled;
     protected boolean mapsEnabled;
     protected Integer teamAmount;
     protected boolean teamMerging;
     protected Integer maxPlayersPerTeam;
+    private DbLoungeServer twinServer;
 
     public TempGameServer(DbTempGameServer database, String folderPath) {
         super(database, folderPath);
@@ -20,6 +20,16 @@ public class TempGameServer extends PvPServer {
 
     public DbLoungeServer getTwinServer() {
         return twinServer;
+    }
+
+    public void setTwinServer(DbLoungeServer twinServer) {
+        this.twinServer = twinServer;
+        if (twinServer != null) {
+            ((DbTempGameServer) this.database).setTwinServerPort(twinServer.getPort());
+        } else {
+            ((DbTempGameServer) this.database).setTwinServerPort(null);
+        }
+
     }
 
     @Override
@@ -34,14 +44,8 @@ public class TempGameServer extends PvPServer {
         }
     }
 
-    public void setTwinServer(DbLoungeServer twinServer) {
-        this.twinServer = twinServer;
-        if (twinServer != null) {
-            ((DbTempGameServer) this.database).setTwinServerPort(twinServer.getPort());
-        } else {
-            ((DbTempGameServer) this.database).setTwinServerPort(null);
-        }
-
+    public Integer getTeamAmount() {
+        return teamAmount;
     }
 
     public void setTeamAmount(Integer number) {
@@ -49,17 +53,13 @@ public class TempGameServer extends PvPServer {
         ((DbTempGameServer) super.database).setTeamAmount(number);
     }
 
-    public Integer getTeamAmount() {
-        return teamAmount;
+    public boolean isTeamMerging() {
+        return teamMerging;
     }
 
     public void setTeamMerging(boolean teamMerging) {
         this.teamMerging = teamMerging;
         ((DbTempGameServer) super.database).setTeamMerging(teamMerging);
-    }
-
-    public boolean isTeamMerging() {
-        return teamMerging;
     }
 
     public void setMapsEnabled(boolean mapsEnabled) {

@@ -46,6 +46,10 @@ import java.util.concurrent.TimeUnit;
 
 public class NetworkManager implements ChannelListener, Network {
 
+    public static NetworkManager getInstance() {
+        return instance;
+    }
+
     private static final NetworkManager instance = new NetworkManager();
     private final HashMap<String, Group> groups = new HashMap<>();
     private final ConcurrentHashMap<UUID, User> users = new ConcurrentHashMap<>();
@@ -69,10 +73,6 @@ public class NetworkManager implements ChannelListener, Network {
     private AutoShutdown autoShutdown;
     private SupportManager supportManager;
     private int onlineLobbys = 0;
-
-    public static NetworkManager getInstance() {
-        return instance;
-    }
 
     public void onEnable() {
 

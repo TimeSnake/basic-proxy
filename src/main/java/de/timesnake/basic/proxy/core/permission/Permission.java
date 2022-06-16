@@ -20,20 +20,20 @@ public class Permission {
         return this.permission;
     }
 
-    public Status.Permission getMode() {
-        return this.mode;
-    }
-
-    public Collection<String> getServer() {
-        return this.server;
-    }
-
     public void setPermission(String permission) {
         this.permission = permission;
     }
 
+    public Status.Permission getMode() {
+        return this.mode;
+    }
+
     public void setMode(Status.Permission mode) {
         this.mode = mode;
+    }
+
+    public Collection<String> getServer() {
+        return this.server;
     }
 
     public void setServer(Collection<String> server) {

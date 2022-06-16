@@ -9,9 +9,6 @@ import java.io.IOException;
 
 public class Config {
 
-    private static final File CONFIG_FILE = new File("plugins/basic-proxy/config.yml");
-    private static Configuration config;
-
     public static void onEnable() {
         File dir = new File("plugins/basic-proxy");
         if (!dir.exists()) {
@@ -54,4 +51,7 @@ public class Config {
         load();
         return config.getString("group.guest");
     }
+
+    private static final File CONFIG_FILE = new File("plugins/basic-proxy/config.yml");
+    private static Configuration config;
 }

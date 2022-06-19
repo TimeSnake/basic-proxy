@@ -26,7 +26,9 @@ dependencies {
     implementation 'de.timesnake:library-basic:1.0-SNAPSHOT'
     implementation 'de.timesnake:library-extension:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:channel-proxy:1.0-SNAPSHOT'
+    compileOnly 'de.timesnake:channel-api:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:database-proxy:1.0-SNAPSHOT'
+    compileOnly 'de.timesnake:database-api:1.0-SNAPSHOT'
     compileOnly 'io.github.waterfallmc:waterfall-api:1.18-R0.1-SNAPSHOT'
     compileOnly 'net.md-5:bungeecord-api:1.18-R0.1-SNAPSHOT'
     compileOnly 'net.md-5:bungeecord-api:1.18-R0.1-SNAPSHOT'
@@ -60,6 +62,7 @@ tasks.withType(JavaCompile) {
 task buildFatJar(type: Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     baseName = rootProject.name
+    classifier = "all"
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
@@ -67,7 +70,7 @@ task buildFatJar(type: Jar) {
 jar.finalizedBy(buildFatJar)
 
 task copyJarToPlugins(type: Copy) {
-    from jar
+    from "build/libs/" + rootProject.name + "-" + version + "-all" + ".jar"
     into "../../plugins"
 }
 

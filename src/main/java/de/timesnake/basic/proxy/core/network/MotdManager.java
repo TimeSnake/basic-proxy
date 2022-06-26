@@ -23,7 +23,7 @@ public class MotdManager implements Listener {
             if (Network.getOnlineLobbys() > 0) {
                 ServerPing conn = e.getResponse();
                 conn.setDescriptionComponent(new TextComponent(net.md_5.bungee.api.ChatColor.GOLD +
-                        "§6Time§2Snake§7-§9Network§c!                                 §31.18.1     " + "    §b " + MOTD + ""));
+                        "§6Time§2Snake§7-§9Network§c!                                 §31.19     " + "    §b " + MOTD + ""));
             } else {
                 ServerPing conn = e.getResponse();
                 conn.setVersion(new ServerPing.Protocol(net.md_5.bungee.api.ChatColor.GOLD + "Starting...", 2));

@@ -245,7 +245,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
-        if (gameMergeTeams.equals(Type.Availability.REQUIRED) && !teamMerging) {
+        if (gameMergeTeams.equals(Type.Availability.REQUIRED) && !teamMerging && teamAmount > 0) {
             sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
                     " require team merging");
             return;

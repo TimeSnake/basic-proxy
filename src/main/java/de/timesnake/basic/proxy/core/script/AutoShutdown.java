@@ -24,7 +24,6 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.event.EventHandler;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -118,14 +117,9 @@ public class AutoShutdown implements CommandListener<Sender, Argument>, Listener
 
     private void shutdown() {
         task.cancel();
-        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), () -> {
-            ProxyServer.getInstance().stop();
-            try {
-                Runtime.getRuntime().exec("shutdown -t 60");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }, 30, TimeUnit.SECONDS);
+
+        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(),
+                () -> ProxyServer.getInstance().stop(), 30, TimeUnit.SECONDS);
     }
 
     private void cancelShutdown() {

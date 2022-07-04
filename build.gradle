@@ -29,9 +29,9 @@ dependencies {
     compileOnly 'de.timesnake:channel-api:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:database-proxy:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:database-api:1.0-SNAPSHOT'
-    compileOnly 'io.github.waterfallmc:waterfall-api:1.18-R0.1-SNAPSHOT'
-    compileOnly 'net.md-5:bungeecord-api:1.18-R0.1-SNAPSHOT'
-    compileOnly 'net.md-5:bungeecord-api:1.18-R0.1-SNAPSHOT'
+    compileOnly 'io.github.waterfallmc:waterfall-api:1.19-R0.1-SNAPSHOT'
+    compileOnly 'net.md-5:bungeecord-api:1.19-R0.1-SNAPSHOT'
+    compileOnly 'net.md-5:bungeecord-api:1.19-R0.1-SNAPSHOT'
 }
 
 group = 'de.timesnake'

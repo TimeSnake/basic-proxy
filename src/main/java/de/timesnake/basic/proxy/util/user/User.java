@@ -1,10 +1,13 @@
 package de.timesnake.basic.proxy.util.user;
 
+import com.velocitypowered.api.proxy.ConnectionRequestBuilder;
+import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.group.Group;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.core.permission.Permission;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.CommandSender;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
@@ -19,25 +22,24 @@ import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.extension.util.chat.Chat;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
+import net.kyori.adventure.text.Component;
 
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
 
 public class User implements de.timesnake.library.extension.util.player.User, ChannelListener {
 
     private final DbUser dbUser;
-    private final ProxiedPlayer player;
+    private final Player player;
     private final Set<Permission> databasePermissions = ConcurrentHashMap.newKeySet();
     private final Set<Permission> permissions = ConcurrentHashMap.newKeySet();
     private boolean service;
@@ -59,13 +61,13 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     private ScheduledTask dpdInfoTask;
 
-    public User(ProxiedPlayer player, PreUser user) {
+    public User(Player player, PreUser user) {
         this.player = player;
 
         if (user == null) {
-            Database.getUsers().addUser(player.getUniqueId(), player.getName(), Network.getGuestGroup().getName(),
+            Database.getUsers().addUser(player.getUniqueId(), player.getUsername(), Network.getGuestGroup().getName(),
                     null);
-            user = new PreUser(this.player.getName());
+            user = new PreUser(this.player.getUsername());
         }
 
         this.dbUser = user.getDbUser();
@@ -163,7 +165,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.updatePermissions();
     }
 
-    public ProxiedPlayer getPlayer() {
+    public Player getPlayer() {
         return player;
     }
 
@@ -183,14 +185,12 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         return this.getPlayer().hasPermission(permission);
     }
 
-    @SuppressWarnings("deprecation")
     public void sendMessage(String message) {
-        this.player.sendMessage(message);
+        this.player.sendMessage(Component.text(message));
     }
 
-    @SuppressWarnings("deprecation")
     public void sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin plugin, String message) {
-        this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin) + message);
+        this.getPlayer().sendMessage(Component.text(Chat.getSenderPlugin(plugin) + message));
     }
 
     public UUID getUniqueId() {
@@ -231,7 +231,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     }
 
     public String getName() {
-        return this.player.getName();
+        return this.player.getUsername();
     }
 
     public void setStatus(Status.User status) {
@@ -384,8 +384,39 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.sendPluginMessage(Plugin.TIME_COINS, ChatColor.PERSONAL + "Balance changed to " + ChatColor.VALUE + coins);
     }
 
-    public void connect(ServerInfo serverInfo) {
-        this.player.connect(serverInfo);
+    public void connect(RegisteredServer server) {
+        CompletableFuture<ConnectionRequestBuilder.Result> resultFuture =
+                this.player.createConnectionRequest(server).connect();
+        Network.runTaskAsync(() -> {
+            resultFuture.join();
+            try {
+                ConnectionRequestBuilder.Result result = resultFuture.get();
+                if (!result.isSuccessful()) {
+                    this.connect(server, 1);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                this.connect(server, 1);
+            }
+        });
+    }
+
+    public void connect(RegisteredServer server, int retries) {
+        if (retries > 3) {
+            return;
+        }
+        CompletableFuture<ConnectionRequestBuilder.Result> resultFuture =
+                this.player.createConnectionRequest(server).connect();
+        Network.runTaskAsync(() -> {
+            resultFuture.join();
+            try {
+                ConnectionRequestBuilder.Result result = resultFuture.get();
+                if (!result.isSuccessful()) {
+                    this.connect(server, retries + 1);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                this.connect(server, retries + 1);
+            }
+        });
     }
 
     //cmd
@@ -445,16 +476,16 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
      * Sends the data-protection-declaration message
      */
     public void forceDataProtectionAgreement() {
-        this.dpdInfoTask = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), () -> {
+        this.dpdInfoTask = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
             this.sendPluginMessage(Plugin.NETWORK, ChatColor.WARNING + "Please accept our data protection declaration");
             this.sendPluginMessage(Plugin.NETWORK,
                     ChatColor.WARNING + "Type " + ChatColor.VALUE + "/dpd agree" + ChatColor.PERSONAL + " to accept");
             this.sendPluginMessage(Plugin.NETWORK,
                     ChatColor.WARNING + "Type " + ChatColor.VALUE + "/dpd disagree" + ChatColor.PERSONAL + " to deny");
-            if (!this.getPlayer().isConnected()) {
+            if (!this.getPlayer().isActive()) {
                 this.dpdInfoTask.cancel();
             }
-        }, 0, 5, TimeUnit.SECONDS);
+        }).repeat(Duration.ofSeconds(5)).schedule();
 
     }
 

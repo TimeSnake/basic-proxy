@@ -4,12 +4,12 @@ import de.timesnake.basic.proxy.core.group.Group;
 import de.timesnake.basic.proxy.core.permission.Permission;
 import de.timesnake.basic.proxy.core.user.UserNotInDatabaseException;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.chat.ChatColor;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -81,8 +81,8 @@ public class PreUser {
 
         Group group = this.getGroup();
         if (this.getNick() == null) {
-            String chatPrefix = "&1";
-            String chatSuffix = "&1";
+            String chatPrefix = ChatColor.WHITE;
+            String chatSuffix = ChatColor.WHITE;
             if (this.getPrefix() != null) {
                 chatPrefix = this.getPrefix();
             }
@@ -92,11 +92,13 @@ public class PreUser {
             }
 
             chatName =
-                    group.getPrefixColor() + group.getPrefix() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', chatPrefix) + ChatColor.RESET + this.getName() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', chatSuffix) + ChatColor.RESET;
+                    group.getPrefixColor() + group.getPrefix() + ChatColor.WHITE + chatPrefix + ChatColor.WHITE +
+                            this.getName() + ChatColor.WHITE + chatSuffix + ChatColor.WHITE;
+
         } else {
             group = Network.getMemberGroup();
             chatName =
-                    group.getPrefixColor() + group.getPrefix() + ChatColor.RESET + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', this.getNick());
+                    group.getPrefixColor() + group.getPrefix() + ChatColor.WHITE + this.getNick();
         }
 
         this.chatName = chatName;

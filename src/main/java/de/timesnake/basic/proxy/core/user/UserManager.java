@@ -1,9 +1,18 @@
 package de.timesnake.basic.proxy.core.user;
 
-import de.timesnake.basic.proxy.core.main.BasicProxy;
+import com.velocitypowered.api.event.PostOrder;
+import com.velocitypowered.api.event.ResultedEvent;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.DisconnectEvent;
+import com.velocitypowered.api.event.connection.LoginEvent;
+import com.velocitypowered.api.event.connection.PostLoginEvent;
+import com.velocitypowered.api.event.connection.PreLoginEvent;
+import com.velocitypowered.api.event.player.ServerConnectedEvent;
+import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.api.proxy.server.ServerInfo;
 import de.timesnake.basic.proxy.core.punishment.Punishments;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
@@ -16,27 +25,22 @@ import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.Title;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.connection.Server;
-import net.md_5.bungee.api.event.*;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
-public class UserManager implements Listener {
+public class UserManager {
+
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final ConcurrentHashMap<String, Future<PreUser>> preUsers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Future<String>> prePunishment = new ConcurrentHashMap<>();
@@ -45,11 +49,11 @@ public class UserManager implements Listener {
         Network.registerListener(this);
     }
 
-    @EventHandler
+    @Subscribe(order = PostOrder.FIRST)
     public void onPreLogin(PreLoginEvent e) {
-        String name = e.getConnection().getName();
+        String name = e.getUsername();
 
-        this.preUsers.put(name, BasicProxy.getPlugin().getExecutorService().submit(() -> {
+        this.preUsers.put(name, executor.submit(() -> {
             try {
                 return new PreUser(name);
             } catch (UserNotInDatabaseException ex) {
@@ -57,15 +61,14 @@ public class UserManager implements Listener {
             }
         }));
 
-        this.prePunishment.put(name,
-                BasicProxy.getPlugin().getExecutorService().submit(() -> checkIsPlayerPunished(name)));
+        this.prePunishment.put(name, executor.submit(() -> checkIsPlayerPunished(name)));
     }
 
-    @EventHandler
+    @Subscribe(order = PostOrder.FIRST)
     public void onPostLogin(PostLoginEvent e) {
-        ProxiedPlayer p = e.getPlayer();
+        Player p = e.getPlayer();
 
-        Future<String> prePunishmentFuture = this.prePunishment.get(p.getName());
+        Future<String> prePunishmentFuture = this.prePunishment.get(p.getUsername());
 
         String punishment;
         try {
@@ -76,7 +79,7 @@ public class UserManager implements Listener {
         }
 
         if (punishment != null) {
-            p.disconnect(new TextComponent(punishment));
+            p.disconnect(Component.text(punishment));
         }
 
 
@@ -84,7 +87,7 @@ public class UserManager implements Listener {
 
         Network.runTaskAsync(() -> this.checkDatabase(p, dbUser));
 
-        Future<PreUser> preUserFuture = this.preUsers.get(p.getName());
+        Future<PreUser> preUserFuture = this.preUsers.get(p.getUsername());
 
         User user;
         try {
@@ -97,7 +100,8 @@ public class UserManager implements Listener {
         Network.runTaskAsync(() -> this.sendJoinMessages(p, user));
 
         for (User userOnline : Network.getNetworkMessageListeners()) {
-            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getName() + ChatColor.PUBLIC + " joined");
+            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getUsername() + ChatColor.PUBLIC + " " +
+                    "joined");
         }
 
         Network.printText(Plugin.NETWORK, "Players online " + Network.getUsers().size());
@@ -105,10 +109,10 @@ public class UserManager implements Listener {
                 MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
     }
 
-    @EventHandler
+    @Subscribe(order = PostOrder.EARLY)
     public void onLogin(LoginEvent e) {
-        UUID uuid = e.getConnection().getUniqueId();
-        String name = e.getConnection().getName();
+        UUID uuid = e.getPlayer().getUniqueId();
+        String name = e.getPlayer().getUsername();
         DbUser user = Database.getUsers().getUser(uuid);
 
         Network.printText(Plugin.NETWORK, "Player: " + name + " (" + uuid.toString() + ") joined");
@@ -119,8 +123,8 @@ public class UserManager implements Listener {
             Network.runTaskAsync(() -> {
                 if (Network.isWork() && !user.hasPermission("network.work.join")) {
                     if (!Database.getUsers().getUser(user.getUniqueId()).hasPermGroup()) {
-                        e.setCancelReason(new TextComponent("§cService-Work    Wartungsarbeiten"));
-                        e.setCancelled(true);
+                        e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§cService-Work    " +
+                                "Wartungsarbeiten")));
                         return;
                     }
 
@@ -130,8 +134,8 @@ public class UserManager implements Listener {
                             ".join")) {
                         group = group.getInheritance();
                         if (group == null) {
-                            e.setCancelReason(new TextComponent("§cService-Work    Wartungsarbeiten"));
-                            e.setCancelled(true);
+                            e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§cService-Work    " +
+                                    "Wartungsarbeiten")));
                             return;
                         }
                     }
@@ -140,21 +144,20 @@ public class UserManager implements Listener {
 
         } else {
             if (Network.isWork()) {
-                e.setCancelReason(new TextComponent("§cService-Work    Wartungsarbeiten"));
-                e.setCancelled(true);
+                e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§cService-Work    Wartungsarbeiten")));
                 return;
             }
         }
 
         if (Network.getOnlineLobbys() == 0) {
-            e.setCancelReason(new TextComponent("§6Server is starting, please wait."));
-            e.setCancelled(true);
+            e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§6Server is starting, please wait.")));
+            return;
         }
     }
 
-    @EventHandler
-    public void onPlayerDisconnect(PlayerDisconnectEvent e) {
-        ProxiedPlayer p = e.getPlayer();
+    @Subscribe
+    public void onPlayerDisconnect(DisconnectEvent e) {
+        Player p = e.getPlayer();
         DbUser user = Database.getUsers().getUser(p.getUniqueId());
         if (user != null) {
             user.setStatus(Status.User.OFFLINE, false);
@@ -167,7 +170,7 @@ public class UserManager implements Listener {
 
         Network.runTaskAsync(() -> {
             for (User userOnline : Network.getNetworkMessageListeners()) {
-                userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getName() +
+                userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getUsername() +
                         ChatColor.PUBLIC + " left");
             }
         });
@@ -178,17 +181,25 @@ public class UserManager implements Listener {
                 Network.getUsers().size()));
     }
 
-    @EventHandler
+    @Subscribe
     public void onServerConnected(ServerConnectedEvent e) {
-        ProxiedPlayer p = e.getPlayer();
-        Server server = e.getServer();
+        Player p = e.getPlayer();
+        RegisteredServer server = e.getServer();
         User user = Network.getUser(p);
 
         if (user == null) {
             return;
         }
 
-        ServerInfo serverInfo = server.getInfo();
+        RegisteredServer previous = e.getServer();
+
+        if (e.getPreviousServer().isPresent()) {
+            previous = e.getPreviousServer().get();
+        }
+
+        user.setServerLast(previous.getServerInfo().getName());
+
+        ServerInfo serverInfo = server.getServerInfo();
         user.setServer(serverInfo.getName());
         if (Database.getServers().getServer(serverInfo.getAddress().getPort()).getType().equals(Type.Server.LOBBY)) {
             user.setLobby(serverInfo.getName());
@@ -196,24 +207,14 @@ public class UserManager implements Listener {
 
         for (User userOnline : Network.getNetworkMessageListeners()) {
             userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + user.getChatName() +
-                    ChatColor.PUBLIC + " connected to " + ChatColor.VALUE + e.getServer().getInfo().getName());
+                    ChatColor.PUBLIC + " connected to " + ChatColor.VALUE + serverInfo.getName());
         }
 
     }
 
-    @EventHandler
-    public void onServerDisconnect(ServerDisconnectEvent e) {
-        ProxiedPlayer p = e.getPlayer();
-        ServerInfo serverInfo = e.getTarget();
-        if (serverInfo != null && serverInfo.getName() != null && Network.getUser(p.getUniqueId()) != null) {
-            Network.getUser(p).setServerLast(serverInfo.getName());
-        }
-
-    }
-
-    private void sendJoinMessages(ProxiedPlayer player, User user) {
-        player.sendMessage(new TextComponent(new TextComponent(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING +
-                "You accepted the network rules!")));
+    private void sendJoinMessages(Player player, User user) {
+        player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING +
+                "You accepted the network rules!"));
 
         if (user.agreedDataProtection()) {
             user.sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin.NETWORK, ChatColor.WARNING +
@@ -225,7 +226,7 @@ public class UserManager implements Listener {
         }
 
         if (player.hasPermission("support.opentickets")) {
-            player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + "§l" +
+            player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + "§l" +
                     Database.getSupport().getTickets().size() + ChatColor.PUBLIC + " open tickets"));
         }
 
@@ -251,39 +252,39 @@ public class UserManager implements Listener {
             }
 
             if (open > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + open +
+                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + open +
                         ChatColor.PERSONAL + " of your ticket(s) is/are open."));
             }
 
             if (inProcess > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + inProcess +
+                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + inProcess +
                         ChatColor.PERSONAL + " of your ticket(s) is/are in process."));
             }
 
             if (solved > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved +
+                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved +
                         ChatColor.PERSONAL + " of your ticket(s) is/are solved."));
             }
 
             if (admin > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved +
+                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved +
                         ChatColor.PERSONAL + " of your ticket(s) is/are forwarded to " + "an admin."));
             }
 
             if (open + inProcess + solved + admin > 0) {
-                player.sendMessage(new TextComponent(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.PERSONAL + "Use" +
+                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.PERSONAL + "Use" +
                         " " +
                         ChatColor.VALUE + "/ticket(s) " + ChatColor.PUBLIC + "to manage your tickets"));
             }
         }
     }
 
-    public void checkDatabase(ProxiedPlayer p, DbUser dbUser) {
+    public void checkDatabase(Player p, DbUser dbUser) {
         if (!Database.getUsers().containsUser(p.getUniqueId())) {
-            Database.getUsers().addUser(p.getUniqueId(), p.getName(), Network.getGuestGroup().getName(), null);
+            Database.getUsers().addUser(p.getUniqueId(), p.getUsername(), Network.getGuestGroup().getName(), null);
             this.sendAcceptedRules(p);
         } else {
-            dbUser.setName(p.getName());
+            dbUser.setName(p.getUsername());
             dbUser.setStatus(Status.User.ONLINE);
             if (!dbUser.hasPermGroup()) {
                 dbUser.setPermGroup(Network.getGuestGroup().getName());
@@ -291,13 +292,11 @@ public class UserManager implements Listener {
         }
     }
 
-    public void sendAcceptedRules(ProxiedPlayer p) {
-        Title title = ProxyServer.getInstance().createTitle();
-        title.title(new TextComponent(ChatColor.WARNING + "You accepted the Network-Rules"));
-        title.subTitle(new TextComponent(ChatColor.PERSONAL + "For more infos use " + ChatColor.VALUE + "/rules"));
-        title.stay(200);
-        title.fadeOut(15);
-        title.send(p);
+    public void sendAcceptedRules(Player p) {
+        Title title = Title.title(Component.text(ChatColor.WARNING + "You accepted the Network-Rules"),
+                Component.text(ChatColor.PERSONAL + "For more infos use " + ChatColor.VALUE + "/rules"),
+                Title.Times.of(Duration.ZERO, Duration.ofSeconds(10), Duration.ofMillis(500)));
+        p.showTitle(title);
     }
 
     public String checkIsPlayerPunished(String name) {

@@ -7,7 +7,7 @@ import de.timesnake.channel.util.message.ChannelGroupMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,7 +22,7 @@ public class Group {
     private final String tablistName;
     private final Set<User> users = new HashSet<>();
     private String prefix;
-    private ChatColor prefixColor;
+    private NamedTextColor prefixColor;
     private List<Permission> permissions = new ArrayList<>();
 
     public Group(String name) throws GroupNotInDatabaseException {
@@ -34,7 +34,7 @@ public class Group {
         this.database = group;
         this.prefix = group.getPrefix();
 
-        this.prefixColor = ChatColor.of(group.getChatColorName());
+        this.prefixColor = NamedTextColor.NAMES.value(group.getChatColorName());
         this.rank = group.getRank();
 
         int size = String.valueOf(this.rank).length();
@@ -60,13 +60,13 @@ public class Group {
         this.database.setPrefix(prefix);
     }
 
-    public ChatColor getPrefixColor() {
+    public NamedTextColor getPrefixColor() {
         return this.prefixColor;
     }
 
-    public void setPrefixColor(ChatColor chatColor) {
+    public void setPrefixColor(NamedTextColor chatColor) {
         this.prefixColor = chatColor;
-        this.database.setChatColorName(chatColor.getName());
+        this.database.setChatColorName(chatColor.toString());
     }
 
     public String getTablistName() {

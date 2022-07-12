@@ -1,36 +1,43 @@
 package de.timesnake.basic.proxy.core.network;
 
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.proxy.ProxyPingEvent;
+import com.velocitypowered.api.proxy.server.ServerPing;
 import de.timesnake.basic.proxy.util.Network;
-import net.md_5.bungee.api.ServerPing;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.event.ProxyPingEvent;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
+import de.timesnake.library.basic.util.chat.ChatColor;
+import net.kyori.adventure.text.Component;
 
-public class MotdManager implements Listener {
+public class MotdManager {
 
+    private static final String VERSION = "1.19";
     private static final String MOTD = "Have fun!";
 
-    @EventHandler
+    @Subscribe
     public void onProxyPing(ProxyPingEvent e) {
         if (Network.isWork()) {
-            ServerPing conn = e.getResponse();
-            conn.setVersion(new ServerPing.Protocol(net.md_5.bungee.api.ChatColor.RED + "Service-Work", 2));
-            conn.setDescriptionComponent(new TextComponent("§6Time§2Snake§7-§9Network§c!" +
-                    "                                         §cService-Work"));
-            e.setResponse(conn);
+            e.setPing(e.getPing().asBuilder()
+                    .version(new ServerPing.Version(0,
+                            ChatColor.RED + "Service-Work"))
+                    .description(Component.text("§6Time§2Snake§7-§9Network§c!" +
+                            "                                         §cService-Work"))
+                    .build());
         } else {
             if (Network.getOnlineLobbys() > 0) {
-                ServerPing conn = e.getResponse();
-                conn.setDescriptionComponent(new TextComponent(net.md_5.bungee.api.ChatColor.GOLD +
-                        "§6Time§2Snake§7-§9Network§c!                                 §31.19     " + "    §b " + MOTD + ""));
+                e.setPing(e.getPing().asBuilder()
+                        .version(new ServerPing.Version(e.getPing().getVersion().getProtocol(),
+                                ChatColor.BLUE + VERSION))
+                        .description(Component.text(ChatColor.GOLD +
+                                "§6Time§2Snake§7-§9Network§c!                                          " +
+                                "   §b" + MOTD))
+                        .build());
             } else {
-                ServerPing conn = e.getResponse();
-                conn.setVersion(new ServerPing.Protocol(net.md_5.bungee.api.ChatColor.GOLD + "Starting...", 2));
-                conn.setDescriptionComponent(new TextComponent(net.md_5.bungee.api.ChatColor.GOLD +
-                        "§6Time§2Snake§7-§9Network§c!" + "                                        §6Server is " +
-                        "starting, please wait."));
-                e.setResponse(conn);
+                e.setPing(e.getPing().asBuilder()
+                        .version(new ServerPing.Version(0, ChatColor.GOLD + "Starting..."))
+                        .description(Component.text(ChatColor.GOLD +
+                                "§6Time§2Snake§7-§9Network§c!" + "                                        §6Server is" +
+                                " " +
+                                "starting, please wait."))
+                        .build());
             }
 
         }

@@ -1,14 +1,14 @@
 package de.timesnake.basic.proxy.core.user;
 
 import de.timesnake.basic.proxy.util.chat.Argument;
-import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.Component;
 
 import java.util.List;
 
@@ -21,10 +21,10 @@ public class AirModeCmd implements CommandListener<Sender, Argument> {
                 User user = sender.getUser();
                 if (user.isAirMode()) {
                     user.setAirMode(false);
-                    user.getPlayer().disconnect(new TextComponent("Back on the ground. Please rejoin"));
+                    user.getPlayer().disconnect(Component.text("Back on the ground. Please rejoin"));
                 } else {
                     user.setAirMode(true);
-                    user.getPlayer().disconnect(new TextComponent("Up in the air. Please rejoin"));
+                    user.getPlayer().disconnect(Component.text("Up in the air. Please rejoin"));
                 }
             } else {
                 if (args.isLengthEquals(1, true)) {

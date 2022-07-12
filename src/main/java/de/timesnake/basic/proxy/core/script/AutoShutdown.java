@@ -1,28 +1,26 @@
 package de.timesnake.basic.proxy.core.script;
 
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.DisconnectEvent;
+import com.velocitypowered.api.event.connection.PostLoginEvent;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
 import de.timesnake.basic.proxy.util.chat.Argument;
-import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
+import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
-import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.PostLoginEvent;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
-import net.md_5.bungee.event.EventHandler;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +28,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class AutoShutdown implements CommandListener<Sender, Argument>, Listener {
+public class AutoShutdown implements CommandListener<Sender, Argument> {
 
     public static final int START_TIME = 15;
     private static final int PLAYER_TIME_0 = 5;
@@ -42,25 +40,25 @@ public class AutoShutdown implements CommandListener<Sender, Argument>, Listener
 
     public AutoShutdown() {
         NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
-                BasicProxy.getPlugin().getProxy().getPluginManager(), "shutdown", this, Plugin.NETWORK);
+                "shutdown", this, Plugin.NETWORK);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
-                BasicProxy.getPlugin().getProxy().getPluginManager(), "autoshutdown", this, Plugin.NETWORK);
+                "autoshutdown", this, Plugin.NETWORK);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
-                BasicProxy.getPlugin().getProxy().getPluginManager(), "hello", List.of("hallo", "hi", "helo"),
+                "hello", List.of("hallo", "hi", "helo"),
                 this, Plugin.NETWORK);
     }
 
-    @EventHandler
+    @Subscribe
     public void onPlayerJoin(PostLoginEvent e) {
         if (Network.getUsers().size() > 0) {
             this.start(PLAYER_TIME_1);
         }
     }
 
-    @EventHandler
-    public void onPlayerDisconnect(PlayerDisconnectEvent e) {
+    @Subscribe
+    public void onPlayerDisconnect(DisconnectEvent e) {
         if (Network.getUsers().size() == 0) {
             this.start(PLAYER_TIME_0);
         }
@@ -73,53 +71,63 @@ public class AutoShutdown implements CommandListener<Sender, Argument>, Listener
 
         if (enabled) {
             Network.printText(Plugin.SYSTEM, "AutoShutdown started");
-            task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::infoShutdown, time
-                    , TimeUnit.MINUTES);
+            task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), this::infoShutdown)
+                    .delay(time, TimeUnit.MINUTES).schedule();
         }
     }
 
     public void infoShutdown() {
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lThe server will shutdown in 5 minutes ");
 
-        TextComponent text = new TextComponent(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING +
-                "§lWrite " + ChatColor.VALUE + ChatColor.UNDERLINE + "/hello" + ChatColor.WARNING + " to keep the " +
-                "server online.");
-        text.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/hello"));
-        text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("Click to execute /hello")));
+        TextComponent text = Component.text(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING +
+                        "§lWrite " + ChatColor.VALUE + "/hello" + ChatColor.WARNING + " to keep the " +
+                        "server online.")
+                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/hello"))
+                .hoverEvent(HoverEvent.showText(Component.text("Click to execute /hello")));
 
         for (User user : Network.getUsers()) {
             user.getPlayer().sendMessage(text);
         }
 
         task.cancel();
-        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::warnShutdown, 4,
-                TimeUnit.MINUTES);
+        task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), this::warnShutdown).delay(4,
+                TimeUnit.MINUTES).schedule();
     }
 
     public void warnShutdown() {
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lWrite " + ChatColor.VALUE + "/hello" +
                 ChatColor.WARNING + " to keep the server online.");
+
+        TextComponent text = Component.text(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING +
+                        "§lWrite " + ChatColor.VALUE + "/hello" + ChatColor.WARNING + " to keep the server online.")
+                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/hello"))
+                .hoverEvent(HoverEvent.showText(Component.text("Click to execute /hello")));
+
+        for (User user : Network.getUsers()) {
+            user.getPlayer().sendMessage(text);
+        }
+
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lThe server will shutdown in 1 minute ");
         task.cancel();
-        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), this::beginShutdown, 1,
-                TimeUnit.MINUTES);
+        task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), this::beginShutdown).delay(1,
+                TimeUnit.MINUTES).schedule();
     }
 
     private void beginShutdown() {
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lThe server will shutdown in 10 seconds ");
         task.cancel();
-        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), () -> {
+        task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
             Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lSHUTDOWN");
             new BukkitCmdHandler().stopAllServers();
             shutdown();
-        }, 10, TimeUnit.SECONDS);
+        }).delay(10, TimeUnit.SECONDS).schedule();
     }
 
     private void shutdown() {
         task.cancel();
 
-        task = ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(),
-                () -> ProxyServer.getInstance().stop(), 30, TimeUnit.SECONDS);
+        task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(),
+                () -> BasicProxy.getServer().shutdown()).delay(30, TimeUnit.SECONDS).schedule();
     }
 
     private void cancelShutdown() {

@@ -1,57 +1,25 @@
 package de.timesnake.basic.proxy.core.file;
 
-import net.md_5.bungee.config.Configuration;
-import net.md_5.bungee.config.ConfigurationProvider;
-import net.md_5.bungee.config.YamlConfiguration;
+import de.timesnake.basic.proxy.util.file.ExFile;
 
-import java.io.File;
-import java.io.IOException;
+public class Config extends ExFile {
 
-public class Config {
-
-    public static void onEnable() {
-        File dir = new File("plugins/basic-proxy");
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-
-        if (!CONFIG_FILE.exists()) {
-            try {
-                CONFIG_FILE.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            load();
-
-            config.set("group.guest", "guest");
-
-            save();
-        }
-    }
-
-    public static void load() {
-        try {
-            config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(CONFIG_FILE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public Config() {
+        super("basic-proxy", "config.toml");
+        this.load();
 
     }
 
-    public static void save() {
-        try {
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, CONFIG_FILE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public static String getGuestGroupName() {
-        load();
+    public String getGuestGroupName() {
         return config.getString("group.guest");
     }
 
-    private static final File CONFIG_FILE = new File("plugins/basic-proxy/config.yml");
-    private static Configuration config;
+    public String getNetworkPath() {
+        return config.getString("network.path");
+    }
+
+    public String getVelocitySecret() {
+        return config.getString("network.velocity-secret");
+    }
+
 }

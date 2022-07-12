@@ -1,22 +1,23 @@
 package de.timesnake.basic.proxy.core.rule;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class RuleParagraph {
 
-    private final String name;
-    private final Collection<String> parts;
+    private final Map<String, String> nameByLang;
+    private final Map<String, Collection<String>> partsByLang;
 
-    public RuleParagraph(String name, Collection<String> parts) {
-        this.name = name;
-        this.parts = parts;
+    public RuleParagraph(Map<String, String> nameByLang, Map<String, Collection<String>> partsByLang) {
+        this.nameByLang = nameByLang;
+        this.partsByLang = partsByLang;
     }
 
-    public String getName() {
-        return name;
+    public String getName(String lang) {
+        return this.nameByLang.get(lang);
     }
 
-    public Collection<String> getParts() {
-        return parts;
+    public Collection<String> getParts(String lang) {
+        return this.partsByLang.get(lang);
     }
 }

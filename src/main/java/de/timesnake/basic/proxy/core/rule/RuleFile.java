@@ -13,27 +13,27 @@ public class RuleFile extends ExFile {
 
 
     public RuleFile() {
-        super("basic-proxy", "rules");
+        super("basic-proxy", "rules.toml");
     }
 
     public String getVersion() {
         return super.getString(VERSION);
     }
 
-    public Collection<Integer> getSections() {
-        return super.getPathIntegerList(SECTIONS);
+    public Collection<String> getSections() {
+        return super.getList(SECTIONS);
     }
 
-    public String getSectionTitle(Integer sectionNumber) {
-        return super.getString(SECTIONS + "." + sectionNumber + "." + TITLE);
+    public String getSectionTitle(String sectionName) {
+        return super.getString(SECTIONS + "." + sectionName + "." + TITLE);
     }
 
-    public Collection<String> getParagraphs(Integer sectionNumber) {
-        return super.getPathStringList(SECTIONS + "." + sectionNumber + "." + PARAGRAPHS);
+    public Collection<String> getParagraphs(String sectionName) {
+        return super.getList(SECTIONS + "." + sectionName + "." + PARAGRAPHS);
     }
 
-    public Collection<String> getParagraphLines(Integer sectionNumber, String paragraphName) {
-        return super.getStringList(SECTIONS + "." + sectionNumber + "." + PARAGRAPHS + "." + paragraphName);
+    public Collection<String> getParagraphLines(String sectionName, String paragraphName) {
+        return super.getList(SECTIONS + "." + sectionName + "." + PARAGRAPHS + "." + paragraphName);
     }
 
 

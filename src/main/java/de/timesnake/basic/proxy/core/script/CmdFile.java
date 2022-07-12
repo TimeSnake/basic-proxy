@@ -1,47 +1,19 @@
 package de.timesnake.basic.proxy.core.script;
 
-import de.timesnake.basic.proxy.util.NetworkManager;
+import de.timesnake.basic.proxy.core.main.BasicProxy;
+import de.timesnake.basic.proxy.util.Network;
+import de.timesnake.basic.proxy.util.file.ExFile;
 import de.timesnake.library.basic.util.chat.Plugin;
-import net.md_5.bungee.config.Configuration;
-import net.md_5.bungee.config.ConfigurationProvider;
-import net.md_5.bungee.config.YamlConfiguration;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class CmdFile {
+public class CmdFile extends ExFile {
 
-    private final File configFile = new File("plugins/basic-proxy/commands.yml");
-    private Configuration config;
     private List<String> startCommands;
 
-    private Integer delay;
-
-    public void onEnable() {
-
-        //ConfigFile
-        File dir = new File("plugins/basic-proxy");
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-
-
-        if (!configFile.exists()) {
-            try {
-                configFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return;
-            }
-
-            this.load();
-
-            config.set("start", List.of("help"));
-
-            this.save();
-        }
-
+    public CmdFile() {
+        super("basic-proxy", "commands.toml");
         this.loadStartCommands();
     }
 
@@ -55,41 +27,20 @@ public class CmdFile {
 
     public void executeStartCommands() {
         if (this.startCommands != null) {
-            this.delay = 3;
+            int delay = 3;
             for (String cmd : this.startCommands) {
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(delay * 1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    NetworkManager.getInstance().printText(Plugin.NETWORK, "Executing command: " + cmd, "Commands");
-                    NetworkManager.getInstance().runCommand(cmd);
-                }).start();
+                BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
+                    Network.printText(Plugin.NETWORK, "Executing command: " + cmd, "Commands");
+                    Network.runCommand(cmd);
+                }).delay(delay, TimeUnit.SECONDS).schedule();
                 delay += 3;
             }
         }
     }
 
-    public void load() {
-        try {
-            config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void save() {
-        try {
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, configFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private List<String> getCommandList() {
         this.load();
-        return config.getStringList("start");
+        return super.getList("start");
     }
 
 }

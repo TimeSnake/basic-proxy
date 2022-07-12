@@ -1,11 +1,13 @@
 package de.timesnake.basic.proxy.util.chat;
 
+import com.velocitypowered.api.proxy.Player;
+import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.User;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.kyori.adventure.text.format.NamedTextColor;
+
+import java.util.Optional;
 
 public class Argument extends de.timesnake.library.extension.util.cmd.Argument {
 
@@ -14,9 +16,9 @@ public class Argument extends de.timesnake.library.extension.util.cmd.Argument {
     }
 
     public boolean isPlayerName(boolean sendMessage) {
-        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(this.string);
-        if (player != null) {
-            User user = Network.getUser(player);
+        Optional<Player> player = BasicProxy.getServer().getPlayer(this.string);
+        if (player.isPresent()) {
+            User user = Network.getUser(player.get());
             return !user.isAirMode();
         }
         if (sendMessage) {
@@ -30,9 +32,8 @@ public class Argument extends de.timesnake.library.extension.util.cmd.Argument {
     }
 
     public boolean isChatColor(boolean sendMessage) {
-        try {
-            ChatColor.of(this.string.toUpperCase());
-        } catch (IllegalArgumentException e) {
+        NamedTextColor color = NamedTextColor.NAMES.value(this.string);
+        if (color == null) {
             if (sendMessage) {
                 this.sender.sendMessageNoChatColor(this.string);
             }
@@ -52,20 +53,16 @@ public class Argument extends de.timesnake.library.extension.util.cmd.Argument {
     }
 
 
-    public ProxiedPlayer toPlayer() {
-        return ProxyServer.getInstance().getPlayer(this.string);
-    }
-
-    public ChatColor toChatColor(boolean sendMessage) {
-        return ChatColor.of(this.string.toUpperCase());
+    public Player toPlayer() {
+        return BasicProxy.getServer().getPlayer(this.string).get();
     }
 
     public Server toServer() {
         return Network.getServer(this.string);
     }
 
-    public ChatColor toChatColor() {
-        return ChatColor.of(this.string);
+    public NamedTextColor toChatColor() {
+        return NamedTextColor.NAMES.value(this.string);
     }
 
 }

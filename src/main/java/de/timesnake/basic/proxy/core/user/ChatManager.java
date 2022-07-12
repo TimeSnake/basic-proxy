@@ -1,18 +1,17 @@
 package de.timesnake.basic.proxy.core.user;
 
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.player.PlayerChatEvent;
+import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.ChatEvent;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
 
-public class ChatManager implements Listener {
+public class ChatManager {
 
-    @EventHandler
-    public void onChat(ChatEvent e) {
+    @Subscribe
+    public void onChat(PlayerChatEvent e) {
         String msg = e.getMessage();
-        ProxiedPlayer p = (ProxiedPlayer) e.getSender();
+        Player p = e.getPlayer();
         User user = Network.getUser(p);
 
         user.setLastChatMessage(msg);

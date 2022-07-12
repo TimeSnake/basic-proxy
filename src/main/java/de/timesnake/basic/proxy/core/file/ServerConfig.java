@@ -1,25 +1,25 @@
 package de.timesnake.basic.proxy.core.file;
 
+import com.velocitypowered.api.proxy.server.RegisteredServer;
+import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.file.ExFile;
 import de.timesnake.database.util.object.Type;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.config.ServerInfo;
 
 public class ServerConfig extends ExFile {
 
     public ServerConfig() {
-        super("basic-proxy", "server_config");
+        super("basic-proxy", "server_config.toml");
     }
 
     public void loadServers() {
         this.load();
 
-        for (ServerInfo server : ProxyServer.getInstance().getServersCopy().values()) {
-            String serverName = server.getName().toLowerCase();
+        for (RegisteredServer server : BasicProxy.getServer().getAllServers()) {
+            String serverName = server.getServerInfo().getName();
             String path = ExFile.toPath("servers", serverName);
-            int port = super.getInt(ExFile.toPath(path, "port"));
+            int port = super.getLong(ExFile.toPath(path, "port")).intValue();
             String typeString = super.getString(ExFile.toPath(path, "type"));
             String task = super.getString(ExFile.toPath(path, "task"));
             String folder = super.getString(ExFile.toPath(path, "folder"));
@@ -56,10 +56,10 @@ public class ServerConfig extends ExFile {
     }
 
     public Integer getMaxPlayersLobby() {
-        return super.getInt("max_players.lobby");
+        return super.getLong("max_players.lobby").intValue();
     }
 
     public Integer getMaxPlayersBuild() {
-        return super.getInt("max_players.build");
+        return super.getLong("max_players.build").intValue();
     }
 }

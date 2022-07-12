@@ -1,7 +1,8 @@
 package de.timesnake.basic.proxy.core.punishment;
 
+import com.velocitypowered.api.proxy.Player;
+import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
@@ -10,10 +11,9 @@ import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.kyori.adventure.text.Component;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -86,9 +86,9 @@ public class Punishments {
         user.setPunishment(Type.Punishment.BAN, new Date(), sender.getName(), reason, "All");
         String name = user.getName();
 
-        for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
-            if (p.getName().equalsIgnoreCase(name)) {
-                p.disconnect(new TextComponent(ChatColor.WARNING + "You were banned. \nReason: " +
+        for (Player p : BasicProxy.getServer().getAllPlayers()) {
+            if (p.getUsername().equalsIgnoreCase(name)) {
+                p.disconnect(Component.text(ChatColor.WARNING + "You were banned. \nReason: " +
                         ChatColor.VALUE + reason));
                 break;
             }
@@ -135,10 +135,10 @@ public class Punishments {
             user.setPunishment(Type.Punishment.TEMP_BAN, datePunish, sender.getName(), reason, "ALL");
             String name = user.getName();
 
-            for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
-                if (p.getName().equalsIgnoreCase(name)) {
+            for (Player p : BasicProxy.getServer().getAllPlayers()) {
+                if (p.getUsername().equalsIgnoreCase(name)) {
                     assert datePunish != null;
-                    p.disconnect(new TextComponent(ChatColor.WARNING + "You were banned \nReason: " +
+                    p.disconnect(Component.text(ChatColor.WARNING + "You were banned \nReason: " +
                             ChatColor.VALUE + reason + ChatColor.WARNING + "\nuntil " + ChatColor.VALUE + datePunish));
                     break;
                 }
@@ -161,7 +161,7 @@ public class Punishments {
 
     public static void kickPlayer(Sender sender, User user, String reason) {
         if (sender.hasGroupRankLower(user.getUniqueId())) {
-            user.getPlayer().disconnect(new TextComponent(ChatColor.WARNING + "You were kicked with reason: " +
+            user.getPlayer().disconnect(Component.text(ChatColor.WARNING + "You were kicked with reason: " +
                     ChatColor.VALUE + reason));
             sender.sendPluginMessage(ChatColor.PERSONAL + "You kicked " + ChatColor.VALUE + user.getChatName() +
                     ChatColor.PERSONAL + " with reason: " + ChatColor.VALUE + reason);

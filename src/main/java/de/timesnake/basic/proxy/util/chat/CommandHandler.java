@@ -1,6 +1,9 @@
 package de.timesnake.basic.proxy.util.chat;
 
+import com.velocitypowered.api.command.CommandMeta;
+import com.velocitypowered.api.command.SimpleCommand;
 import de.timesnake.basic.proxy.core.group.Group;
+import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.User;
@@ -9,8 +12,6 @@ import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
-import net.md_5.bungee.api.plugin.PluginManager;
-import net.md_5.bungee.api.plugin.TabExecutor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,17 +22,27 @@ public class CommandHandler {
 
     private final HashMap<String, ExCommand<Sender, Argument>> commands = new HashMap<>();
 
-    public void addCommand(net.md_5.bungee.api.plugin.Plugin mainClass, PluginManager pm, String cmd,
-                           CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
+    public void addCommand(Object mainClass, String cmd, CommandListener<Sender, Argument> listener,
+                           Plugin basicPlugin) {
         this.commands.put(cmd, new ExCommand<>(cmd, listener, basicPlugin));
-        pm.registerCommand(mainClass, new Command(cmd));
+        Command command = new Command();
+        CommandMeta commandMeta = BasicProxy.getCommandManager().metaBuilder(cmd).plugin(mainClass).build();
+        BasicProxy.getCommandManager().register(commandMeta, command);
     }
 
-    public void addCommand(net.md_5.bungee.api.plugin.Plugin mainClass, PluginManager pm, String cmd,
-                           List<String> aliases, CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
-        this.commands.put(cmd, new ExCommand<>(cmd, listener, basicPlugin));
-        String[] aliasArray = new String[aliases.size()];
-        pm.registerCommand(mainClass, new Command(cmd, aliases.toArray(aliasArray)));
+    public void addCommand(Object mainClass, String cmd, List<String> aliases,
+                           CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
+        ExCommand<Sender, Argument> exCommand = new ExCommand<>(cmd, listener, basicPlugin);
+        this.commands.put(cmd, exCommand);
+
+        for (String alias : aliases) {
+            this.commands.put(alias, exCommand);
+        }
+
+        Command command = new Command();
+        CommandMeta commandMeta =
+                BasicProxy.getCommandManager().metaBuilder(cmd).aliases(aliases.toArray(new String[0])).plugin(mainClass).build();
+        BasicProxy.getCommandManager().register(commandMeta, command);
     }
 
     public List<String> getPlayerNames() {
@@ -65,44 +76,39 @@ public class CommandHandler {
         return new ArrayList<>(Database.getGames().getGamesName());
     }
 
-    private class Command extends net.md_5.bungee.api.plugin.Command implements TabExecutor {
+    private class Command implements SimpleCommand {
 
-        public Command(String name) {
-            super(name);
-        }
+        public Command() {
 
-        public Command(String name, String[] aliases) {
-            super(name, null, aliases);
         }
 
         @Override
-        public void execute(net.md_5.bungee.api.CommandSender cmdSender, String[] args) {
-            if (commands.containsKey(super.getName())) {
-                ExCommand<Sender, Argument> basicCmd = commands.get(super.getName());
-                Sender sender = new Sender(new CommandSender(cmdSender), basicCmd.getPlugin());
+        public List<String> suggest(final Invocation invocation) {
+            if (commands.containsKey(invocation.alias())) {
+                ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
+                Sender sender = new Sender(new CommandSender(invocation.source()), basicCmd.getPlugin());
                 LinkedList<Argument> extendedArgs = new LinkedList<>();
-                for (String arg : args) {
-                    extendedArgs.addLast(new Argument(sender, arg));
-                }
-                basicCmd.getListener().onCommand(sender, basicCmd, new Arguments<>(sender, extendedArgs));
-            }
-        }
-
-        @Override
-        public Iterable<String> onTabComplete(net.md_5.bungee.api.CommandSender cmdSender, String[] args) {
-            if (commands.containsKey(super.getName())) {
-                ExCommand<Sender, Argument> basicCmd = commands.get(super.getName());
-                Sender sender = new Sender(new CommandSender(cmdSender), basicCmd.getPlugin());
-                LinkedList<Argument> extendedArgs = new LinkedList<>();
-                for (String arg : args) {
+                for (String arg : invocation.arguments()) {
                     extendedArgs.add(new Argument(sender, arg));
                 }
                 List<String> tab = basicCmd.getListener().getTabCompletion(basicCmd, new Arguments<>(sender,
                         extendedArgs));
                 return tab != null ? tab : List.of();
             }
-            return null;
+            return List.of();
         }
 
+        @Override
+        public void execute(Invocation invocation) {
+            if (commands.containsKey(invocation.alias())) {
+                ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
+                Sender sender = new Sender(new CommandSender(invocation.source()), basicCmd.getPlugin());
+                LinkedList<Argument> extendedArgs = new LinkedList<>();
+                for (String arg : invocation.arguments()) {
+                    extendedArgs.addLast(new Argument(sender, arg));
+                }
+                basicCmd.getListener().onCommand(sender, basicCmd, new Arguments<>(sender, extendedArgs));
+            }
+        }
     }
 }

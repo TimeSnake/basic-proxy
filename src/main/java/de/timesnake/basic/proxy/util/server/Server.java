@@ -1,5 +1,6 @@
 package de.timesnake.basic.proxy.util.server;
 
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Plugin;
@@ -7,8 +8,6 @@ import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Status;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.config.ServerInfo;
 
 import java.util.concurrent.TimeUnit;
 
@@ -72,12 +71,12 @@ public abstract class Server extends BukkitConsole {
 
 
         if (this.status == Status.Server.STARTING) {
-            ProxyServer.getInstance().getScheduler().schedule(BasicProxy.getPlugin(), () -> {
+            BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
                 if (status == Status.Server.STARTING) {
                     Network.printWarning(Plugin.NETWORK, "Failed to start server " + this.getName());
                     this.setStatus(Status.Server.OFFLINE, true);
                 }
-            }, 2, TimeUnit.MINUTES);
+            }).delay(2, TimeUnit.MINUTES).schedule();
         }
 
     }
@@ -99,8 +98,8 @@ public abstract class Server extends BukkitConsole {
         return this.type;
     }
 
-    public ServerInfo getBungeeInfo() {
-        return BasicProxy.getPlugin().getProxy().getServerInfo(this.name);
+    public RegisteredServer getBungeeInfo() {
+        return BasicProxy.getServer().getServer(this.name).get();
     }
 
 }

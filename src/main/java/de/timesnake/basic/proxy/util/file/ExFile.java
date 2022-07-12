@@ -1,8 +1,7 @@
 package de.timesnake.basic.proxy.util.file;
 
-import net.md_5.bungee.config.Configuration;
-import net.md_5.bungee.config.ConfigurationProvider;
-import net.md_5.bungee.config.YamlConfiguration;
+import com.moandjiezana.toml.Toml;
+import com.moandjiezana.toml.TomlWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +28,11 @@ public class ExFile {
     }
 
     protected final File configFile;
-    protected Configuration config;
+    protected Toml config;
+    protected TomlWriter writer;
 
     public ExFile(String folder, String name) {
-        this.configFile = new File("plugins/" + folder + "/" + name + ".yml");
+        this.configFile = new File("plugins/" + folder + "/" + name);
 
         //directory creation
         File dir = new File("plugins/" + folder);
@@ -47,137 +47,59 @@ public class ExFile {
                 e.printStackTrace();
             }
         }
+        this.config = new Toml();
 
         this.load();
     }
 
     public void load() {
-        try {
-            config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        config.read(configFile);
 
     }
 
     public void save() {
-        try {
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, configFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writer.write(configFile);
     }
 
+    public String getString(String key) {return config.getString(key);}
 
-    public void set(String path, Object value) {
-        if (value != null) {
-            if (value instanceof UUID) {
-                this.config.set(path, value.toString());
-                return;
-            }
-        }
-        this.load();
-        this.config.set(path, value);
-        this.save();
-    }
+    public String getString(String key, String defaultValue) {return config.getString(key, defaultValue);}
 
-    public boolean contains(String path) {
-        return this.config.contains(path);
-    }
+    public Long getLong(String key) {return config.getLong(key);}
 
-    public String getString(String path) {
-        this.load();
-        return this.config.getString(path);
-    }
+    public Long getLong(String key, Long defaultValue) {return config.getLong(key, defaultValue);}
 
-    public Integer getInt(String path) {
-        this.load();
-        return this.config.getInt(path);
-    }
+    public <T> List<T> getList(String key) {return config.getList(key);}
 
-    public boolean getBoolean(String path) {
-        this.load();
-        return this.config.getBoolean(path);
-    }
+    public <T> List<T> getList(String key, List<T> defaultValue) {return config.getList(key, defaultValue);}
 
-    public double getDouble(String path) {
-        this.load();
-        return this.config.getDouble(path);
-    }
+    public Boolean getBoolean(String key) {return config.getBoolean(key);}
 
-    public long getLong(String path) {
-        this.load();
-        return this.config.getLong(path);
-    }
+    public Boolean getBoolean(String key, Boolean defaultValue) {return config.getBoolean(key, defaultValue);}
 
+    public Date getDate(String key) {return config.getDate(key);}
 
-    public boolean remove(String path) {
-        this.load();
-        if (this.contains(path)) {
-            this.config.set(path, "");
-            return true;
-        }
-        return false;
-    }
+    public Date getDate(String key, Date defaultValue) {return config.getDate(key, defaultValue);}
 
-    public List<Integer> getIntegerList(String path) {
-        this.load();
-        return this.config.getIntList(path);
-    }
+    public Double getDouble(String key) {return config.getDouble(key);}
 
-    public List<String> getStringList(String path) {
-        this.load();
-        return this.config.getStringList(path);
-    }
+    public Double getDouble(String key, Double defaultValue) {return config.getDouble(key, defaultValue);}
 
-    public List<UUID> getUUIDList(String path) {
-        this.load();
-        ArrayList<UUID> uuids = new ArrayList<>();
-        for (String s : this.getStringList(path)) {
-            try {
-                uuids.add(UUID.fromString(s));
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
-        return uuids;
-    }
+    public Toml getTable(String key) {return config.getTable(key);}
 
-    public UUID getUUID(String path) {
-        this.load();
-        try {
-            return UUID.fromString(this.getString(path));
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-    }
+    public List<Toml> getTables(String key) {return config.getTables(key);}
 
-    public Configuration getConfigSection(String path) {
-        return this.config.getSection(path);
-    }
+    public boolean contains(String key) {return config.contains(key);}
 
-    public Collection<String> getPathStringList(String path) {
-        this.load();
-        if (this.config.contains(path)) {
-            return this.getConfigSection(path).getKeys();
-        }
-        return null;
-    }
+    public boolean containsPrimitive(String key) {return config.containsPrimitive(key);}
 
-    public Collection<Integer> getPathIntegerList(String path) {
-        this.load();
-        Collection<Integer> ids = new HashSet<>();
-        if (this.config.contains(path)) {
-            Collection<String> idStrings = this.getPathStringList(path);
-            for (String idString : idStrings) {
-                if (idString != null) {
-                    try {
-                        ids.add(Integer.valueOf(idString));
-                    } catch (NumberFormatException ignored) {
+    public boolean containsTable(String key) {return config.containsTable(key);}
 
-                    }
-                }
-            }
-        }
-        return ids;
-    }
+    public boolean containsTableArray(String key) {return config.containsTableArray(key);}
+
+    public boolean isEmpty() {return config.isEmpty();}
+
+    public Map<String, Object> toMap() {return config.toMap();}
+
+    public Set<Map.Entry<String, Object>> entrySet() {return config.entrySet();}
 }

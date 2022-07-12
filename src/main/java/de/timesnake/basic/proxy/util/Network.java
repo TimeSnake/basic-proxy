@@ -1,5 +1,6 @@
 package de.timesnake.basic.proxy.util;
 
+import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.core.file.ServerConfig;
 import de.timesnake.basic.proxy.core.group.Group;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
@@ -7,22 +8,24 @@ import de.timesnake.basic.proxy.core.rule.RuleManager;
 import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
 import de.timesnake.basic.proxy.util.chat.Chat;
 import de.timesnake.basic.proxy.util.chat.CommandHandler;
-import de.timesnake.basic.proxy.util.server.Server;
+import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.proxy.channel.Channel;
 import de.timesnake.database.util.server.DbServer;
+import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.basic.util.server.Task;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Listener;
+import de.timesnake.library.network.NetworkServer;
+import de.timesnake.library.network.ServerCreationResult;
 
+import java.io.File;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
 
 public interface Network {
+
+    int PORT_BASE = 25100;
 
     static void broadcastMessage(String msg) {
         NetworkManager.getInstance().broadcastMessage(msg);
@@ -44,7 +47,7 @@ public interface Network {
         return NetworkManager.getInstance().getUser(uuid);
     }
 
-    static User getUser(ProxiedPlayer p) {
+    static User getUser(Player p) {
         return NetworkManager.getInstance().getUser(p);
     }
 
@@ -92,28 +95,28 @@ public interface Network {
         NetworkManager.getInstance().getServer(port);
     }
 
-    static void addLobby(int port, String name, String folderPath) {
-        NetworkManager.getInstance().addLobby(port, name, folderPath);
+    static Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server) {
+        return NetworkManager.getInstance().newServer(server);
     }
 
-    static void addGame(int port, String name, String task, String folderPath) {
-        NetworkManager.getInstance().addGame(port, name, task, folderPath);
+    static LobbyServer addLobby(int port, String name, String folderPath) {
+        return NetworkManager.getInstance().addLobby(port, name, folderPath);
     }
 
-    static void addLounge(int port, String name, String folderPath) {
-        NetworkManager.getInstance().addLounge(port, name, folderPath);
+    static GameServer addGame(int port, String name, String task, String folderPath) {
+        return NetworkManager.getInstance().addGame(port, name, task, folderPath);
     }
 
-    static void addTempGame(int port, String name, String task, String folderPath) {
-        NetworkManager.getInstance().addTempGame(port, name, task, folderPath);
+    static LoungeServer addLounge(int port, String name, String folderPath) {
+        return NetworkManager.getInstance().addLounge(port, name, folderPath);
     }
 
-    static void addBuild(int port, String name, String task, String folderPath) {
-        NetworkManager.getInstance().addBuild(port, name, task, folderPath);
+    static TempGameServer addTempGame(int port, String name, String task, String folderPath) {
+        return NetworkManager.getInstance().addTempGame(port, name, task, folderPath);
     }
 
-    static void sendUserToServer(User user, String server, String message) {
-        NetworkManager.getInstance().sendUserToServer(user, server, message);
+    static BuildServer addBuild(int port, String name, String task, String folderPath) {
+        return NetworkManager.getInstance().addBuild(port, name, task, folderPath);
     }
 
     static void sendUserToServer(User user, String server) {
@@ -124,13 +127,15 @@ public interface Network {
         NetworkManager.getInstance().sendUserToServer(user, port);
     }
 
-    static void removeUser(ProxiedPlayer p) {
+    static void removeUser(Player p) {
         User user = Network.getUser(p);
-        user.getGroup().removeUser(user);
+        if (user != null) {
+            user.getGroup().removeUser(user);
+        }
         NetworkManager.getInstance().removeUser(p);
     }
 
-    static User addUser(ProxiedPlayer p, PreUser user) {
+    static User addUser(Player p, PreUser user) {
         return NetworkManager.getInstance().addUser(p, user);
     }
 
@@ -190,7 +195,7 @@ public interface Network {
         NetworkManager.getInstance().runCommand(command);
     }
 
-    static void registerListener(Listener listener) {
+    static void registerListener(Object listener) {
         NetworkManager.getInstance().registerListener(listener);
     }
 
@@ -230,9 +235,6 @@ public interface Network {
         NetworkManager.getInstance().printWarning(plugin, warning, subPlugins);
     }
 
-    static void printError(Plugin plugin, String error, String... subPlugins) {
-        NetworkManager.getInstance().printError(plugin, error, subPlugins);
-    }
 
     static BukkitCmdHandler getBukkitCmdHandler() {
         return NetworkManager.getInstance().getBukkitCmdHandler();
@@ -252,5 +254,17 @@ public interface Network {
 
     static int getOnlineLobbys() {
         return NetworkManager.getInstance().getOnlineLobbys();
+    }
+
+    static int nextEmptyPort() {
+        return NetworkManager.getInstance().nextEmptyPort();
+    }
+
+    static String getVelocitySecret() {
+        return NetworkManager.getInstance().getVelocitySecret();
+    }
+
+    static Set<File> getTmpServerDirs() {
+        return NetworkManager.getInstance().getTmpServerDirs();
     }
 }

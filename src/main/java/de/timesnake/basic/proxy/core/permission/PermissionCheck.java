@@ -1,63 +1,66 @@
 package de.timesnake.basic.proxy.core.permission;
 
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.permission.PermissionsSetupEvent;
+import com.velocitypowered.api.permission.PermissionFunction;
+import com.velocitypowered.api.permission.Tristate;
+import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.util.Network;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.PermissionCheckEvent;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class PermissionCheck implements Listener {
-    public PermissionCheck() {
+public class PermissionCheck {
+
+    @Subscribe
+    public void onPermissionCheck(PermissionsSetupEvent e) {
+        if (e.getSubject() instanceof Player) {
+            e.setProvider(subject -> new PlayerPermissionChecker(((Player) e.getSubject())));
+        }
     }
 
-    @EventHandler
-    public void onPermissionCheck(PermissionCheckEvent e) {
-        if (e.getSender() instanceof ProxiedPlayer p) {
-            String perm = e.getPermission();
-            if (Network.getUser(p) != null) {
+    public static class PlayerPermissionChecker implements PermissionFunction {
 
-                if (perm == null) {
-                    e.setHasPermission(true);
-                    return;
+        private final Player player;
+
+        public PlayerPermissionChecker(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public Tristate getPermissionValue(String permission) {
+            if (permission == null) {
+                return Tristate.TRUE;
+            }
+
+            Set<Permission> perms = new HashSet<>(Network.getUser(player).getPermissions());
+
+            if (perms.isEmpty()) {
+                return Tristate.FALSE;
+            }
+
+            for (Permission userPerm : perms) {
+
+                if (userPerm.getPermission().equals("*")) {
+                    return Tristate.TRUE;
                 }
 
-                Set<Permission> perms = new HashSet<>(Network.getUser(p).getPermissions());
-
-                if (perms.isEmpty()) {
-                    e.setHasPermission(false);
-                    return;
+                if (userPerm.getPermission().equals(permission)) {
+                    return Tristate.TRUE;
                 }
 
-                for (Permission userPerm : perms) {
+                String[] needPerm = permission.split("\\.");
+                StringBuilder permSum = new StringBuilder();
 
-                    if (userPerm.getPermission().equals("*")) {
-                        e.setHasPermission(true);
-                        return;
-                    }
-
-                    if (userPerm.getPermission().equals(perm)) {
-                        e.setHasPermission(true);
-                        return;
-                    }
-
-                    String[] needPerm = perm.split("\\.");
-                    StringBuilder permSum = new StringBuilder();
-
-                    for (String permPart : needPerm) {
-                        permSum.append(permPart).append(".");
-                        if (userPerm.getPermission().equals(permSum + "*")) {
-                            e.setHasPermission(true);
-                            return;
-                        }
+                for (String permPart : needPerm) {
+                    permSum.append(permPart).append(".");
+                    if (userPerm.getPermission().equals(permSum + "*")) {
+                        return Tristate.TRUE;
                     }
                 }
             }
 
-            e.setHasPermission(false);
+            return Tristate.FALSE;
         }
-
     }
 }

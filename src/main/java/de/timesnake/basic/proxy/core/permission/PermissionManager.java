@@ -1,7 +1,6 @@
 package de.timesnake.basic.proxy.core.permission;
 
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.channel.util.message.ChannelGroupMessage;
@@ -11,7 +10,9 @@ import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -178,7 +179,7 @@ public class PermissionManager {
     }
 
     public void createGroup(Sender sender, String groupName, int rank, String prefix,
-                            net.md_5.bungee.api.ChatColor chatColor) {
+                            NamedTextColor chatColor) {
         if (!sender.hasPermission("permission.group.create", 26)) {
             return;
         }
@@ -198,7 +199,7 @@ public class PermissionManager {
                     Chat.getMessageCode("H", 110, Plugin.PERMISSION));
         }
 
-        Database.getGroups().addPermGroup(groupName.toLowerCase(), rank, prefix, chatColor.getName());
+        Database.getGroups().addPermGroup(groupName.toLowerCase(), rank, prefix, chatColor.toString());
 
         sender.sendPluginMessage(ChatColor.PERSONAL + "Group " + ChatColor.VALUE + groupName.toLowerCase() +
                 ChatColor.PERSONAL + " created");

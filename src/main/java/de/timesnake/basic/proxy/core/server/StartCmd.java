@@ -2,7 +2,6 @@ package de.timesnake.basic.proxy.core.server;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
-import de.timesnake.basic.proxy.util.chat.ChatColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.*;
@@ -11,14 +10,19 @@ import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.basic.util.Tuple;
+import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import de.timesnake.library.network.NetworkServer;
+import de.timesnake.library.network.ServerCreationResult;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class StartCmd implements CommandListener<Sender, Argument> {
 
@@ -255,72 +259,82 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
 
         // search temp game and lounge server
-        LoungeServer loungeServer = null;
-        TempGameServer gameServer = null;
 
-        for (Server s : Network.getServers()) {
-            Status.Server status = s.getStatus();
-            if (s.getType().equals(Type.Server.LOUNGE)) {
-                if (status == null || status.equals(Status.Server.OFFLINE)) {
-                    loungeServer = ((LoungeServer) s);
-                }
-            } else if (s.getType().equals(Type.Server.TEMP_GAME)) {
-                if ((status == null || status.equals(Status.Server.OFFLINE)) && ((TempGameServer) s).getTask() != null
-                        && (((TempGameServer) s).getTask().equalsIgnoreCase(gameName))) {
-                    if (((TempGameServer) s).getTwinServer() == null || ((TempGameServer) s).getTwinServer().exists()) {
-                        gameServer = ((TempGameServer) s);
-                    }
-                }
+        sender.sendPluginMessage(ChatColor.PERSONAL + "Creating server...");
+
+        Integer finalMaxServerPlayers = maxServerPlayers;
+        Integer finalTeamAmount = teamAmount;
+        Integer finalPlayersPerTeam = playersPerTeam;
+
+        Network.runTaskAsync(() -> {
+            int loungePort = Network.nextEmptyPort();
+            NetworkServer loungeNetworkServer =
+                    new NetworkServer(Type.Server.LOUNGE.getDatabaseValue() + (loungePort % 1000),
+                            loungePort, Type.Server.LOUNGE, Network.getVelocitySecret());
+
+            Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.newServer(loungeNetworkServer);
+            if (!loungeResult.getA().isSuccessful()) {
+                sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while creation a" +
+                        " lounge server! Please contact an administrator (" +
+                        ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")");
+                return;
             }
-        }
 
-        if (gameServer == null) {
-            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All game servers are in " +
-                    "use!");
-            return;
-        }
+            int tempGamePort = Network.nextEmptyPort();
 
-        if (loungeServer == null) {
-            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "All lounge servers are in " +
-                    "use!");
-            return;
-        }
+            NetworkServer gameNetworkServer = new NetworkServer(gameName + (tempGamePort % 1000), tempGamePort,
+                    Type.Server.TEMP_GAME, Network.getVelocitySecret()).setTask(gameName);
 
-        // update server database
+            if (game.getPlayerTrackingRange() != null) {
+                gameNetworkServer.setPlayerTrackingRange(game.getPlayerTrackingRange());
+            }
 
-        loungeServer.setTaskSynchronized(gameName);
-        loungeServer.setMaxPlayers(maxServerPlayers);
+            Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.newServer(gameNetworkServer);
+            if (!tempServerResult.getA().isSuccessful()) {
+                sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while creation a" +
+                        " " + gameName + " server! Please contact an administrator (" +
+                        ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")");
+                return;
+            }
 
-        gameServer.setTaskSynchronized(gameName);
-        gameServer.setMapsEnabled(mapsEnabled);
-        gameServer.setKitsEnabled(kitsEnabled);
-        gameServer.setMaxPlayers(maxServerPlayers);
-        gameServer.setTeamAmount(teamAmount);
-        gameServer.setMapsEnabled(mapsEnabled);
-        gameServer.setTeamMerging(teamMerging);
-        gameServer.setMaxPlayersPerTeam(playersPerTeam);
-        gameServer.setPvP(oldPvP);
-        gameServer.setTwinServer((DbLoungeServer) loungeServer.getDatabase());
+            LoungeServer loungeServer = (LoungeServer) loungeResult.getB().get();
+            TempGameServer tempGameServer = ((TempGameServer) tempServerResult.getB().get());
 
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Started game " + ChatColor.VALUE + gameName);
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Game server: " + ChatColor.VALUE + gameServer.getName());
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Lounge server: " + ChatColor.VALUE + loungeServer.getName());
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Max players: " + ChatColor.VALUE + maxServerPlayers);
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Maps: " + ChatColor.VALUE + mapsEnabled);
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Kits: " + ChatColor.VALUE + kitsEnabled);
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Team amount: " + ChatColor.VALUE + teamAmount);
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Team merging: " + ChatColor.VALUE + teamMerging);
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Max players per team: " + ChatColor.VALUE + playersPerTeam);
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Old PvP: " + ChatColor.VALUE + oldPvP);
+            loungeServer.setTaskSynchronized(gameName);
+            loungeServer.setMaxPlayers(finalMaxServerPlayers);
 
-        Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);
+            tempGameServer.setTaskSynchronized(gameName);
+            tempGameServer.setMapsEnabled(mapsEnabled);
+            tempGameServer.setKitsEnabled(kitsEnabled);
+            tempGameServer.setMaxPlayers(finalMaxServerPlayers);
+            tempGameServer.setTeamAmount(finalTeamAmount);
+            tempGameServer.setMapsEnabled(mapsEnabled);
+            tempGameServer.setTeamMerging(teamMerging);
+            tempGameServer.setMaxPlayersPerTeam(finalPlayersPerTeam);
+            tempGameServer.setPvP(oldPvP);
+            tempGameServer.setTwinServer((DbLoungeServer) loungeServer.getDatabase());
+
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Started game " + ChatColor.VALUE + gameName);
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Game server: " + ChatColor.VALUE + tempGameServer.getName());
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Lounge server: " + ChatColor.VALUE + loungeServer.getName());
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Max players: " + ChatColor.VALUE + finalMaxServerPlayers);
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Maps: " + ChatColor.VALUE + mapsEnabled);
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Kits: " + ChatColor.VALUE + kitsEnabled);
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Team amount: " + ChatColor.VALUE + finalTeamAmount);
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Team merging: " + ChatColor.VALUE + teamMerging);
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Max players per team: " + ChatColor.VALUE + finalPlayersPerTeam);
+            sender.sendPluginMessage(ChatColor.PERSONAL + "Old PvP: " + ChatColor.VALUE + oldPvP);
+
+            Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);
+
+        });
     }
 
 
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         int length = args.getLength();
-        if (length == 1) {
+        if (length == 1 || length == 0) {
             return List.of("game", "server");
         }
 

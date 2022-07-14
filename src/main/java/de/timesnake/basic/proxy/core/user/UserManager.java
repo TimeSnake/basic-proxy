@@ -206,7 +206,7 @@ public class UserManager {
         }
 
         for (User userOnline : Network.getNetworkMessageListeners()) {
-            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + user.getChatName() +
+            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + user.getChatNameComponent() +
                     ChatColor.PUBLIC + " connected to " + ChatColor.VALUE + serverInfo.getName());
         }
 

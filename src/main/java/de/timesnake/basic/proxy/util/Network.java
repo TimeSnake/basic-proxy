@@ -5,7 +5,6 @@ import de.timesnake.basic.proxy.core.file.ServerConfig;
 import de.timesnake.basic.proxy.core.group.Group;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
 import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
-import de.timesnake.basic.proxy.util.chat.Chat;
 import de.timesnake.basic.proxy.util.chat.CommandHandler;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.PreUser;
@@ -17,6 +16,7 @@ import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.ServerCreationResult;
+import net.kyori.adventure.text.Component;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -25,7 +25,8 @@ import java.util.*;
 public interface Network {
 
     int PORT_BASE = 25100;
-    String TMP_SERVER_SUFFIX = "_TMP";
+    String TMP_SERVER_SUFFIX = "_tmp";
+    String TMUX_SESSION_NAME = "mcts";
 
     static void broadcastMessage(String msg) {
         NetworkManager.getInstance().broadcastMessage(msg);
@@ -199,10 +200,6 @@ public interface Network {
         NetworkManager.getInstance().registerListener(listener);
     }
 
-    static Chat getChat() {
-        return NetworkManager.getInstance().getChat();
-    }
-
     static Channel getChannel() {
         return NetworkManager.getInstance().getChannel();
     }
@@ -231,10 +228,17 @@ public interface Network {
         NetworkManager.getInstance().printText(plugin, text, subPlugins);
     }
 
+    static void printText(Plugin plugin, Component text, String... subPlugins) {
+        NetworkManager.getInstance().printText(plugin, text, subPlugins);
+    }
+
     static void printWarning(Plugin plugin, String warning, String... subPlugins) {
         NetworkManager.getInstance().printWarning(plugin, warning, subPlugins);
     }
 
+    static void printWarning(Plugin plugin, Component text, String... subPlugins) {
+        NetworkManager.getInstance().printText(plugin, text, subPlugins);
+    }
 
     static BukkitCmdHandler getBukkitCmdHandler() {
         return NetworkManager.getInstance().getBukkitCmdHandler();
@@ -270,5 +274,9 @@ public interface Network {
 
     static Path getNetworkPath() {
         return NetworkManager.getInstance().getNetworkPath();
+    }
+
+    static boolean isTmuxEnabled() {
+        return NetworkManager.getInstance().isTmuxEnabled();
     }
 }

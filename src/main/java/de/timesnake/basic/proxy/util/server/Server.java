@@ -16,16 +16,14 @@ public abstract class Server extends BukkitConsole {
 
     protected DbServer database;
     protected int port;
-    protected String name;
     protected Type.Server<?> type;
     protected Status.Server status;
     protected Integer maxPlayers;
 
     protected Server(DbServer database, Path folderPath) {
-        super(folderPath);
+        super(database.getName(), folderPath);
         this.database = database;
         this.port = database.getPort();
-        this.name = database.getName();
         this.type = Database.getServers().getServerType(this.port);
         this.status = database.getStatus();
         this.maxPlayers = database.getMaxPlayers();
@@ -37,10 +35,6 @@ public abstract class Server extends BukkitConsole {
 
     public Integer getPort() {
         return port;
-    }
-
-    public String getName() {
-        return name;
     }
 
     @Override

@@ -9,6 +9,7 @@ import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Status;
 
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 public abstract class Server extends BukkitConsole {
@@ -20,7 +21,7 @@ public abstract class Server extends BukkitConsole {
     protected Status.Server status;
     protected Integer maxPlayers;
 
-    protected Server(DbServer database, String folderPath) {
+    protected Server(DbServer database, Path folderPath) {
         super(folderPath);
         this.database = database;
         this.port = database.getPort();

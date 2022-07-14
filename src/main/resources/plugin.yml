@@ -61,4 +61,7 @@ commands:
   pid:
 
   kickall:
+
+  dtmp:
+  delete_tmp:
      

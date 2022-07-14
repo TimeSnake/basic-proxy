@@ -31,8 +31,8 @@ import de.timesnake.channel.core.NetworkChannel;
 import de.timesnake.database.util.Database;
 import org.apache.commons.io.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -139,6 +139,9 @@ public class BasicProxy {
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "kickall", new KickAllCmd(),
                 de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "dtmp", List.of("delete_tmp"),
+                new DeleteTmpServerCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+
         EventManager em = server.getEventManager();
 
         em.register(this, new MotdManager());
@@ -152,13 +155,14 @@ public class BasicProxy {
 
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent e) {
-        for (File tmpServerDir : Network.getTmpServerDirs()) {
+        for (Path tmpServerPath : Network.getTmpServerDirs().values()) {
             try {
-                FileUtils.deleteDirectory(tmpServerDir);
+                FileUtils.deleteDirectory(tmpServerPath.toFile());
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
         }
+        getLogger().info("Deleted tmp servers");
         NetworkChannel.stop();
         Database.getInstance().closeWithBackups();
     }

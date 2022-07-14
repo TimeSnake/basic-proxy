@@ -5,12 +5,13 @@ import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 public abstract class BukkitConsole {
 
-    private final String folderPath;
+    private final Path folderPath;
 
-    public BukkitConsole(String folderPath) {
+    public BukkitConsole(Path folderPath) {
         this.folderPath = folderPath;
     }
 
@@ -34,7 +35,7 @@ public abstract class BukkitConsole {
         Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, cmd));
     }
 
-    public String getFolderPath() {
+    public Path getFolderPath() {
         return this.folderPath;
     }
 

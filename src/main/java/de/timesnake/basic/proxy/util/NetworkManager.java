@@ -9,7 +9,6 @@ import de.timesnake.basic.proxy.core.group.Group;
 import de.timesnake.basic.proxy.core.group.GroupNotInDatabaseException;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
-import de.timesnake.basic.proxy.core.rule.RuleManager;
 import de.timesnake.basic.proxy.core.script.AutoShutdown;
 import de.timesnake.basic.proxy.core.script.CmdFile;
 import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
@@ -38,9 +37,11 @@ import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.ServerCreationResult;
+import org.apache.commons.io.FileUtils;
 
-import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,7 +59,7 @@ public class NetworkManager implements ChannelListener, Network {
     private final ArrayList<User> privateMessageListeners = new ArrayList<>();
     private final ArrayList<User> supportMessageListeners = new ArrayList<>();
     private final HashMap<Integer, Server> servers = new HashMap<>();
-    private final Set<File> tmpServerDirs = new HashSet<>();
+    private final Map<String, Path> tmpDirsByServerName = new HashMap<>();
     private final CommandHandler commandHandler = new CommandHandler();
     private final PermissionManager permissionManager = new PermissionManager();
     private final BukkitCmdHandler bukkitCmdHandler = new BukkitCmdHandler();
@@ -71,12 +72,11 @@ public class NetworkManager implements ChannelListener, Network {
     private Integer maxPlayersLobby = 20;
     private Integer maxPlayersBuild = 20;
     private UserManager userManager;
-    private RuleManager ruleManager;
     private AutoShutdown autoShutdown;
     private SupportManager supportManager;
     private int onlineLobbys = 0;
     private Config config;
-    private File networkPath;
+    private Path networkPath;
     private String velocitySecret;
     private NetworkUtils networkUtils;
 
@@ -89,7 +89,7 @@ public class NetworkManager implements ChannelListener, Network {
         this.getChannel().addListener(this);
 
         this.config = new Config();
-        this.networkPath = new File(this.config.getNetworkPath());
+        this.networkPath = Path.of(this.config.getNetworkPath());
         this.velocitySecret = this.config.getVelocitySecret();
 
         String guestGroupName = config.getGuestGroupName();
@@ -97,7 +97,7 @@ public class NetworkManager implements ChannelListener, Network {
             try {
                 guestGroup = new Group(guestGroupName);
             } catch (GroupNotInDatabaseException e) {
-                System.out.println(e.getMessage());
+                BasicProxy.getLogger().warning(e.getMessage());
             }
         } else {
             this.printWarning(Plugin.PROXY, "Guest group is not loaded");
@@ -107,7 +107,7 @@ public class NetworkManager implements ChannelListener, Network {
             try {
                 groups.put(groupName, new Group(groupName));
             } catch (GroupNotInDatabaseException e) {
-                System.out.println(e.getMessage());
+                BasicProxy.getLogger().warning(e.getMessage());
             }
             this.printText(Plugin.PROXY, "Loaded group: " + groupName);
         }
@@ -117,8 +117,6 @@ public class NetworkManager implements ChannelListener, Network {
 
         maxPlayersLobby = serverConfig.getMaxPlayersLobby();
         maxPlayersBuild = serverConfig.getMaxPlayersBuild();
-
-        this.ruleManager = new RuleManager();
 
         this.channelPingPong.startPingPong();
         this.getChannel().addTimeOutListener(this.channelPingPong);
@@ -213,11 +211,9 @@ public class NetworkManager implements ChannelListener, Network {
         return null;
     }
 
-
     public Server getServer(DbServer server) {
         return servers.get(server.getPort());
     }
-
 
     public void updateServerTaskAll() {
         for (Server server : servers.values()) {
@@ -226,38 +222,59 @@ public class NetworkManager implements ChannelListener, Network {
 
     }
 
-
     public void updateServerTask(int port) {
         getServer(port).setStatus(Database.getServers().getServer(port).getStatus(), false);
     }
 
-    public Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server) {
-        ServerCreationResult result = this.networkUtils.createServer(server);
-        Optional<Server> serverObj = Optional.empty();
+    public Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds) {
+        ServerCreationResult result = this.networkUtils.createServer(server, copyWorlds);
+        Optional<Server> serverOpt = Optional.empty();
         if (result.isSuccessful()) {
-            File serverDir = ((ServerCreationResult.Successful) result).getServerDir();
+            Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
             if (Type.Server.LOBBY.equals(server.getType())) {
-                serverObj = Optional.of(this.addLobby(server.getPort(), server.getName(), serverDir.getAbsolutePath()));
+                serverOpt = Optional.of(this.addLobby(server.getPort(), server.getName(), serverPath));
             } else if (Type.Server.LOUNGE.equals(server.getType())) {
-                serverObj = Optional.of(this.addLounge(server.getPort(), server.getName(),
-                        serverDir.getAbsolutePath()));
+                serverOpt = Optional.of(this.addLounge(server.getPort(), server.getName(), serverPath));
             } else if (Type.Server.GAME.equals(server.getType())) {
-                serverObj = Optional.of(this.addGame(server.getPort(), server.getName(), server.getTask(),
-                        serverDir.getAbsolutePath()));
+                serverOpt = Optional.of(this.addGame(server.getPort(), server.getName(), server.getTask(), serverPath));
             } else if (Type.Server.BUILD.equals(server.getType())) {
-                serverObj = Optional.of(this.addBuild(server.getPort(), server.getName(), server.getTask(),
-                        serverDir.getAbsolutePath()));
+                serverOpt = Optional.of(this.addBuild(server.getPort(), server.getName(), server.getTask(),
+                        serverPath));
             } else if (Type.Server.TEMP_GAME.equals(server.getType())) {
-                serverObj = Optional.of(this.addTempGame(server.getPort(), server.getName(), server.getTask(),
-                        serverDir.getAbsolutePath()));
+                serverOpt = Optional.of(this.addTempGame(server.getPort(), server.getName(), server.getTask(),
+                        serverPath));
             }
 
             BasicProxy.getServer().registerServer(new ServerInfo(server.getName(),
                     new InetSocketAddress(server.getPort())));
 
-            this.tmpServerDirs.add(serverDir);
+            this.tmpDirsByServerName.put(server.getName(), serverPath);
         }
-        return new Tuple<>(result, serverObj);
+        return new Tuple<>(result, serverOpt);
+    }
+
+    public boolean deleteServer(String name) {
+        if (!this.tmpDirsByServerName.containsKey(name)) {
+            return false;
+        }
+
+        Server server = this.getServer(name);
+
+        if (!server.getStatus().equals(Status.Server.OFFLINE)) {
+            return false;
+        }
+
+        BasicProxy.getServer().unregisterServer(server.getBungeeInfo().getServerInfo());
+
+        try {
+            FileUtils.deleteDirectory(this.tmpDirsByServerName.get(name).toFile());
+        } catch (IOException ex) {
+            return false;
+        }
+
+        BasicProxy.getLogger().info("Deleted tmp server " + name);
+
+        return true;
     }
 
     public int nextEmptyPort() {
@@ -266,7 +283,7 @@ public class NetworkManager implements ChannelListener, Network {
         return port;
     }
 
-    public LobbyServer addLobby(int port, String name, String folderPath) {
+    public LobbyServer addLobby(int port, String name, Path folderPath) {
         Database.getServers().addLobby(port, name, Status.Server.OFFLINE, folderPath);
         LobbyServer server = new LobbyServer(Database.getServers().getServer(Type.Server.LOBBY, port), folderPath);
         servers.put(port, server);
@@ -274,7 +291,7 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
 
-    public GameServer addGame(int port, String name, String task, String folderPath) {
+    public GameServer addGame(int port, String name, String task, Path folderPath) {
         Database.getServers().addGame(port, name, task, Status.Server.OFFLINE, folderPath);
         GameServer server = new GameServer(Database.getServers().getServer(Type.Server.GAME, port), folderPath);
         servers.put(port, server);
@@ -282,7 +299,7 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
 
-    public LoungeServer addLounge(int port, String name, String folderPath) {
+    public LoungeServer addLounge(int port, String name, Path folderPath) {
         Database.getServers().addLounge(port, name, Status.Server.OFFLINE, folderPath);
         LoungeServer server = new LoungeServer(Database.getServers().getServer(Type.Server.LOUNGE, port), folderPath);
         servers.put(port, server);
@@ -290,7 +307,7 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
 
-    public TempGameServer addTempGame(int port, String name, String task, String folderPath) {
+    public TempGameServer addTempGame(int port, String name, String task, Path folderPath) {
         Database.getServers().addTempGame(port, name, task, Status.Server.OFFLINE, folderPath);
         TempGameServer server = new TempGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port),
                 folderPath);
@@ -299,7 +316,7 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
 
-    public BuildServer addBuild(int port, String name, String task, String folderPath) {
+    public BuildServer addBuild(int port, String name, String task, Path folderPath) {
         Database.getServers().addBuild(port, name, task, Status.Server.OFFLINE, folderPath);
         BuildServer server = new BuildServer(Database.getServers().getServer(Type.Server.BUILD, port), folderPath);
         servers.put(port, server);
@@ -517,10 +534,6 @@ public class NetworkManager implements ChannelListener, Network {
         return this.bukkitCmdHandler;
     }
 
-    public RuleManager getRuleManager() {
-        return ruleManager;
-    }
-
     public int getOnlineLobbys() {
         return onlineLobbys;
     }
@@ -529,7 +542,11 @@ public class NetworkManager implements ChannelListener, Network {
         return velocitySecret;
     }
 
-    public Set<File> getTmpServerDirs() {
-        return tmpServerDirs;
+    public Map<String, Path> getTmpDirsByServerName() {
+        return tmpDirsByServerName;
+    }
+
+    public Path getNetworkPath() {
+        return this.networkPath;
     }
 }

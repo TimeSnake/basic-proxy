@@ -5,6 +5,7 @@ import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.library.basic.util.chat.Plugin;
+import de.timesnake.library.extension.util.chat.Chat;
 import net.kyori.adventure.text.Component;
 
 public class Sender extends de.timesnake.library.extension.util.cmd.Sender {
@@ -32,5 +33,9 @@ public class Sender extends de.timesnake.library.extension.util.cmd.Sender {
 
     public void sendMessage(Component component) {
         ((CommandSender) this.cmdSender).sendMessage(component);
+    }
+
+    public void sendPluginMessage(Component component) {
+        ((CommandSender) this.cmdSender).sendMessage(Component.text(Chat.getSenderPlugin(this.plugin)).append(component));
     }
 }

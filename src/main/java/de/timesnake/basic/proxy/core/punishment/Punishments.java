@@ -163,7 +163,7 @@ public class Punishments {
         if (sender.hasGroupRankLower(user.getUniqueId())) {
             user.getPlayer().disconnect(Component.text(ChatColor.WARNING + "You were kicked with reason: " +
                     ChatColor.VALUE + reason));
-            sender.sendPluginMessage(ChatColor.PERSONAL + "You kicked " + ChatColor.VALUE + user.getChatName() +
+            sender.sendPluginMessage(ChatColor.PERSONAL + "You kicked " + ChatColor.VALUE + user.getChatNameComponent() +
                     ChatColor.PERSONAL + " with reason: " + ChatColor.VALUE + reason);
             broadcastMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() + ChatColor.WARNING +
                     " was kicked with reason: " + ChatColor.VALUE + reason);

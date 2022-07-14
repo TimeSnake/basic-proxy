@@ -7,7 +7,6 @@ public class Config extends ExFile {
     public Config() {
         super("basic-proxy", "config.toml");
         this.load();
-
     }
 
     public String getGuestGroupName() {
@@ -20,6 +19,10 @@ public class Config extends ExFile {
 
     public String getVelocitySecret() {
         return config.getString("network.velocity-secret");
+    }
+
+    public Boolean isTmuxEnabled() {
+        return config.getBoolean("network.tmux");
     }
 
 }

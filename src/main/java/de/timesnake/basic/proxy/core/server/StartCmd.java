@@ -7,6 +7,7 @@ import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
+import de.timesnake.database.util.game.DbTmpGame;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.library.basic.util.Status;
@@ -45,14 +46,14 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                         return;
                     }
                     Status.Server status = server.getStatus();
-                    if (!(status == null || status.equals(Status.Server.OFFLINE))) {
-                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
-                                ChatColor.WARNING + " is already online!");
-                        return;
-                    }
                     if (status != null && status.equals(Status.Server.STARTING)) {
                         sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
                                 ChatColor.WARNING + " is already starting!");
+                        return;
+                    }
+                    if (!(status == null || status.equals(Status.Server.OFFLINE))) {
+                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
+                                ChatColor.WARNING + " is already online!");
                         return;
                     }
                     maxPlayers = null;
@@ -60,7 +61,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                         maxPlayers = args.get(2).toInt();
                     } else if (server instanceof GameServer && !(server instanceof BuildServer)) {
                         String task = ((TaskServer) server).getTask();
-                        maxPlayers = Database.getGames().getGame(task).getMaxPlayers();
+                        maxPlayers = Database.getGames().getGame(task).getInfo().getMaxPlayers();
                     } else if (server.getType().equals(Type.Server.LOBBY)) {
                         maxPlayers = Network.getMaxPlayersLobby();
                     } else if (server.getType().equals(Type.Server.BUILD)) {
@@ -93,8 +94,8 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
-        if (game.isTemporary()) {
-            this.handleStartTempGame(sender, args, game);
+        if (game instanceof DbTmpGame) {
+            this.handleStartTempGame(sender, args, (DbTmpGame) game);
         } else {
             sender.sendPluginMessage(ChatColor.WARNING + "Please use the /start server command to start a non temp " + "game server");
             GameServer gameServer = null;
@@ -118,7 +119,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                     && args.get(2).isInt(true)) {
                 maxPlayers = args.get(2).toInt();
             } else if (Database.getGames().containsGame(gameType)) {
-                maxPlayers = Database.getGames().getGame(gameType).getMaxPlayers();
+                maxPlayers = Database.getGames().getGame(gameType).getInfo().getMaxPlayers();
             }
 
             if (maxPlayers != null) {
@@ -135,14 +136,14 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
     }
 
-    private void handleStartTempGame(Sender sender, Arguments<Argument> args, DbGame game) {
+    private void handleStartTempGame(Sender sender, Arguments<Argument> args, DbTmpGame game) {
 
         String gameName = game.getName();
         Type.Availability gameKitAvailability = game.getKitAvailability();
         Type.Availability gameMapAvailability = game.getMapAvailability();
-        Collection<Integer> gameTeamAmounts = game.getTeamAmounts();
+        Collection<Integer> gameTeamAmounts = game.getTeamSizes();
         Integer gameMaxPlayers = game.getMaxPlayers();
-        Integer gameMinPlayers = game.getMinPlayers();
+        Integer gameMinPlayers = game.getMinPlayerNumber();
         Type.Availability gameMergeTeams = game.getTeamMergeAvailability();
 
         // kits
@@ -290,8 +291,8 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                     new NetworkServer((tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
                             tempGamePort, Type.Server.TEMP_GAME, Network.getVelocitySecret()).setTask(gameName);
 
-            if (game.getPlayerTrackingRange() != null) {
-                gameNetworkServer.setPlayerTrackingRange(game.getPlayerTrackingRange());
+            if (game.getInfo().getPlayerTrackingRange() != null) {
+                gameNetworkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());
             }
 
             Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.newServer(gameNetworkServer,

@@ -9,20 +9,34 @@ import java.nio.file.Path;
 
 public abstract class BukkitConsole {
 
-    private final Path folderPath;
+    protected final String name;
+    protected final Path folderPath;
 
-    public BukkitConsole(Path folderPath) {
+    public BukkitConsole(String name, Path folderPath) {
+        this.name = name;
         this.folderPath = folderPath;
     }
 
     public boolean start() {
-        try {
-            Runtime.getRuntime().exec("konsole --separate --workdir " + this.folderPath + " -e " +
-                    this.folderPath + "/start.sh " + this.getServerTask());
-            return true;
-        } catch (IOException var2) {
-            var2.printStackTrace();
-            return false;
+        if (Network.isTmuxEnabled()) {
+            try {
+                new ProcessBuilder().command("/bin/bash", "-c", "tmux new-window -n " + this.name + " -t " +
+                        Network.TMUX_SESSION_NAME + ": " + this.folderPath.toAbsolutePath() + "/start.sh " +
+                        this.getServerTask()).start();
+                return true;
+            } catch (IOException var2) {
+                var2.printStackTrace();
+                return false;
+            }
+        } else {
+            try {
+                Runtime.getRuntime().exec("konsole --separate --workdir " + this.folderPath + " -e " +
+                        this.folderPath + "/start.sh " + this.getServerTask());
+                return true;
+            } catch (IOException var2) {
+                var2.printStackTrace();
+                return false;
+            }
         }
     }
 
@@ -33,6 +47,10 @@ public abstract class BukkitConsole {
 
     public void execute(String cmd) {
         Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, cmd));
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Path getFolderPath() {

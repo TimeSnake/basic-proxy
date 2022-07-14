@@ -37,6 +37,7 @@ import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.ServerCreationResult;
+import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class NetworkManager implements ChannelListener, Network {
     private final PermissionManager permissionManager = new PermissionManager();
     private final BukkitCmdHandler bukkitCmdHandler = new BukkitCmdHandler();
     private final ChannelPingPong channelPingPong = new ChannelPingPong();
-    public Chat chat;
+
     public ServerConfig serverConfig;
     private CmdFile cmdFile;
     private boolean isWork = false;
@@ -78,11 +79,10 @@ public class NetworkManager implements ChannelListener, Network {
     private Config config;
     private Path networkPath;
     private String velocitySecret;
+    private boolean tmuxEnabled;
     private NetworkUtils networkUtils;
 
     public void onEnable() {
-
-        chat = new de.timesnake.basic.proxy.util.chat.Chat();
 
         this.userManager = new UserManager();
 
@@ -91,6 +91,7 @@ public class NetworkManager implements ChannelListener, Network {
         this.config = new Config();
         this.networkPath = Path.of(this.config.getNetworkPath());
         this.velocitySecret = this.config.getVelocitySecret();
+        this.tmuxEnabled = this.config.isTmuxEnabled();
 
         String guestGroupName = config.getGuestGroupName();
         if (guestGroupName != null) {
@@ -478,6 +479,10 @@ public class NetworkManager implements ChannelListener, Network {
         BasicProxy.getLogger().info(sb.toString());
     }
 
+    public final void printText(Plugin plugin, Component text, String... subPlugins) {
+        this.printText(plugin, Chat.componentToString(text), subPlugins);
+    }
+
     public final void printWarning(Plugin plugin, String warning, String... subPlugins) {
         StringBuilder sb = new StringBuilder("[" + plugin.getName() + "]");
         for (String subPlugin : subPlugins) {
@@ -489,6 +494,10 @@ public class NetworkManager implements ChannelListener, Network {
         BasicProxy.getLogger().warning(sb.toString());
     }
 
+    public final void printWarning(Plugin plugin, Component text, String... subPlugins) {
+        this.printWarning(plugin, Chat.componentToString(text), subPlugins);
+    }
+
     public void runCommand(String command) {
         BasicProxy.getServer().getCommandManager().executeAsync(BasicProxy.getServer().getConsoleCommandSource(),
                 command);
@@ -497,11 +506,6 @@ public class NetworkManager implements ChannelListener, Network {
     public void registerListener(Object listener) {
         BasicProxy.getEventManager().register(BasicProxy.getPlugin(), listener);
     }
-
-    public Chat getChat() {
-        return chat;
-    }
-
 
     public Channel getChannel() {
         return (Channel) NetworkChannel.getChannel();
@@ -548,5 +552,9 @@ public class NetworkManager implements ChannelListener, Network {
 
     public Path getNetworkPath() {
         return this.networkPath;
+    }
+
+    public boolean isTmuxEnabled() {
+        return tmuxEnabled;
     }
 }

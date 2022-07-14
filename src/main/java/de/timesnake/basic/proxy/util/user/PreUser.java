@@ -10,6 +10,7 @@ import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.chat.ChatColor;
+import net.kyori.adventure.text.Component;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +25,7 @@ public class PreUser {
     private final DbUser dbUser;
 
     private final boolean service;
-    private final String chatName;
+    private final Component chatName;
 
     private final boolean airMode;
 
@@ -77,7 +78,7 @@ public class PreUser {
 
         this.coins = dbLocalUser.getCoins();
 
-        String chatName;
+        Component chatName;
 
         Group group = this.getGroup();
         if (this.getNick() == null) {
@@ -91,14 +92,12 @@ public class PreUser {
                 chatSuffix = this.getSuffix();
             }
 
-            chatName =
-                    group.getPrefixColor() + group.getPrefix() + ChatColor.WHITE + chatPrefix + ChatColor.WHITE +
-                            this.getName() + ChatColor.WHITE + chatSuffix + ChatColor.WHITE;
+            chatName = Component.text(group.getPrefix()).color(group.getPrefixColor()).append(Component.text(ChatColor.WHITE + chatPrefix +
+                    ChatColor.WHITE + this.getName() + ChatColor.WHITE + chatSuffix + ChatColor.WHITE));
 
         } else {
             group = Network.getMemberGroup();
-            chatName =
-                    group.getPrefixColor() + group.getPrefix() + ChatColor.WHITE + this.getNick();
+            chatName = Component.text(group.getPrefix()).color(group.getPrefixColor()).append(Component.text(ChatColor.WHITE + this.getNick()));
         }
 
         this.chatName = chatName;
@@ -138,7 +137,7 @@ public class PreUser {
         return service;
     }
 
-    public String getChatName() {
+    public Component getChatName() {
         return chatName;
     }
 

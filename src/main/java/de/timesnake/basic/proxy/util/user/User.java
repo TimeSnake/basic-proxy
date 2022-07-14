@@ -57,7 +57,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     private String suffix;
     private String nick;
     private float coins;
-    private String chatName;
+    private Component chatName;
 
     private ScheduledTask dpdInfoTask;
 
@@ -169,8 +169,14 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         return player;
     }
 
-    public String getChatName() {
+    public Component getChatNameComponent() {
         return chatName;
+    }
+
+    @Override
+    @Deprecated
+    public String getChatName() {
+        return chatName.toString();
     }
 
     public Sender getAsSender(de.timesnake.library.basic.util.chat.Plugin plugin) {
@@ -189,8 +195,16 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.player.sendMessage(Component.text(message));
     }
 
+    public void sendMessage(Component message) {
+        this.player.sendMessage(message);
+    }
+
     public void sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin plugin, String message) {
         this.getPlayer().sendMessage(Component.text(Chat.getSenderPlugin(plugin) + message));
+    }
+
+    public void sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin plugin, Component message) {
+        this.getPlayer().sendMessage(Component.text(Chat.getSenderPlugin(plugin)).append(message));
     }
 
     public UUID getUniqueId() {

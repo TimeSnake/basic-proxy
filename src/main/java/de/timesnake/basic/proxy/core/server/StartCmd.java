@@ -131,6 +131,10 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         }
     }
 
+    private void handleStartGame(Sender sender, Arguments<Argument> args, DbGame game) {
+
+    }
+
     private void handleStartTempGame(Sender sender, Arguments<Argument> args, DbGame game) {
 
         String gameName = game.getName();
@@ -269,10 +273,10 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         Network.runTaskAsync(() -> {
             int loungePort = Network.nextEmptyPort();
             NetworkServer loungeNetworkServer =
-                    new NetworkServer(Type.Server.LOUNGE.getDatabaseValue() + (loungePort % 1000),
+                    new NetworkServer((loungePort % 1000) + Type.Server.LOUNGE.getDatabaseValue() + Network.TMP_SERVER_SUFFIX,
                             loungePort, Type.Server.LOUNGE, Network.getVelocitySecret());
 
-            Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.newServer(loungeNetworkServer);
+            Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.newServer(loungeNetworkServer, true);
             if (!loungeResult.getA().isSuccessful()) {
                 sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while creation a" +
                         " lounge server! Please contact an administrator (" +
@@ -282,14 +286,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
             int tempGamePort = Network.nextEmptyPort();
 
-            NetworkServer gameNetworkServer = new NetworkServer(gameName + (tempGamePort % 1000), tempGamePort,
-                    Type.Server.TEMP_GAME, Network.getVelocitySecret()).setTask(gameName);
+            NetworkServer gameNetworkServer =
+                    new NetworkServer((tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
+                            tempGamePort, Type.Server.TEMP_GAME, Network.getVelocitySecret()).setTask(gameName);
 
             if (game.getPlayerTrackingRange() != null) {
                 gameNetworkServer.setPlayerTrackingRange(game.getPlayerTrackingRange());
             }
 
-            Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.newServer(gameNetworkServer);
+            Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.newServer(gameNetworkServer,
+                    mapsEnabled);
             if (!tempServerResult.getA().isSuccessful()) {
                 sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while creation a" +
                         " " + gameName + " server! Please contact an administrator (" +

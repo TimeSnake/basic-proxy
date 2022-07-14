@@ -4,6 +4,8 @@ import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.database.util.server.DbTempGameServer;
 import de.timesnake.library.basic.util.Status;
 
+import java.nio.file.Path;
+
 public class TempGameServer extends PvPServer {
 
     protected boolean kitsEnabled;
@@ -13,7 +15,7 @@ public class TempGameServer extends PvPServer {
     protected Integer maxPlayersPerTeam;
     private DbLoungeServer twinServer;
 
-    public TempGameServer(DbTempGameServer database, String folderPath) {
+    public TempGameServer(DbTempGameServer database, Path folderPath) {
         super(database, folderPath);
         this.twinServer = database.getTwinServer();
     }

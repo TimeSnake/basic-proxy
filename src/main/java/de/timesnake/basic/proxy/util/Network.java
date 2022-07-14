@@ -4,7 +4,6 @@ import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.core.file.ServerConfig;
 import de.timesnake.basic.proxy.core.group.Group;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
-import de.timesnake.basic.proxy.core.rule.RuleManager;
 import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
 import de.timesnake.basic.proxy.util.chat.Chat;
 import de.timesnake.basic.proxy.util.chat.CommandHandler;
@@ -19,13 +18,14 @@ import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.ServerCreationResult;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 
 public interface Network {
 
     int PORT_BASE = 25100;
+    String TMP_SERVER_SUFFIX = "_TMP";
 
     static void broadcastMessage(String msg) {
         NetworkManager.getInstance().broadcastMessage(msg);
@@ -95,27 +95,27 @@ public interface Network {
         NetworkManager.getInstance().getServer(port);
     }
 
-    static Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server) {
-        return NetworkManager.getInstance().newServer(server);
+    static Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds) {
+        return NetworkManager.getInstance().newServer(server, copyWorlds);
     }
 
-    static LobbyServer addLobby(int port, String name, String folderPath) {
+    static LobbyServer addLobby(int port, String name, Path folderPath) {
         return NetworkManager.getInstance().addLobby(port, name, folderPath);
     }
 
-    static GameServer addGame(int port, String name, String task, String folderPath) {
+    static GameServer addGame(int port, String name, String task, Path folderPath) {
         return NetworkManager.getInstance().addGame(port, name, task, folderPath);
     }
 
-    static LoungeServer addLounge(int port, String name, String folderPath) {
+    static LoungeServer addLounge(int port, String name, Path folderPath) {
         return NetworkManager.getInstance().addLounge(port, name, folderPath);
     }
 
-    static TempGameServer addTempGame(int port, String name, String task, String folderPath) {
+    static TempGameServer addTempGame(int port, String name, String task, Path folderPath) {
         return NetworkManager.getInstance().addTempGame(port, name, task, folderPath);
     }
 
-    static BuildServer addBuild(int port, String name, String task, String folderPath) {
+    static BuildServer addBuild(int port, String name, String task, Path folderPath) {
         return NetworkManager.getInstance().addBuild(port, name, task, folderPath);
     }
 
@@ -240,10 +240,6 @@ public interface Network {
         return NetworkManager.getInstance().getBukkitCmdHandler();
     }
 
-    static RuleManager getRuleManager() {
-        return NetworkManager.getInstance().getRuleManager();
-    }
-
     static void runTaskLater(Task task, Duration delay) {
         NetworkManager.getInstance().runTaskLater(task, delay);
     }
@@ -264,7 +260,15 @@ public interface Network {
         return NetworkManager.getInstance().getVelocitySecret();
     }
 
-    static Set<File> getTmpServerDirs() {
-        return NetworkManager.getInstance().getTmpServerDirs();
+    static Map<String, Path> getTmpServerDirs() {
+        return NetworkManager.getInstance().getTmpDirsByServerName();
+    }
+
+    static boolean deleteServer(String name) {
+        return NetworkManager.getInstance().deleteServer(name);
+    }
+
+    static Path getNetworkPath() {
+        return NetworkManager.getInstance().getNetworkPath();
     }
 }

@@ -3,9 +3,11 @@ package de.timesnake.basic.proxy.util.server;
 import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.library.basic.util.Status;
 
+import java.nio.file.Path;
+
 public class LoungeServer extends TaskServer {
 
-    public LoungeServer(DbLoungeServer database, String folderPath) {
+    public LoungeServer(DbLoungeServer database, Path folderPath) {
         super(database, folderPath);
     }
 

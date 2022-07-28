@@ -35,6 +35,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     private static final int PLAYER_TIME_1 = 30;
     private final Set<UUID> votedUsers = new HashSet<>();
     private boolean enabled = true;
+    private boolean cancelable = false;
     private int requiredVotes = 1;
     private ScheduledTask task;
 
@@ -70,6 +71,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
         }
 
         if (enabled) {
+            this.cancelable = false;
             Network.printText(Plugin.SYSTEM, "AutoShutdown started");
             task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), this::infoShutdown)
                     .delay(time, TimeUnit.MINUTES).schedule();
@@ -77,6 +79,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     }
 
     public void infoShutdown() {
+        this.cancelable = true;
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lThe server will shutdown in 5 minutes ");
 
         TextComponent text = Component.text(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING +
@@ -95,6 +98,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     }
 
     public void warnShutdown() {
+        this.cancelable = true;
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lWrite " + ChatColor.VALUE + "/hello" +
                 ChatColor.WARNING + " to keep the server online.");
 
@@ -114,6 +118,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     }
 
     private void beginShutdown() {
+        this.cancelable = true;
         Network.broadcastMessage(Plugin.NETWORK, ChatColor.WARNING + "§lThe server will shutdown in 10 seconds ");
         task.cancel();
         task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
@@ -124,6 +129,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     }
 
     private void shutdown() {
+        this.cancelable = false;
         task.cancel();
 
         task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(),
@@ -143,10 +149,17 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        if (cmd.getName().equalsIgnoreCase("hello") || cmd.getName().equalsIgnoreCase("hallo")) {
+        if (cmd.getName().equalsIgnoreCase("hello")
+                || cmd.getName().equalsIgnoreCase("hallo")
+                || cmd.getName().equalsIgnoreCase("hi")) {
             if (sender.hasPermission("network.hello", 35)) {
                 if (sender.isConsole(false)) {
                     this.cancelShutdown();
+                    return;
+                }
+
+                if (!this.cancelable) {
+                    sender.sendPluginMessage(ChatColor.WARNING + "There is no running shutdown");
                     return;
                 }
 

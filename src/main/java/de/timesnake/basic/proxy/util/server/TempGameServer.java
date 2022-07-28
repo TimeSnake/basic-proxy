@@ -1,7 +1,7 @@
 package de.timesnake.basic.proxy.util.server;
 
 import de.timesnake.database.util.server.DbLoungeServer;
-import de.timesnake.database.util.server.DbTempGameServer;
+import de.timesnake.database.util.server.DbTmpGameServer;
 import de.timesnake.library.basic.util.Status;
 
 import java.nio.file.Path;
@@ -15,7 +15,7 @@ public class TempGameServer extends PvPServer {
     protected Integer maxPlayersPerTeam;
     private DbLoungeServer twinServer;
 
-    public TempGameServer(DbTempGameServer database, Path folderPath) {
+    public TempGameServer(DbTmpGameServer database, Path folderPath) {
         super(database, folderPath);
         this.twinServer = database.getTwinServer();
     }
@@ -27,9 +27,9 @@ public class TempGameServer extends PvPServer {
     public void setTwinServer(DbLoungeServer twinServer) {
         this.twinServer = twinServer;
         if (twinServer != null) {
-            ((DbTempGameServer) this.database).setTwinServerPort(twinServer.getPort());
+            ((DbTmpGameServer) this.database).setTwinServerPort(twinServer.getPort());
         } else {
-            ((DbTempGameServer) this.database).setTwinServerPort(null);
+            ((DbTmpGameServer) this.database).setTwinServerPort(null);
         }
 
     }
@@ -52,7 +52,7 @@ public class TempGameServer extends PvPServer {
 
     public void setTeamAmount(Integer number) {
         this.teamAmount = teamAmount;
-        ((DbTempGameServer) super.database).setTeamAmount(number);
+        ((DbTmpGameServer) super.database).setTeamAmount(number);
     }
 
     public boolean isTeamMerging() {
@@ -61,12 +61,12 @@ public class TempGameServer extends PvPServer {
 
     public void setTeamMerging(boolean teamMerging) {
         this.teamMerging = teamMerging;
-        ((DbTempGameServer) super.database).setTeamMerging(teamMerging);
+        ((DbTmpGameServer) super.database).setTeamMerging(teamMerging);
     }
 
     public void setMapsEnabled(boolean mapsEnabled) {
         this.mapsEnabled = mapsEnabled;
-        ((DbTempGameServer) super.database).setMapsEnabled(mapsEnabled);
+        ((DbTmpGameServer) super.database).setMapsEnabled(mapsEnabled);
     }
 
     public boolean areMapsEnabled() {
@@ -75,7 +75,7 @@ public class TempGameServer extends PvPServer {
 
     public void setKitsEnabled(boolean kitsEnabled) {
         this.kitsEnabled = kitsEnabled;
-        ((DbTempGameServer) super.database).setKitsEnabled(this.kitsEnabled);
+        ((DbTmpGameServer) super.database).setKitsEnabled(this.kitsEnabled);
     }
 
     public boolean areKitsEnabled() {
@@ -88,6 +88,6 @@ public class TempGameServer extends PvPServer {
 
     public void setMaxPlayersPerTeam(Integer maxPlayersPerTeam) {
         this.maxPlayersPerTeam = maxPlayersPerTeam;
-        ((DbTempGameServer) super.database).setMaxPlayersPerTeam(maxPlayersPerTeam);
+        ((DbTmpGameServer) super.database).setMaxPlayersPerTeam(maxPlayersPerTeam);
     }
 }

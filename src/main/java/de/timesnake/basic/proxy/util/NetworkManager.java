@@ -90,6 +90,8 @@ public class NetworkManager implements ChannelListener, Network {
 
         this.config = new Config();
         this.networkPath = Path.of(this.config.getNetworkPath());
+        Database.getNetwork().addNetworkFile("templates", this.networkPath.resolve("templates").toFile());
+
         this.velocitySecret = this.config.getVelocitySecret();
         this.tmuxEnabled = this.config.isTmuxEnabled();
 

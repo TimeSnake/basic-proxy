@@ -10,7 +10,7 @@ import net.kyori.adventure.text.Component;
 public class MotdManager {
 
     private static final String VERSION = "1.19";
-    private static final String MOTD = "Have fun!";
+    private static final String MOTD = "§f§kaaa §62 Years Anniversary! §f§kaaa";
 
     @Subscribe
     public void onProxyPing(ProxyPingEvent e) {

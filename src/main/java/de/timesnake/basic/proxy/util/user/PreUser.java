@@ -4,6 +4,7 @@ import de.timesnake.basic.proxy.core.group.Group;
 import de.timesnake.basic.proxy.core.permission.Permission;
 import de.timesnake.basic.proxy.core.user.UserNotInDatabaseException;
 import de.timesnake.basic.proxy.util.Network;
+import de.timesnake.basic.proxy.util.chat.NamedTextColor;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
@@ -80,7 +81,7 @@ public class PreUser {
 
         Component chatName;
 
-        Group group = this.getGroup();
+        Group group = this.group;
         if (this.getNick() == null) {
             String chatPrefix = ChatColor.WHITE;
             String chatSuffix = ChatColor.WHITE;
@@ -92,12 +93,15 @@ public class PreUser {
                 chatSuffix = this.getSuffix();
             }
 
-            chatName = Component.text(group.getPrefix()).color(group.getPrefixColor()).append(Component.text(ChatColor.WHITE + chatPrefix +
-                    ChatColor.WHITE + this.getName() + ChatColor.WHITE + chatSuffix + ChatColor.WHITE));
+            chatName = Component.text(group.getPrefix()).color(group.getPrefixColor())
+                    .append(Component.text(chatPrefix))
+                    .append(Component.text(this.getName()).color(NamedTextColor.WHITE))
+                    .append(Component.text(chatSuffix));
 
         } else {
             group = Network.getMemberGroup();
-            chatName = Component.text(group.getPrefix()).color(group.getPrefixColor()).append(Component.text(ChatColor.WHITE + this.getNick()));
+            chatName = Component.text(group.getPrefix()).color(group.getPrefixColor())
+                    .append(Component.text(this.getNick()).color(NamedTextColor.WHITE));
         }
 
         this.chatName = chatName;

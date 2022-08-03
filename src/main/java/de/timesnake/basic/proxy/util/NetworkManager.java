@@ -141,10 +141,12 @@ public class NetworkManager implements ChannelListener, Network {
 
 
     public void broadcastMessage(Plugin plugin, String msg) {
-        BasicProxy.getServer().sendMessage(net.kyori.adventure.text.Component.text(
-                de.timesnake.library.extension.util.chat.Chat.getSenderPlugin(plugin) + msg));
+        BasicProxy.getServer().sendMessage(Chat.getSenderPlugin(plugin).append(Component.text(msg)));
     }
 
+    public void broadcastMessage(Plugin plugin, Component msg) {
+        BasicProxy.getServer().sendMessage(Chat.getSenderPlugin(plugin).append(msg));
+    }
 
     public void sendConsoleMessage(String message) {
         BasicProxy.getServer().sendMessage(net.kyori.adventure.text.Component.text(message));
@@ -193,7 +195,8 @@ public class NetworkManager implements ChannelListener, Network {
     public Collection<Integer> getNotOfflineServerPorts() {
         Collection<Integer> ports = new HashSet<>();
         for (Server server : this.getServers()) {
-            if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE) && !server.getStatus().equals(Status.Server.STARTING)) {
+            if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
+                    && !server.getStatus().equals(Status.Server.LAUNCHING)) {
                 ports.add(server.getPort());
             }
         }

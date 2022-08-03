@@ -46,7 +46,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                         return;
                     }
                     Status.Server status = server.getStatus();
-                    if (status != null && status.equals(Status.Server.STARTING)) {
+                    if (status != null && (status.equals(Status.Server.LAUNCHING) || status.equals(Status.Server.LOADING))) {
                         sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
                                 ChatColor.WARNING + " is already starting!");
                         return;

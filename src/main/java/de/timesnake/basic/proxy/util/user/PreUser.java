@@ -93,15 +93,27 @@ public class PreUser {
                 chatSuffix = this.getSuffix();
             }
 
-            chatName = Component.text(group.getPrefix()).color(group.getPrefixColor())
-                    .append(Component.text(chatPrefix))
-                    .append(Component.text(this.getName()).color(NamedTextColor.WHITE))
-                    .append(Component.text(chatSuffix));
+            if (group.getPrefix() != null) {
+                chatName = Component.text(group.getPrefix()).color(group.getPrefixColor())
+                        .append(Component.text(chatPrefix))
+                        .append(Component.text(this.getName()).color(NamedTextColor.WHITE))
+                        .append(Component.text(chatSuffix));
+            } else {
+                chatName = Component.text(chatPrefix)
+                        .append(Component.text(this.getName()).color(NamedTextColor.WHITE))
+                        .append(Component.text(chatSuffix));
+            }
+
 
         } else {
             group = Network.getMemberGroup();
-            chatName = Component.text(group.getPrefix()).color(group.getPrefixColor())
-                    .append(Component.text(this.getNick()).color(NamedTextColor.WHITE));
+            if (group.getPrefix() != null) {
+                chatName = Component.text(group.getPrefix()).color(group.getPrefixColor())
+                        .append(Component.text(this.getNick()).color(NamedTextColor.WHITE));
+            } else {
+                chatName = Component.text(this.getNick()).color(NamedTextColor.WHITE);
+            }
+
         }
 
         this.chatName = chatName;

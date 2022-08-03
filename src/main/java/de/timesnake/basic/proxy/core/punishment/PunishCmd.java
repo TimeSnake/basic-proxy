@@ -3,7 +3,6 @@ package de.timesnake.basic.proxy.core.punishment;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
-import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
@@ -33,7 +32,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
                 if (sender.hasPermission("punish.netkick", 14)) {
                     if (args.isLengthHigherEquals(2, true)) {
                         if (args.get(0).isPlayerName(true)) {
-                            Punishments.kickPlayer(sender, (User) args.get(0).toUser(), args.toMessage(1));
+                            Punishments.kickPlayer(sender, args.get(0).toUser(), args.toMessage(1));
                         }
                     } else sender.sendMessageCommandHelp("Kick a player", "netkick <player> <reason>");
                 }

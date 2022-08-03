@@ -10,7 +10,7 @@ import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Status;
 
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 public abstract class Server extends BukkitConsole {
 
@@ -65,13 +65,22 @@ public abstract class Server extends BukkitConsole {
         this.status = serverStatus;
 
 
-        if (this.status == Status.Server.STARTING) {
-            BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
-                if (status == Status.Server.STARTING) {
+        if (this.status == Status.Server.LAUNCHING) {
+            Network.runTaskLater(() -> {
+                if (status == Status.Server.LAUNCHING || status == Status.Server.OFFLINE) {
                     Network.printWarning(Plugin.NETWORK, "Failed to start server " + this.getName());
                     this.setStatus(Status.Server.OFFLINE, true);
+                    return;
                 }
-            }).delay(2, TimeUnit.MINUTES).schedule();
+
+                Network.runTaskLater(() -> {
+                    if (status == Status.Server.LAUNCHING || status == Status.Server.OFFLINE
+                            || status.equals(Status.Server.LOADING)) {
+                        Network.printWarning(Plugin.NETWORK, "Failed to start server " + this.getName());
+                        this.setStatus(Status.Server.OFFLINE, true);
+                    }
+                }, Duration.ofMinutes(3));
+            }, Duration.ofSeconds(30));
         }
 
     }
@@ -81,7 +90,7 @@ public abstract class Server extends BukkitConsole {
     }
 
     public boolean start() {
-        this.setStatus(Status.Server.STARTING, true);
+        this.setStatus(Status.Server.LAUNCHING, true);
         return super.start();
     }
 

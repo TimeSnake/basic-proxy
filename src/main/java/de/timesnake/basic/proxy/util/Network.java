@@ -36,6 +36,10 @@ public interface Network {
         NetworkManager.getInstance().broadcastMessage(plugin, msg);
     }
 
+    static void broadcastMessage(Plugin plugin, Component msg) {
+        NetworkManager.getInstance().broadcastMessage(plugin, msg);
+    }
+
     static void sendConsoleMessage(String message) {
         NetworkManager.getInstance().sendConsoleMessage(message);
     }

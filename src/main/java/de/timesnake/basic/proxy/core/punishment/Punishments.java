@@ -3,6 +3,7 @@ package de.timesnake.basic.proxy.core.punishment;
 import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
+import de.timesnake.basic.proxy.util.chat.NamedTextColor;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
@@ -163,8 +164,10 @@ public class Punishments {
         if (sender.hasGroupRankLower(user.getUniqueId())) {
             user.getPlayer().disconnect(Component.text(ChatColor.WARNING + "You were kicked with reason: " +
                     ChatColor.VALUE + reason));
-            sender.sendPluginMessage(ChatColor.PERSONAL + "You kicked " + ChatColor.VALUE + user.getChatNameComponent() +
-                    ChatColor.PERSONAL + " with reason: " + ChatColor.VALUE + reason);
+            sender.sendPluginMessage(Component.text("You kicked ").color(NamedTextColor.PERSONAL)
+                    .append(user.getChatNameComponent())
+                    .append(Component.text(" with reason: ").color(NamedTextColor.PERSONAL))
+                    .append(Component.text(reason).color(NamedTextColor.VALUE)));
             broadcastMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() + ChatColor.WARNING +
                     " was kicked with reason: " + ChatColor.VALUE + reason);
         }
@@ -177,7 +180,7 @@ public class Punishments {
             if (type == null) {
                 user.setPunishment(Type.Punishment.MUTE, new Date(), sender.getName(), reason, "ALL");
                 Network.getChannel().sendMessageToServer(user.getServer().getPort(),
-                        new ChannelUserMessage(user.getUniqueId(), MessageType.User.PUNISH));
+                        new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.PUNISH));
                 String name = user.getName();
                 sender.sendPluginMessage(ChatColor.PERSONAL + "You muted " + ChatColor.VALUE + name +
                         ChatColor.PUBLIC + " with reason: " + ChatColor.VALUE + reason);
@@ -198,7 +201,7 @@ public class Punishments {
             if (type.equals(Type.Punishment.MUTE)) {
                 user.getPunishment().delete();
                 Network.getChannel().sendMessageToServer(user.getServer().getPort(),
-                        new ChannelUserMessage(user.getUniqueId(), MessageType.User.PUNISH));
+                        new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.PUNISH));
                 sender.sendPluginMessage(ChatColor.PERSONAL + "You unmuted " + ChatColor.VALUE + user.getName());
 
                 broadcastMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() +

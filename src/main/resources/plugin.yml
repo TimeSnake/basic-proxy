@@ -64,4 +64,8 @@ commands:
 
   dtmp:
   delete_tmp:
+
+  dgroup:
+  displaygroup:
+  dg:
      

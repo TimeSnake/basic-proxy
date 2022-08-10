@@ -1,21 +1,18 @@
 package de.timesnake.basic.proxy.util.user;
 
-import de.timesnake.basic.proxy.core.group.Group;
-import de.timesnake.basic.proxy.core.permission.Permission;
+import de.timesnake.basic.proxy.core.group.DisplayGroup;
+import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.user.UserNotInDatabaseException;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.NamedTextColor;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.extension.util.permission.ExPermission;
 import net.kyori.adventure.text.Component;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class PreUser {
 
@@ -26,22 +23,21 @@ public class PreUser {
     private final DbUser dbUser;
 
     private final boolean service;
-    private final Component chatName;
 
     private final boolean airMode;
 
     private final DataProtectionAgreement dataProtectionAgreement;
 
-    private final Group group;
+    private final PermGroup permGroup;
+    private final SortedSet<DisplayGroup> displayGroups;
 
-    private final String prefix;
-    private final String suffix;
-    private final String nick;
+    private final Component prefix;
+    private final Component suffix;
+    private final Component nick;
 
     private final float coins;
 
-    private final Set<Permission> databasePermissions = new HashSet<>();
-    private final Set<Permission> permissions = new HashSet<>();
+    private final Collection<ExPermission> databasePermissions = new HashSet<>();
 
     public PreUser(String name) throws UserNotInDatabaseException {
         if (!Database.getUsers().containsUser(name)) {
@@ -59,82 +55,41 @@ public class PreUser {
 
         this.airMode = dbLocalUser.isAirMode();
 
-        this.prefix = dbLocalUser.getPrefix();
+        this.prefix = Component.text(dbLocalUser.getPrefix());
 
-        this.suffix = dbLocalUser.getSuffix();
+        this.suffix = Component.text(dbLocalUser.getSuffix());
 
-        this.nick = dbLocalUser.getNick();
+        this.nick = Component.text(dbLocalUser.getNick());
 
         DbPermGroup dbGroup = dbLocalUser.getPermGroup();
-        String groupName;
+        String permGroupName;
         if (dbGroup != null) {
-            groupName = dbGroup.getName();
+            permGroupName = dbGroup.getName();
         } else {
-            groupName = Network.getGuestGroup().getName();
+            permGroupName = Network.getGuestGroup().getName();
         }
 
-        this.group = Network.getGroup(groupName);
+        this.permGroup = Network.getPermGroup(permGroupName);
+
+        this.displayGroups = new TreeSet<>(Comparator.comparingInt(DisplayGroup::getRank));
+        for (String groupName : dbLocalUser.getDisplayGroupNames()) {
+            this.displayGroups.add(Network.getDisplayGroup(groupName));
+        }
+
+        if (this.displayGroups.isEmpty()) {
+            this.displayGroups.add(Network.getGuestDisplayGroup());
+        }
 
         this.service = dbLocalUser.isService();
 
         this.coins = dbLocalUser.getCoins();
 
-        Component chatName;
-
-        Group group = this.group;
-        if (this.getNick() == null) {
-            String chatPrefix = ChatColor.WHITE;
-            String chatSuffix = ChatColor.WHITE;
-            if (this.getPrefix() != null) {
-                chatPrefix = this.getPrefix();
-            }
-
-            if (this.getSuffix() != null) {
-                chatSuffix = this.getSuffix();
-            }
-
-            if (group.getPrefix() != null) {
-                chatName = Component.text(group.getPrefix()).color(group.getPrefixColor())
-                        .append(Component.text(chatPrefix))
-                        .append(Component.text(this.getName()).color(NamedTextColor.WHITE))
-                        .append(Component.text(chatSuffix));
-            } else {
-                chatName = Component.text(chatPrefix)
-                        .append(Component.text(this.getName()).color(NamedTextColor.WHITE))
-                        .append(Component.text(chatSuffix));
-            }
-
-
-        } else {
-            group = Network.getMemberGroup();
-            if (group.getPrefix() != null) {
-                chatName = Component.text(group.getPrefix()).color(group.getPrefixColor())
-                        .append(Component.text(this.getNick()).color(NamedTextColor.WHITE));
-            } else {
-                chatName = Component.text(this.getNick()).color(NamedTextColor.WHITE);
-            }
-
-        }
-
-        this.chatName = chatName;
-
         this.dataProtectionAgreement = dbLocalUser.getDataProtectionAgreement();
 
         for (DbPermission perm : dbLocalUser.getPermissions()) {
-            this.databasePermissions.add(new Permission(perm.getName(), perm.getMode(), perm.getServers()));
+            this.databasePermissions.add(new ExPermission(perm.getName(), perm.getMode(), perm.getServers()));
         }
-
-        if (this.group != null) {
-            while (Database.getGroups().containsGroup(dbGroup.getName())) {
-                for (DbPermission perm : dbGroup.getPermissions()) {
-                    this.databasePermissions.add(new Permission(perm.getName(), perm.getMode(), perm.getServers()));
-                }
-                dbGroup = dbGroup.getInheritance();
-                if (dbGroup == null) {
-                    break;
-                }
-            }
-        }
+        this.databasePermissions.addAll(this.permGroup.getPermissions());
     }
 
     public UUID getUuid() {
@@ -153,10 +108,6 @@ public class PreUser {
         return service;
     }
 
-    public Component getChatName() {
-        return chatName;
-    }
-
     public boolean isAirMode() {
         return airMode;
     }
@@ -165,19 +116,27 @@ public class PreUser {
         return dataProtectionAgreement;
     }
 
-    public Group getGroup() {
-        return group;
+    public PermGroup getPermGroup() {
+        return permGroup;
     }
 
-    public String getPrefix() {
+    public SortedSet<DisplayGroup> getDisplayGroups() {
+        return displayGroups;
+    }
+
+    public DisplayGroup getMainDisplayGroup() {
+        return displayGroups.first();
+    }
+
+    public Component getPrefix() {
         return prefix;
     }
 
-    public String getSuffix() {
+    public Component getSuffix() {
         return suffix;
     }
 
-    public String getNick() {
+    public Component getNick() {
         return nick;
     }
 
@@ -185,11 +144,7 @@ public class PreUser {
         return coins;
     }
 
-    public Set<Permission> getDatabasePermissions() {
+    public Collection<ExPermission> getDatabasePermissions() {
         return databasePermissions;
-    }
-
-    public Set<Permission> getPermissions() {
-        return permissions;
     }
 }

@@ -5,8 +5,8 @@ import com.velocitypowered.api.proxy.server.ServerInfo;
 import de.timesnake.basic.proxy.core.channel.ChannelPingPong;
 import de.timesnake.basic.proxy.core.file.Config;
 import de.timesnake.basic.proxy.core.file.ServerConfig;
-import de.timesnake.basic.proxy.core.group.Group;
-import de.timesnake.basic.proxy.core.group.GroupNotInDatabaseException;
+import de.timesnake.basic.proxy.core.group.DisplayGroup;
+import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
 import de.timesnake.basic.proxy.core.script.AutoShutdown;
@@ -28,6 +28,8 @@ import de.timesnake.channel.util.message.ChannelListenerMessage;
 import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
+import de.timesnake.database.util.group.DbDisplayGroup;
+import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Status;
@@ -47,14 +49,15 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NetworkManager implements ChannelListener, Network {
+public class NetworkManager implements ChannelListener {
 
     public static NetworkManager getInstance() {
         return instance;
     }
 
     private static final NetworkManager instance = new NetworkManager();
-    private final HashMap<String, Group> groups = new HashMap<>();
+    private final HashMap<String, PermGroup> permGroups = new HashMap<>();
+    private final HashMap<String, DisplayGroup> displayGroups = new HashMap<>();
     private final ConcurrentHashMap<UUID, User> users = new ConcurrentHashMap<>();
     private final ArrayList<User> networkMessageListeners = new ArrayList<>();
     private final ArrayList<User> privateMessageListeners = new ArrayList<>();
@@ -69,7 +72,6 @@ public class NetworkManager implements ChannelListener, Network {
     public ServerConfig serverConfig;
     private CmdFile cmdFile;
     private boolean isWork = false;
-    private Group guestGroup;
     private Integer maxPlayersLobby = 20;
     private Integer maxPlayersBuild = 20;
     private UserManager userManager;
@@ -95,24 +97,40 @@ public class NetworkManager implements ChannelListener, Network {
         this.velocitySecret = this.config.getVelocitySecret();
         this.tmuxEnabled = this.config.isTmuxEnabled();
 
-        String guestGroupName = config.getGuestGroupName();
-        if (guestGroupName != null) {
-            try {
-                guestGroup = new Group(guestGroupName);
-            } catch (GroupNotInDatabaseException e) {
-                BasicProxy.getLogger().warning(e.getMessage());
-            }
-        } else {
-            this.printWarning(Plugin.PROXY, "Guest group is not loaded");
+        if (!Database.getGroups().containsPermGroup(Network.GUEST_PERM_GROUP_NAME)) {
+            Database.getGroups().addPermGroup(Network.GUEST_PERM_GROUP_NAME, Network.GUEST_PERM_GROUP_RANK);
         }
 
-        for (String groupName : Database.getGroups().getPermGroupNames()) {
-            try {
-                groups.put(groupName, new Group(groupName));
-            } catch (GroupNotInDatabaseException e) {
-                BasicProxy.getLogger().warning(e.getMessage());
-            }
-            this.printText(Plugin.PROXY, "Loaded group: " + groupName);
+        if (!Database.getGroups().containsPermGroup(Network.MEMBER_PERM_GROUP_NAME)) {
+            Database.getGroups().addPermGroup(Network.MEMBER_PERM_GROUP_NAME, Network.MEMBER_PERM_GROUP_RANK);
+        }
+
+        if (!Database.getGroups().containsDisplayGroup(Network.GUEST_DISPLAY_GROUP_NAME)) {
+            Database.getGroups().addDisplayGroup(Network.GUEST_DISPLAY_GROUP_NAME, Network.GUEST_DISPLAY_GROUP_RANK,
+                    "Guest", "gray");
+        }
+
+        if (!Database.getGroups().containsDisplayGroup(Network.MEMBER_DISPLAY_GROUP_NAME)) {
+            Database.getGroups().addDisplayGroup(Network.MEMBER_DISPLAY_GROUP_NAME, Network.MEMBER_DISPLAY_GROUP_RANK,
+                    null, null);
+        }
+
+
+        for (DbPermGroup dbGroup : Database.getGroups().getPermGroups()) {
+            PermGroup group = new PermGroup(dbGroup);
+            this.permGroups.put(group.getName(), group);
+        }
+
+        ArrayList<PermGroup> groups = new ArrayList<>(this.getPermGroups());
+        groups.sort(PermGroup::compareTo);
+        groups.sort(Comparator.reverseOrder());
+        for (PermGroup group : groups) {
+            group.updatePermissions(false);
+        }
+
+        for (DbDisplayGroup dbGroup : Database.getGroups().getDisplayGroups()) {
+            DisplayGroup group = new DisplayGroup(dbGroup);
+            this.displayGroups.put(group.getName(), group);
         }
 
         serverConfig = new ServerConfig();
@@ -173,15 +191,21 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
 
-    public Group getGroup(String group) {
-        return groups.get(group);
+    public PermGroup getPermGroup(String name) {
+        return permGroups.get(name);
     }
 
-
-    public Collection<Group> getGroups() {
-        return groups.values();
+    public DisplayGroup getDisplayGroup(String name) {
+        return this.displayGroups.get(name);
     }
 
+    public Collection<PermGroup> getPermGroups() {
+        return permGroups.values();
+    }
+
+    public Collection<DisplayGroup> getDisplayGroups() {
+        return displayGroups.values();
+    }
 
     public Collection<User> getUsers() {
         return users.values();
@@ -195,8 +219,7 @@ public class NetworkManager implements ChannelListener, Network {
     public Collection<Integer> getNotOfflineServerPorts() {
         Collection<Integer> ports = new HashSet<>();
         for (Server server : this.getServers()) {
-            if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
-                    && !server.getStatus().equals(Status.Server.LAUNCHING)) {
+            if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE) && !server.getStatus().equals(Status.Server.LAUNCHING)) {
                 ports.add(server.getPort());
             }
         }
@@ -244,15 +267,12 @@ public class NetworkManager implements ChannelListener, Network {
             } else if (Type.Server.GAME.equals(server.getType())) {
                 serverOpt = Optional.of(this.addGame(server.getPort(), server.getName(), server.getTask(), serverPath));
             } else if (Type.Server.BUILD.equals(server.getType())) {
-                serverOpt = Optional.of(this.addBuild(server.getPort(), server.getName(), server.getTask(),
-                        serverPath));
+                serverOpt = Optional.of(this.addBuild(server.getPort(), server.getName(), server.getTask(), serverPath));
             } else if (Type.Server.TEMP_GAME.equals(server.getType())) {
-                serverOpt = Optional.of(this.addTempGame(server.getPort(), server.getName(), server.getTask(),
-                        serverPath));
+                serverOpt = Optional.of(this.addTempGame(server.getPort(), server.getName(), server.getTask(), serverPath));
             }
 
-            BasicProxy.getServer().registerServer(new ServerInfo(server.getName(),
-                    new InetSocketAddress(server.getPort())));
+            BasicProxy.getServer().registerServer(new ServerInfo(server.getName(), new InetSocketAddress(server.getPort())));
 
             this.tmpDirsByServerName.put(server.getName(), serverPath);
         }
@@ -315,8 +335,7 @@ public class NetworkManager implements ChannelListener, Network {
 
     public TempGameServer addTempGame(int port, String name, String task, Path folderPath) {
         Database.getServers().addTempGame(port, name, task, Status.Server.OFFLINE, folderPath);
-        TempGameServer server = new TempGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port),
-                folderPath);
+        TempGameServer server = new TempGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port), folderPath);
         servers.put(port, server);
         return server;
     }
@@ -407,25 +426,20 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
 
-    public Group getGuestGroup() {
-        return guestGroup;
+    public PermGroup getGuestPermGroup() {
+        return this.permGroups.get(Network.GUEST_PERM_GROUP_NAME);
     }
 
+    public DisplayGroup getGuestDisplayGroup() {
+        return this.displayGroups.get(Network.GUEST_DISPLAY_GROUP_NAME);
+    }
 
-    public Group getMemberGroup() {
-        Group guest = this.getGuestGroup();
-        Group member = null;
-        int rank = guest.getRank() + 1;
-        while (member != null) {
-            for (Group group : this.getGroups()) {
-                if (group.getRank() == rank) {
-                    member = group;
-                    break;
-                }
-            }
-            rank++;
-        }
-        return guest;
+    public PermGroup getMemberPermGroup() {
+        return this.permGroups.get(Network.MEMBER_PERM_GROUP_NAME);
+    }
+
+    public DisplayGroup getMemberDisplayGroup() {
+        return this.displayGroups.get(Network.MEMBER_DISPLAY_GROUP_NAME);
     }
 
     public void runTaskLater(Task task, Duration delay) {
@@ -443,7 +457,7 @@ public class NetworkManager implements ChannelListener, Network {
 
             for (User user : getUsers()) {
                 if (user.getServer().getPort().equals(msg.getPort())) {
-                    user.updatePermissions();
+                    user.updatePermissions(false);
                 }
             }
         } else if (type.equals(MessageType.Server.STATUS)) {
@@ -485,7 +499,7 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
     public final void printText(Plugin plugin, Component text, String... subPlugins) {
-        this.printText(plugin, Chat.componentToString(text), subPlugins);
+        this.printText(plugin, Chat.parseComponentToString(text), subPlugins);
     }
 
     public final void printWarning(Plugin plugin, String warning, String... subPlugins) {
@@ -500,12 +514,11 @@ public class NetworkManager implements ChannelListener, Network {
     }
 
     public final void printWarning(Plugin plugin, Component text, String... subPlugins) {
-        this.printWarning(plugin, Chat.componentToString(text), subPlugins);
+        this.printWarning(plugin, Chat.parseComponentToString(text), subPlugins);
     }
 
     public void runCommand(String command) {
-        BasicProxy.getServer().getCommandManager().executeAsync(BasicProxy.getServer().getConsoleCommandSource(),
-                command);
+        BasicProxy.getServer().getCommandManager().executeAsync(BasicProxy.getServer().getConsoleCommandSource(), command);
     }
 
     public void registerListener(Object listener) {

@@ -13,6 +13,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import de.timesnake.basic.proxy.core.channel.ChannelBroadcastCmd;
 import de.timesnake.basic.proxy.core.channel.ChannelCmdHandler;
 import de.timesnake.basic.proxy.core.coins.CoinsCmd;
+import de.timesnake.basic.proxy.core.group.DisplayGroupCmd;
 import de.timesnake.basic.proxy.core.infomessage.NetworkMsgCmd;
 import de.timesnake.basic.proxy.core.network.MotdManager;
 import de.timesnake.basic.proxy.core.network.ServiceWorkCmd;
@@ -141,6 +142,9 @@ public class BasicProxy {
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "dtmp", List.of("delete_tmp"),
                 new DeleteTmpServerCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "dgroup", List.of("displaygroup", "dg"),
+                new DisplayGroupCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
         EventManager em = server.getEventManager();
 

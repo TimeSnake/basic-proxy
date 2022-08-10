@@ -4,11 +4,13 @@ import com.velocitypowered.api.proxy.ConnectionRequestBuilder;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
-import de.timesnake.basic.proxy.core.group.Group;
+import de.timesnake.basic.proxy.core.group.DisplayGroup;
+import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
-import de.timesnake.basic.proxy.core.permission.Permission;
 import de.timesnake.basic.proxy.util.Network;
+import de.timesnake.basic.proxy.util.chat.Chat;
 import de.timesnake.basic.proxy.util.chat.CommandSender;
+import de.timesnake.basic.proxy.util.chat.NamedTextColor;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.channel.util.listener.ChannelHandler;
@@ -24,14 +26,11 @@ import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.basic.util.chat.Plugin;
-import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.permission.ExPermission;
 import net.kyori.adventure.text.Component;
 
 import java.time.Duration;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -40,8 +39,9 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     private final DbUser dbUser;
     private final Player player;
-    private final Set<Permission> databasePermissions = ConcurrentHashMap.newKeySet();
-    private final Set<Permission> permissions = ConcurrentHashMap.newKeySet();
+    private final Collection<ExPermission> databasePermissions;
+    private final Collection<ExPermission> permissions = ConcurrentHashMap.newKeySet();
+    private final SortedSet<DisplayGroup> displayGroups;
     private boolean service;
     private boolean airMode;
     private DataProtectionAgreement dataProtectionAgreement;
@@ -52,10 +52,10 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     private Server server;
     private Server serverLast;
     private Server lobby;
-    private Group group;
-    private String prefix;
-    private String suffix;
-    private String nick;
+    private PermGroup permGroup;
+    private Component prefix;
+    private Component suffix;
+    private Component nick;
     private float coins;
     private Component chatName;
 
@@ -75,13 +75,16 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.prefix = user.getPrefix();
         this.suffix = user.getSuffix();
         this.nick = user.getNick();
-        this.group = user.getGroup();
+        this.permGroup = user.getPermGroup();
+        this.displayGroups = user.getDisplayGroups();
         this.service = user.isService();
-        this.chatName = user.getChatName();
+        this.updateChatName();
         this.dataProtectionAgreement = user.getDataProtectionAgreement();
 
-        this.group.addUser(this);
-        this.updatePermissions();
+        this.permGroup.addUser(this);
+
+        this.databasePermissions = user.getDatabasePermissions();
+        this.loadPermissions();
 
         Network.getChannel().addListener(this, () -> Collections.singleton(this.getUniqueId()));
     }
@@ -103,54 +106,81 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         Network.getChannel().removeListener(this);
     }
 
-    public Group getGroup() {
-        return group;
+    public PermGroup getGroup() {
+        return permGroup;
     }
 
     public void updateGroup() {
-        if (this.group != null) {
-            this.group.removeUser(this);
+        if (this.permGroup != null) {
+            this.permGroup.removeUser(this);
         }
 
         DbPermGroup group = this.getDatabase().getPermGroup();
         if (group.exists()) {
-            this.group = Network.getGroup(group.getName());
+            this.permGroup = Network.getPermGroup(group.getName());
         }
 
-        if (this.group != null) {
-            this.group.addUser(this);
+        if (this.permGroup != null) {
+            this.permGroup.addUser(this);
         }
 
-        Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.GROUP,
-                this.group.getName()));
-        this.updatePermissions();
+        Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.PERM_GROUP,
+                this.permGroup.getName()));
+        this.updatePermissions(false);
     }
 
-    public String getPrefix() {
+    public void updateChatName() {
+        Component component = Component.text("");
+
+        if (this.getNick() == null) {
+            for (DisplayGroup group : this.getMainDisplayGroups()) {
+                component = component.append(Component.text(group.getPrefix()).color(group.getPrefixColor()));
+            }
+
+            if (this.getPrefix() != null) {
+                component = component.append(this.getPrefix());
+            }
+
+            component = component.append(Component.text(this.getPlayer().getUsername()).color(NamedTextColor.WHITE));
+
+            if (this.getSuffix() != null) {
+                component = component.append(this.getSuffix());
+            }
+        } else {
+            DisplayGroup group = Network.getMemberDisplayGroup();
+            component = component.append(Component.text(group.getPrefix()).color(group.getPrefixColor()));
+            component.append(this.getNick());
+
+        }
+        this.chatName = component;
+
+    }
+
+    public Component getPrefix() {
         return prefix;
     }
 
     public void setPrefix(String prefix) {
         this.dbUser.setPrefix(prefix);
-        this.prefix = prefix;
+        this.prefix = Chat.parseStringToComponent(prefix);
     }
 
-    public String getSuffix() {
+    public Component getSuffix() {
         return suffix;
     }
 
     public void setSuffix(String suffix) {
         this.dbUser.setSuffix(suffix);
-        this.suffix = suffix;
+        this.suffix = Chat.parseStringToComponent(suffix);
     }
 
-    public String getNick() {
+    public Component getNick() {
         return nick;
     }
 
     public void setNick(String nick) {
         this.dbUser.setNick(nick);
-        this.nick = nick;
+        this.nick = Chat.parseStringToComponent(nick);
     }
 
     public boolean isService() {
@@ -162,7 +192,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
             this.dbUser.setService(service);
         }
         this.service = service;
-        this.updatePermissions();
+        this.updatePermissions(true);
     }
 
     public Player getPlayer() {
@@ -200,11 +230,11 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     }
 
     public void sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin plugin, String message) {
-        this.getPlayer().sendMessage(Component.text(Chat.getSenderPlugin(plugin) + message));
+        this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin).append(Chat.parseStringToComponent(message)));
     }
 
     public void sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin plugin, Component message) {
-        this.getPlayer().sendMessage(Component.text(Chat.getSenderPlugin(plugin)).append(message));
+        this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin).append(message));
     }
 
     public UUID getUniqueId() {
@@ -256,46 +286,38 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.dbUser.setTeam(null);
     }
 
-    public Set<Permission> getPermissions() {
+    public Collection<ExPermission> getPermissions() {
         return permissions;
     }
 
-    public void updatePermissions() {
+    public void updatePermissions(boolean broadcastUpdate) {
         Network.runTaskAsync(() -> {
+            if (broadcastUpdate) {
+                Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.PERMISSION));
+            }
+
             this.databasePermissions.clear();
 
             for (DbPermission perm : this.dbUser.getPermissions()) {
-                this.databasePermissions.add(new Permission(perm.getName(), perm.getMode(), perm.getServers()));
+                this.databasePermissions.add(new ExPermission(perm.getName(), perm.getMode(), perm.getServers()));
             }
 
-            if (this.group != null) {
-                DbPermGroup group = this.dbUser.getPermGroup();
-                while (Database.getGroups().containsGroup(group.getName())) {
-                    for (DbPermission perm : group.getPermissions()) {
-                        this.databasePermissions.add(new Permission(perm.getName(), perm.getMode(), perm.getServers()));
-                    }
-                    group = group.getInheritance();
-                    if (group == null) {
-                        break;
-                    }
-                }
-            }
+            this.databasePermissions.addAll(this.permGroup.getPermissions());
 
             Network.runTaskLater(this::loadPermissions, Duration.ZERO);
 
-            Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.PERMISSION));
             Network.printText(de.timesnake.basic.proxy.util.chat.Plugin.PERMISSION,
                     "Updated permissions for user " + this.getName() + " from database");
         });
     }
 
     private void loadPermissions() {
-        for (Permission perm : this.databasePermissions) {
+        for (ExPermission perm : this.databasePermissions) {
             this.addPermission(perm);
         }
     }
 
-    private void addPermission(Permission perm) {
+    private void addPermission(ExPermission perm) {
         Status.Permission mode = perm.getMode();
         Status.Server statusServer;
         if (this.getServer() == null) {
@@ -319,6 +341,33 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
                 }
             }
         }
+    }
+
+    public DisplayGroup getMasterDisplayGroup() {
+        return displayGroups.first();
+    }
+
+    public List<DisplayGroup> getMainDisplayGroups() {
+        return this.displayGroups.stream().filter(displayGroup -> displayGroup.isShowAlways()
+                || displayGroup.equals(this.getMasterDisplayGroup())).sorted().limit(DisplayGroup.MAX_PREFIX_LENGTH).toList();
+    }
+
+    public SortedSet<DisplayGroup> getDisplayGroups() {
+        return displayGroups;
+    }
+
+    public void updateDisplayGroup() {
+        this.displayGroups.clear();
+        for (String groupName : this.dbUser.getDisplayGroupNames()) {
+            this.displayGroups.add(Network.getDisplayGroup(groupName));
+        }
+
+        if (this.displayGroups.isEmpty()) {
+            this.displayGroups.add(Network.getGuestDisplayGroup());
+        }
+
+        Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.DISPLAY_GROUP));
+        this.updateChatName();
     }
 
     public String getLastChatMessage() {
@@ -510,7 +559,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         if (type.equals(MessageType.User.SERVICE)) {
             this.service = this.dbUser.isService();
         } else if (type.equals(MessageType.User.PERMISSION)) {
-            this.updatePermissions();
+            this.updatePermissions(false);
         } else if (type.equals(MessageType.User.SWITCH_NAME)) {
             Network.sendUserToServer(this, (String) msg.getValue());
         } else if (type.equals(MessageType.User.SWITCH_PORT)) {

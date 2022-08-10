@@ -130,7 +130,7 @@ public class UserManager {
 
                     DbPermGroup group = user.getPermGroup();
 
-                    while (Database.getGroups().containsGroup(group.getName()) && !group.hasPermission("network.work" +
+                    while (Database.getGroups().containsPermGroup(group.getName()) && !group.hasPermission("network.work" +
                             ".join")) {
                         group = group.getInheritance();
                         if (group == null) {

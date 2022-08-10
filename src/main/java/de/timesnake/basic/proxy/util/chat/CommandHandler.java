@@ -2,7 +2,8 @@ package de.timesnake.basic.proxy.util.chat;
 
 import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.command.SimpleCommand;
-import de.timesnake.basic.proxy.core.group.Group;
+import de.timesnake.basic.proxy.core.group.DisplayGroup;
+import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommandHandler {
 
@@ -64,12 +66,17 @@ public class CommandHandler {
         return names;
     }
 
+    @Deprecated
     public List<String> getGroupNames() {
-        List<String> names = new ArrayList<>();
-        for (Group group : Network.getGroups()) {
-            names.add(group.getName());
-        }
-        return names;
+        return this.getPermGroupNames();
+    }
+
+    public List<String> getPermGroupNames() {
+        return Network.getPermGroups().stream().map(PermGroup::getName).collect(Collectors.toList());
+    }
+
+    public List<String> getDisplayGroupNames() {
+        return Network.getDisplayGroups().stream().map(DisplayGroup::getName).collect(Collectors.toList());
     }
 
     public List<String> getGameNames() {

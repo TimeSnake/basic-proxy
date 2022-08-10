@@ -1,6 +1,6 @@
 package de.timesnake.basic.proxy.core.permission;
 
-import de.timesnake.basic.proxy.core.group.Group;
+import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
@@ -26,18 +26,14 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
             } else if (args.get(0).equalsIgnoreCase("reload")) {
                 sender.sendPluginMessage(ChatColor.PERSONAL + "Permissions reloaded");
                 for (User user : Network.getUsers()) {
-                    user.updatePermissions();
+                    user.updatePermissions(true);
                 }
             } else if (args.get(0).equalsIgnoreCase("help")) {
                 sender.sendMessageCommandHelp("Set user permission", "perm user <user> add/remove> " + "<permission>");
                 sender.sendMessageCommandHelp("Set user permgroup", "perm user <user> " + "setgroup/removegroup " +
                         "<group>");
-                sender.sendMessageCommandHelp("Create permgroup", "perm group <group> create <rank> " + "<prefix> " +
-                        "<chatcolor>");
+                sender.sendMessageCommandHelp("Create permgroup", "perm group <group> create <rank>");
                 sender.sendMessageCommandHelp("Delete permgroup", "perm group <group> delete");
-                sender.sendMessageCommandHelp("Set group prefix", "perm group <group> setprefix " + "<prefix>");
-                sender.sendMessageCommandHelp("Set group chatcolor", "perm group <group> setcolorchat " + "<chatcolor" +
-                        ">");
                 sender.sendMessageCommandHelp("Add/Remove permission from group", "perm group <group> " + "add/remove" +
                         " <permission> <mode>");
                 sender.sendMessageCommandHelp("Set/Remove inheritance", "perm group <group> " + "setinherit" +
@@ -84,15 +80,13 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
     private void handleGroupPermissionCmd(Sender sender, Arguments<Argument> args) {
         if (args.isLengthHigherEquals(4, true)) {
             String groupName = args.getString(1).toLowerCase();
-            Group group = Network.getGroup(groupName);
+            PermGroup group = Network.getPermGroup(groupName);
             switch (args.getString(2).toLowerCase()) {
                 case "create":
-                    if (args.isLengthEquals(6, true) && args.get(3).isInt(true) && args.get(5).isChatColor(true)) {
-                        Network.getPermissionHandler().createGroup(sender, groupName, args.get(3).toInt(),
-                                args.getString(4), args.get(5).toChatColor());
+                    if (args.isLengthEquals(4, true) && args.get(3).isInt(true)) {
+                        Network.getPermissionHandler().createGroup(sender, groupName, args.get(3).toInt());
                     } else {
-                        sender.sendMessageCommandHelp("Create permgroup", "perm group <group> create" + " <rank> " +
-                                "<prefix> <chatcolor>");
+                        sender.sendMessageCommandHelp("Create permgroup", "perm group <group> create" + " <rank> ");
                     }
                     break;
                 case "delete":
@@ -115,19 +109,6 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
                 case "remowinherit":
                     Network.getPermissionHandler().removeGroupInheritance(sender, groupName);
                     break;
-                case "setprefix":
-                    if (group != null) {
-                        group.setPrefix(args.getString(3));
-                        //TODO msg
-                    }
-                    break;
-                case "setchatcolor":
-                    if (args.get(3).isChatColor(true)) {
-                        if (group != null) {
-                            group.setPrefixColor(args.get(3).toChatColor());
-                            //TODO msg
-                        }
-                    }
                 default:
 
             }
@@ -153,7 +134,7 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
             if (length == 4) {
                 if (args.getString(2).equalsIgnoreCase("setgroup") || args.getString(2).equalsIgnoreCase("removegroup"
                 )) {
-                    return Network.getCommandHandler().getGroupNames();
+                    return Network.getCommandHandler().getPermGroupNames();
                 }
             }
             return null;
@@ -161,17 +142,16 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
 
         if (args.getString(0).equalsIgnoreCase("group")) {
             if (length == 2) {
-                return Network.getCommandHandler().getGroupNames();
+                return Network.getCommandHandler().getPermGroupNames();
             }
             if (length == 3) {
-                return List.of("add", "remove", "create", "delete", "setinherit", "removeinherit", "setprefix",
-                        "setchatcolor");
+                return List.of("add", "remove", "create", "delete", "setinherit", "removeinherit");
             }
 
             if (length == 4) {
                 if (args.getString(3).equalsIgnoreCase("setinherit") || args.getString(3).equalsIgnoreCase(
                         "removeinherit")) {
-                    return Network.getCommandHandler().getGroupNames();
+                    return Network.getCommandHandler().getPermGroupNames();
                 }
             }
             return null;

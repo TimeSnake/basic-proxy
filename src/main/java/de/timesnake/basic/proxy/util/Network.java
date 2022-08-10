@@ -2,7 +2,8 @@ package de.timesnake.basic.proxy.util;
 
 import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.core.file.ServerConfig;
-import de.timesnake.basic.proxy.core.group.Group;
+import de.timesnake.basic.proxy.core.group.DisplayGroup;
+import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
 import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
 import de.timesnake.basic.proxy.util.chat.CommandHandler;
@@ -22,265 +23,291 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 
-public interface Network {
+public class Network {
 
-    int PORT_BASE = 25100;
-    String TMP_SERVER_SUFFIX = "_tmp";
-    String TMUX_SESSION_NAME = "mcts";
+    public static final int PORT_BASE = 25100;
+    public static final String TMP_SERVER_SUFFIX = "_tmp";
+    public static final String TMUX_SESSION_NAME = "mcts";
+    public static final String GUEST_PERM_GROUP_NAME = "guest";
+    public static final int GUEST_PERM_GROUP_RANK = 20;
+    public static final String GUEST_DISPLAY_GROUP_NAME = "guest";
+    public static final int GUEST_DISPLAY_GROUP_RANK = 30;
+    public static final String MEMBER_PERM_GROUP_NAME = "member";
+    public static final int MEMBER_PERM_GROUP_RANK = 17;
+    public static final String MEMBER_DISPLAY_GROUP_NAME = "member";
+    public static final int MEMBER_DISPLAY_GROUP_RANK = 25;
 
-    static void broadcastMessage(String msg) {
-        NetworkManager.getInstance().broadcastMessage(msg);
+    public static void broadcastMessage(String msg) {
+        network.broadcastMessage(msg);
     }
 
-    static void broadcastMessage(Plugin plugin, String msg) {
-        NetworkManager.getInstance().broadcastMessage(plugin, msg);
+    public static void broadcastMessage(Plugin plugin, String msg) {
+        network.broadcastMessage(plugin, msg);
     }
 
-    static void broadcastMessage(Plugin plugin, Component msg) {
-        NetworkManager.getInstance().broadcastMessage(plugin, msg);
+    public static void broadcastMessage(Plugin plugin, Component msg) {
+        network.broadcastMessage(plugin, msg);
     }
 
-    static void sendConsoleMessage(String message) {
-        NetworkManager.getInstance().sendConsoleMessage(message);
+    public static void sendConsoleMessage(String message) {
+        network.sendConsoleMessage(message);
     }
 
-    static Integer getPort() {
-        return NetworkManager.getInstance().getPort();
+    public static Integer getPort() {
+        return network.getPort();
     }
 
-    static User getUser(UUID uuid) {
-        return NetworkManager.getInstance().getUser(uuid);
+    public static User getUser(UUID uuid) {
+        return network.getUser(uuid);
     }
 
-    static User getUser(Player p) {
-        return NetworkManager.getInstance().getUser(p);
+    public static User getUser(Player p) {
+        return network.getUser(p);
     }
 
-    static boolean isUserOnline(UUID uuid) {
-        return NetworkManager.getInstance().isUserOnline(uuid);
+    public static boolean isUserOnline(UUID uuid) {
+        return network.isUserOnline(uuid);
     }
 
-    static Group getGroup(String group) {
-        return NetworkManager.getInstance().getGroup(group);
+    public static PermGroup getPermGroup(String group) {
+        return network.getPermGroup(group);
     }
 
-    static Collection<Group> getGroups() {
-        return NetworkManager.getInstance().getGroups();
+    public static Collection<PermGroup> getPermGroups() {
+        return network.getPermGroups();
     }
 
-    static Collection<User> getUsers() {
-        return NetworkManager.getInstance().getUsers();
+    public static DisplayGroup getDisplayGroup(String name) {
+        return network.getDisplayGroup(name);
     }
 
-    static Collection<Server> getServers() {
-        return NetworkManager.getInstance().getServers();
+    public static Collection<DisplayGroup> getDisplayGroups() {return network.getDisplayGroups();}
+
+    public static PermGroup getGuestPermGroup() {return network.getGuestPermGroup();}
+
+    public static DisplayGroup getGuestDisplayGroup() {return network.getGuestDisplayGroup();}
+
+    public static PermGroup getMemberPermGroup() {return network.getMemberPermGroup();}
+
+    public static DisplayGroup getMemberDisplayGroup() {return network.getMemberDisplayGroup();}
+
+    public static Map<String, Path> getTmpDirsByServerName() {return network.getTmpDirsByServerName();}
+
+    public static Collection<User> getUsers() {
+        return network.getUsers();
     }
 
-    static Collection<Integer> getNotOfflineServerPorts() {
-        return NetworkManager.getInstance().getNotOfflineServerPorts();
+    public static Collection<Server> getServers() {
+        return network.getServers();
     }
 
-    static Server getServer(Integer port) {
-        return NetworkManager.getInstance().getServer(port);
+    public static Collection<Integer> getNotOfflineServerPorts() {
+        return network.getNotOfflineServerPorts();
     }
 
-    static Server getServer(String name) {
-        return NetworkManager.getInstance().getServer(name);
+    public static Server getServer(Integer port) {
+        return network.getServer(port);
     }
 
-    static Server getServer(DbServer server) {
-        return NetworkManager.getInstance().getServer(server);
+    public static Server getServer(String name) {
+        return network.getServer(name);
     }
 
-    static void updateServerTaskAll() {
-        NetworkManager.getInstance().updateServerTaskAll();
+    public static Server getServer(DbServer server) {
+        return network.getServer(server);
     }
 
-    static void updateServerTask(int port) {
-        NetworkManager.getInstance().getServer(port);
+    public static void updateServerTaskAll() {
+        network.updateServerTaskAll();
     }
 
-    static Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds) {
-        return NetworkManager.getInstance().newServer(server, copyWorlds);
+    public static void updateServerTask(int port) {
+        network.getServer(port);
     }
 
-    static LobbyServer addLobby(int port, String name, Path folderPath) {
-        return NetworkManager.getInstance().addLobby(port, name, folderPath);
+    public static Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds) {
+        return network.newServer(server, copyWorlds);
     }
 
-    static GameServer addGame(int port, String name, String task, Path folderPath) {
-        return NetworkManager.getInstance().addGame(port, name, task, folderPath);
+    public static LobbyServer addLobby(int port, String name, Path folderPath) {
+        return network.addLobby(port, name, folderPath);
     }
 
-    static LoungeServer addLounge(int port, String name, Path folderPath) {
-        return NetworkManager.getInstance().addLounge(port, name, folderPath);
+    public static GameServer addGame(int port, String name, String task, Path folderPath) {
+        return network.addGame(port, name, task, folderPath);
     }
 
-    static TempGameServer addTempGame(int port, String name, String task, Path folderPath) {
-        return NetworkManager.getInstance().addTempGame(port, name, task, folderPath);
+    public static LoungeServer addLounge(int port, String name, Path folderPath) {
+        return network.addLounge(port, name, folderPath);
     }
 
-    static BuildServer addBuild(int port, String name, String task, Path folderPath) {
-        return NetworkManager.getInstance().addBuild(port, name, task, folderPath);
+    public static TempGameServer addTempGame(int port, String name, String task, Path folderPath) {
+        return network.addTempGame(port, name, task, folderPath);
     }
 
-    static void sendUserToServer(User user, String server) {
-        NetworkManager.getInstance().sendUserToServer(user, server);
+    public static BuildServer addBuild(int port, String name, String task, Path folderPath) {
+        return network.addBuild(port, name, task, folderPath);
     }
 
-    static void sendUserToServer(User user, Integer port) {
-        NetworkManager.getInstance().sendUserToServer(user, port);
+    public static void sendUserToServer(User user, String server) {
+        network.sendUserToServer(user, server);
     }
 
-    static void removeUser(Player p) {
+    public static void sendUserToServer(User user, Integer port) {
+        network.sendUserToServer(user, port);
+    }
+
+    public static void removeUser(Player p) {
         User user = Network.getUser(p);
         if (user != null) {
             user.getGroup().removeUser(user);
         }
-        NetworkManager.getInstance().removeUser(p);
+        network.removeUser(p);
     }
 
-    static User addUser(Player p, PreUser user) {
-        return NetworkManager.getInstance().addUser(p, user);
+    public static User addUser(Player p, PreUser user) {
+        return network.addUser(p, user);
     }
 
-    static boolean isWork() {
-        return NetworkManager.getInstance().isWork();
+    public static boolean isWork() {
+        return network.isWork();
     }
 
-    static void setWork(boolean isWork) {
-        NetworkManager.getInstance().setWork(isWork);
+    public static void setWork(boolean isWork) {
+        network.setWork(isWork);
     }
 
-    static ArrayList<User> getNetworkMessageListeners() {
-        return NetworkManager.getInstance().getNetworkMessageListeners();
+    public static ArrayList<User> getNetworkMessageListeners() {
+        return network.getNetworkMessageListeners();
     }
 
-    static ArrayList<User> getPrivateMessageListeners() {
-        return NetworkManager.getInstance().getPrivateMessageListeners();
+    public static ArrayList<User> getPrivateMessageListeners() {
+        return network.getPrivateMessageListeners();
     }
 
-    static ArrayList<User> getSupportMessageListeners() {
-        return NetworkManager.getInstance().getSupportMessageListeners();
+    public static ArrayList<User> getSupportMessageListeners() {
+        return network.getSupportMessageListeners();
     }
 
-    static void addNetworkMessageListener(User user) {
-        NetworkManager.getInstance().addNetworkMessageListener(user);
+    public static void addNetworkMessageListener(User user) {
+        network.addNetworkMessageListener(user);
     }
 
-    static void addPrivateMessageListener(User user) {
-        NetworkManager.getInstance().addPrivateMessageListener(user);
+    public static void addPrivateMessageListener(User user) {
+        network.addPrivateMessageListener(user);
     }
 
-    static void addSupportMessageListener(User user) {
-        NetworkManager.getInstance().addSupportMessageListener(user);
+    public static void addSupportMessageListener(User user) {
+        network.addSupportMessageListener(user);
     }
 
-    static void removeNetworkMessageListener(User user) {
-        NetworkManager.getInstance().removeNetworkMessageListener(user);
+    public static void removeNetworkMessageListener(User user) {
+        network.removeNetworkMessageListener(user);
     }
 
-    static void removePrivateMessageListener(User user) {
-        NetworkManager.getInstance().removePrivateMessageListener(user);
+    public static void removePrivateMessageListener(User user) {
+        network.removePrivateMessageListener(user);
     }
 
-    static void removeSupportMessageListener(User user) {
-        NetworkManager.getInstance().removeSupportMessageListener(user);
+    public static void removeSupportMessageListener(User user) {
+        network.removeSupportMessageListener(user);
     }
 
-    static Group getGuestGroup() {
-        return NetworkManager.getInstance().getGuestGroup();
+    public static PermGroup getGuestGroup() {
+        return network.getGuestPermGroup();
     }
 
-    static Group getMemberGroup() {
-        return NetworkManager.getInstance().getMemberGroup();
+    public static PermGroup getMemberGroup() {
+        return network.getMemberPermGroup();
     }
 
-    static void runCommand(String command) {
-        NetworkManager.getInstance().runCommand(command);
+    public static void runCommand(String command) {
+        network.runCommand(command);
     }
 
-    static void registerListener(Object listener) {
-        NetworkManager.getInstance().registerListener(listener);
+    public static void registerListener(Object listener) {
+        network.registerListener(listener);
     }
 
-    static Channel getChannel() {
-        return NetworkManager.getInstance().getChannel();
+    public static Channel getChannel() {
+        return network.getChannel();
     }
 
-    static Integer getMaxPlayersLobby() {
-        return NetworkManager.getInstance().getMaxPlayersLobby();
+    public static Integer getMaxPlayersLobby() {
+        return network.getMaxPlayersLobby();
     }
 
-    static Integer getMaxPlayersBuild() {
-        return NetworkManager.getInstance().getMaxPlayersBuild();
+    public static Integer getMaxPlayersBuild() {
+        return network.getMaxPlayersBuild();
     }
 
-    static ServerConfig getServerConfig() {
-        return NetworkManager.getInstance().getServerConfig();
+    public static ServerConfig getServerConfig() {
+        return network.getServerConfig();
     }
 
-    static CommandHandler getCommandHandler() {
-        return NetworkManager.getInstance().getCommandHandler();
+    public static CommandHandler getCommandHandler() {
+        return network.getCommandHandler();
     }
 
-    static PermissionManager getPermissionHandler() {
-        return NetworkManager.getInstance().getPermissionHandler();
+    public static PermissionManager getPermissionHandler() {
+        return network.getPermissionHandler();
     }
 
-    static void printText(Plugin plugin, String text, String... subPlugins) {
-        NetworkManager.getInstance().printText(plugin, text, subPlugins);
+    public static void printText(Plugin plugin, String text, String... subPlugins) {
+        network.printText(plugin, text, subPlugins);
     }
 
-    static void printText(Plugin plugin, Component text, String... subPlugins) {
-        NetworkManager.getInstance().printText(plugin, text, subPlugins);
+    public static void printText(Plugin plugin, Component text, String... subPlugins) {
+        network.printText(plugin, text, subPlugins);
     }
 
-    static void printWarning(Plugin plugin, String warning, String... subPlugins) {
-        NetworkManager.getInstance().printWarning(plugin, warning, subPlugins);
+    public static void printWarning(Plugin plugin, String warning, String... subPlugins) {
+        network.printWarning(plugin, warning, subPlugins);
     }
 
-    static void printWarning(Plugin plugin, Component text, String... subPlugins) {
-        NetworkManager.getInstance().printText(plugin, text, subPlugins);
+    public static void printWarning(Plugin plugin, Component text, String... subPlugins) {
+        network.printText(plugin, text, subPlugins);
     }
 
-    static BukkitCmdHandler getBukkitCmdHandler() {
-        return NetworkManager.getInstance().getBukkitCmdHandler();
+    public static BukkitCmdHandler getBukkitCmdHandler() {
+        return network.getBukkitCmdHandler();
     }
 
-    static void runTaskLater(Task task, Duration delay) {
-        NetworkManager.getInstance().runTaskLater(task, delay);
+    public static void runTaskLater(Task task, Duration delay) {
+        network.runTaskLater(task, delay);
     }
 
-    static void runTaskAsync(Task task) {
-        NetworkManager.getInstance().runTaskAsync(task);
+    public static void runTaskAsync(Task task) {
+        network.runTaskAsync(task);
     }
 
-    static int getOnlineLobbys() {
-        return NetworkManager.getInstance().getOnlineLobbys();
+    public static int getOnlineLobbys() {
+        return network.getOnlineLobbys();
     }
 
-    static int nextEmptyPort() {
-        return NetworkManager.getInstance().nextEmptyPort();
+    public static int nextEmptyPort() {
+        return network.nextEmptyPort();
     }
 
-    static String getVelocitySecret() {
-        return NetworkManager.getInstance().getVelocitySecret();
+    public static String getVelocitySecret() {
+        return network.getVelocitySecret();
     }
 
-    static Map<String, Path> getTmpServerDirs() {
-        return NetworkManager.getInstance().getTmpDirsByServerName();
+    public static Map<String, Path> getTmpServerDirs() {
+        return network.getTmpDirsByServerName();
     }
 
-    static boolean deleteServer(String name) {
-        return NetworkManager.getInstance().deleteServer(name);
+    public static boolean deleteServer(String name) {
+        return network.deleteServer(name);
     }
 
-    static Path getNetworkPath() {
-        return NetworkManager.getInstance().getNetworkPath();
+    public static Path getNetworkPath() {
+        return network.getNetworkPath();
     }
 
-    static boolean isTmuxEnabled() {
-        return NetworkManager.getInstance().isTmuxEnabled();
+    public static boolean isTmuxEnabled() {
+        return network.isTmuxEnabled();
     }
+
+    private static final NetworkManager network = NetworkManager.getInstance();
 }

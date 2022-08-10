@@ -6,6 +6,7 @@ import com.velocitypowered.api.permission.PermissionFunction;
 import com.velocitypowered.api.permission.Tristate;
 import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.util.Network;
+import de.timesnake.library.extension.util.permission.ExPermission;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,13 +34,13 @@ public class PermissionCheck {
                 return Tristate.TRUE;
             }
 
-            Set<Permission> perms = new HashSet<>(Network.getUser(player).getPermissions());
+            Set<ExPermission> perms = new HashSet<>(Network.getUser(player).getPermissions());
 
             if (perms.isEmpty()) {
                 return Tristate.FALSE;
             }
 
-            for (Permission userPerm : perms) {
+            for (ExPermission userPerm : perms) {
 
                 if (userPerm.getPermission().equals("*")) {
                     return Tristate.TRUE;

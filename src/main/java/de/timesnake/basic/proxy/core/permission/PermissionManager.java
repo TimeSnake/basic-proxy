@@ -12,7 +12,6 @@ import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -34,7 +33,7 @@ public class PermissionManager {
         UUID uuid = user.getUniqueId();
 
         if (Network.isUserOnline(uuid)) {
-            user.addPermission(permission, mode, () -> Network.getUser(uuid).updatePermissions(), servers);
+            user.addPermission(permission, mode, () -> Network.getUser(uuid).updatePermissions(true), servers);
         } else {
             user.addPermission(permission, mode, servers);
         }
@@ -55,7 +54,7 @@ public class PermissionManager {
         UUID uuid = user.getUniqueId();
 
         if (Network.isUserOnline(uuid)) {
-            user.removePermission(permission, () -> Network.getUser(uuid).updatePermissions());
+            user.removePermission(permission, () -> Network.getUser(uuid).updatePermissions(true));
         } else {
             user.removePermission(permission);
         }
@@ -134,7 +133,7 @@ public class PermissionManager {
 
         DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
 
-        if (!Database.getGroups().containsGroup(groupName)) {
+        if (!Database.getGroups().containsPermGroup(groupName)) {
             this.sendMessagePermGroupNotExists(sender, groupName);
             return;
         }
@@ -148,7 +147,7 @@ public class PermissionManager {
             return;
         }
 
-        group.addPermission(permission, mode, () -> Network.getGroup(groupName).updatePermissions(), servers);
+        group.addPermission(permission, mode, () -> Network.getPermGroup(groupName).updatePermissions(), servers);
         this.sendMessageAddedPermission(sender, groupName, permission, mode, servers);
 
     }
@@ -160,7 +159,7 @@ public class PermissionManager {
 
         DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
 
-        if (!Database.getGroups().containsGroup(groupName)) {
+        if (!Database.getGroups().containsPermGroup(groupName)) {
             this.sendMessagePermGroupNotExists(sender, groupName);
         }
 
@@ -173,19 +172,18 @@ public class PermissionManager {
             return;
         }
 
-        group.removePermission(permission, () -> Network.getGroup(groupName).updatePermissions());
+        group.removePermission(permission, () -> Network.getPermGroup(groupName).updatePermissions());
         this.sendMessageRemovedPermission(sender, groupName, permission);
 
     }
 
-    public void createGroup(Sender sender, String groupName, int rank, String prefix,
-                            NamedTextColor chatColor) {
+    public void createGroup(Sender sender, String groupName, int rank) {
         if (!sender.hasPermission("permission.group.create", 26)) {
             return;
         }
 
         DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
-        if (Database.getGroups().containsGroup(groupName)) {
+        if (Database.getGroups().containsPermGroup(groupName)) {
             sender.sendPluginMessage(ChatColor.WARNING + "Group " + ChatColor.VALUE + group.getName() +
                     ChatColor.PERSONAL + " already exists");
         }
@@ -199,7 +197,7 @@ public class PermissionManager {
                     Chat.getMessageCode("H", 110, Plugin.PERMISSION));
         }
 
-        Database.getGroups().addPermGroup(groupName.toLowerCase(), rank, prefix, chatColor.toString());
+        Database.getGroups().addPermGroup(groupName.toLowerCase(), rank);
 
         sender.sendPluginMessage(ChatColor.PERSONAL + "Group " + ChatColor.VALUE + groupName.toLowerCase() +
                 ChatColor.PERSONAL + " created");
@@ -212,7 +210,7 @@ public class PermissionManager {
         }
 
         DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
-        if (!Database.getGroups().containsGroup(groupName)) {
+        if (!Database.getGroups().containsPermGroup(groupName)) {
             this.sendMessagePermGroupNotExists(sender, groupName);
         }
 
@@ -230,7 +228,7 @@ public class PermissionManager {
             }
         }
 
-        Database.getGroups().removePermGroup(group);
+        Database.getGroups().removePermGroup(group.getName());
         sender.sendPluginMessage(ChatColor.PERSONAL + "Group " + ChatColor.VALUE + group.getName() +
                 ChatColor.PERSONAL + " deleted");
         Network.getChannel().sendMessage(new ChannelGroupMessage<>(groupName, MessageType.Group.PERMISSION));
@@ -243,7 +241,7 @@ public class PermissionManager {
         }
 
         DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
-        if (!Database.getGroups().containsGroup(groupName)) {
+        if (!Database.getGroups().containsPermGroup(groupName)) {
             this.sendMessagePermGroupNotExists(sender, groupName);
             return;
         }
@@ -253,11 +251,11 @@ public class PermissionManager {
         }
 
         DbPermGroup inheritGroup = Database.getGroups().getPermGroup(inheritGroupName.toLowerCase());
-        if (!(Database.getGroups().containsGroup(inheritGroupName) && sender.hasGroupRankLower(inheritGroup))) {
+        if (!(Database.getGroups().containsPermGroup(inheritGroupName) && sender.hasGroupRankLower(inheritGroup))) {
             return;
         }
 
-        group.setInheritance(inheritGroup.getName(), () -> Network.getGroup(groupName).updatePermissions());
+        group.setInheritance(inheritGroup.getName(), () -> Network.getPermGroup(groupName).updatePermissions());
         sender.sendPluginMessage(ChatColor.PERSONAL + "Added Inheritance " + ChatColor.VALUE + inheritGroup.getName() +
                 ChatColor.PERSONAL + " to " + ChatColor.VALUE + group.getName());
 
@@ -269,7 +267,7 @@ public class PermissionManager {
         }
 
         DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
-        if (Database.getGroups().containsGroup(groupName)) {
+        if (Database.getGroups().containsPermGroup(groupName)) {
             this.sendMessagePermGroupNotExists(sender, groupName);
             return;
         }
@@ -278,7 +276,7 @@ public class PermissionManager {
             return;
         }
 
-        group.removeInheritance(() -> Network.getGroup(groupName).updatePermissions());
+        group.removeInheritance(() -> Network.getPermGroup(groupName).updatePermissions());
         sender.sendPluginMessage(ChatColor.PERSONAL + "Removed inheritance from " + ChatColor.VALUE + group.getName());
     }
 

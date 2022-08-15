@@ -9,6 +9,7 @@ import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.permission.ExPermission;
 import net.kyori.adventure.text.Component;
 
@@ -55,11 +56,11 @@ public class PreUser {
 
         this.airMode = dbLocalUser.isAirMode();
 
-        this.prefix = Component.text(dbLocalUser.getPrefix());
+        this.prefix = Chat.parseStringToComponent(dbLocalUser.getPrefix());
 
-        this.suffix = Component.text(dbLocalUser.getSuffix());
+        this.suffix = Chat.parseStringToComponent(dbLocalUser.getSuffix());
 
-        this.nick = Component.text(dbLocalUser.getNick());
+        this.nick = Chat.parseStringToComponent(dbLocalUser.getNick());
 
         DbPermGroup dbGroup = dbLocalUser.getPermGroup();
         String permGroupName;

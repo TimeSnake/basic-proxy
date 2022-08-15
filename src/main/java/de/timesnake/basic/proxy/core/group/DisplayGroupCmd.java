@@ -2,9 +2,9 @@ package de.timesnake.basic.proxy.core.group;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
-import de.timesnake.basic.proxy.util.chat.NamedTextColor;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -38,9 +38,9 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
         DisplayGroup group = Network.getDisplayGroup(groupName);
 
         if (group == null) {
-            sender.sendPluginMessage(Component.text("Display group ").color(NamedTextColor.WARNING)
-                    .append(Component.text(groupName).color(NamedTextColor.VALUE))
-                    .append(Component.text(" not exists").color(NamedTextColor.WARNING)));
+            sender.sendPluginMessage(Component.text("Display group ", ExTextColor.WARNING)
+                    .append(Component.text(groupName, ExTextColor.VALUE))
+                    .append(Component.text(" not exists", ExTextColor.WARNING)));
         }
 
         DbUser user = args.get(0).toDbUser();
@@ -51,31 +51,31 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
         switch (action) {
             case "add" -> {
                 if (user.getDisplayGroupNames().contains(groupName)) {
-                    sender.sendPluginMessage(Component.text(userName).color(NamedTextColor.VALUE)
-                            .append(Component.text(" is already member of display group ").color(NamedTextColor.WARNING))
-                            .append(Component.text(groupName).color(NamedTextColor.VALUE)));
+                    sender.sendPluginMessage(Component.text(userName).color(ExTextColor.VALUE)
+                            .append(Component.text(" is already member of display group ").color(ExTextColor.WARNING))
+                            .append(Component.text(groupName).color(ExTextColor.VALUE)));
                     return;
                 }
 
                 user.addDisplayGroup(groupName);
-                sender.sendPluginMessage(Component.text("Added ").color(NamedTextColor.PERSONAL)
-                        .append(Component.text(userName).color(NamedTextColor.VALUE))
-                        .append(Component.text(" to display group ").color(NamedTextColor.PERSONAL))
-                        .append(Component.text(groupName).color(NamedTextColor.VALUE)));
+                sender.sendPluginMessage(Component.text("Added ").color(ExTextColor.PERSONAL)
+                        .append(Component.text(userName).color(ExTextColor.VALUE))
+                        .append(Component.text(" to display group ").color(ExTextColor.PERSONAL))
+                        .append(Component.text(groupName).color(ExTextColor.VALUE)));
             }
             case "remove" -> {
                 if (!user.getDisplayGroupNames().contains(groupName)) {
-                    sender.sendPluginMessage(Component.text(user.getName()).color(NamedTextColor.VALUE)
-                            .append(Component.text(" is not a member of display group ").color(NamedTextColor.WARNING))
-                            .append(Component.text(groupName).color(NamedTextColor.VALUE)));
+                    sender.sendPluginMessage(Component.text(user.getName()).color(ExTextColor.VALUE)
+                            .append(Component.text(" is not a member of display group ").color(ExTextColor.WARNING))
+                            .append(Component.text(groupName).color(ExTextColor.VALUE)));
                     return;
                 }
 
                 user.removeDisplayGroup(groupName);
-                sender.sendPluginMessage(Component.text("Removed ").color(NamedTextColor.PERSONAL)
-                        .append(Component.text(userName).color(NamedTextColor.VALUE))
-                        .append(Component.text(" from display group ").color(NamedTextColor.PERSONAL))
-                        .append(Component.text(groupName).color(NamedTextColor.VALUE)));
+                sender.sendPluginMessage(Component.text("Removed ").color(ExTextColor.PERSONAL)
+                        .append(Component.text(userName).color(ExTextColor.VALUE))
+                        .append(Component.text(" from display group ").color(ExTextColor.PERSONAL))
+                        .append(Component.text(groupName).color(ExTextColor.VALUE)));
             }
             default -> {
                 return;

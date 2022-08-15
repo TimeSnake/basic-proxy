@@ -27,6 +27,13 @@ public class CommandSender implements de.timesnake.library.extension.util.cmd.Co
         }
     }
 
+    @Override
+    public void sendMessage(Component... components) {
+        for (Component component : components) {
+            this.cmdSender.sendMessage(component);
+        }
+    }
+
     public void sendMessage(Component message) {
         this.cmdSender.sendMessage(message);
     }

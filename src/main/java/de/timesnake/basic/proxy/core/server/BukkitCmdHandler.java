@@ -6,13 +6,15 @@ import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 
 import java.util.List;
+
+import static de.timesnake.library.basic.util.chat.ExTextColor.*;
+import static net.kyori.adventure.text.Component.text;
 
 public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
 
@@ -39,12 +41,13 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
                 }
             } else if (args.get(1).equalsIgnoreCase("stop")) {
                 this.stopAllServers();
-                sender.sendPluginMessage(ChatColor.PERSONAL + "All servers stopped");
+                sender.sendPluginMessage(text("All servers stopped", PERSONAL));
             } else {
-                sender.sendPluginMessage(ChatColor.WARNING + "Only commands " + ChatColor.VALUE + "start " +
-                        ChatColor.WARNING + "and " + ChatColor.VALUE + "stop " + ChatColor.WARNING + " are allowed on" +
-                        " " +
-                        "the all servers command");
+                sender.sendPluginMessage(text("Only commands ", WARNING)
+                        .append(text("start ", VALUE))
+                        .append(text("and ", WARNING))
+                        .append(text("stop ", VALUE))
+                        .append(text(" are allowed on the all servers command", WARNING)));
             }
 
         } else if (args.get(0).isServerName(true)) {
@@ -61,8 +64,9 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
             Server server = args.get(0).toServer();
             String bukkitCmd = args.toMessage(1);
             server.execute(bukkitCmd);
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Executed command on server " + ChatColor.VALUE +
-                    server.getName() + ChatColor.PERSONAL + ": " + bukkitCmd);
+            sender.sendPluginMessage(text("Executed command on server ", PERSONAL)
+                    .append(text(server.getName(), VALUE))
+                    .append(text(": " + bukkitCmd, PERSONAL)));
         }
     }
 
@@ -73,16 +77,18 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
 
     public void startServer(Sender sender, Arguments<Argument> args) {
         if (Network.getServer(args.get(1).toLowerCase()) == null) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + args.get(1).toLowerCase() +
-                    ChatColor.WARNING + " doesn't exist!");
+            sender.sendPluginMessage(text("Server ", WARNING)
+                    .append(text(args.get(1).toLowerCase(), VALUE))
+                    .append(text(" doesn't exist!", WARNING)));
             return;
         }
 
         Server server = Network.getServer(args.get(1).toLowerCase());
 
         if (server.getStatus().equals(Status.Server.OFFLINE)) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + args.get(1).toLowerCase() +
-                    ChatColor.WARNING + " is already online!");
+            sender.sendPluginMessage(text("Server ", WARNING)
+                    .append(text(args.get(1).toLowerCase(), VALUE))
+                    .append(text(" is already online!", WARNING)));
             return;
         }
 
@@ -115,25 +121,28 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
         }
 
         if (server.getStatus().equals(Status.Server.SERVICE)) {
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Changed status of server " + ChatColor.VALUE +
-                    server.getName() + ChatColor.PERSONAL + " to service");
+            sender.sendPluginMessage(text("Changed status of server ", PERSONAL)
+                    .append(text(server.getName(), VALUE))
+                    .append(text(" to service", PERSONAL)));
         } else {
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Changed status of server " + ChatColor.VALUE +
-                    server.getName() + ChatColor.PERSONAL + " to online");
+            sender.sendPluginMessage(text("Changed status of server ", PERSONAL)
+                    .append(text(server.getName(), VALUE))
+                    .append(text(" to online", PERSONAL)));
         }
     }
 
     public void handleServerCmd(Sender sender, Server server) {
         boolean isStart = server.start();
         if (!isStart) {
-            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while starting " +
-                    "server " +
-                    ChatColor.VALUE + server.getName());
+            sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK)
+                    .append(text("Error while starting server ", WARNING))
+                    .append(text(server.getName(), VALUE)));
             return;
         }
 
-        sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.PERSONAL + "Started server " +
-                ChatColor.VALUE + server.getName());
+        sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK)
+                .append(text("Started server ", PERSONAL))
+                .append(text(server.getName(), VALUE)));
         if (!sender.isConsole(false)) {
             Network.printText(Plugin.NETWORK, "Started server " + server.getName());
         }

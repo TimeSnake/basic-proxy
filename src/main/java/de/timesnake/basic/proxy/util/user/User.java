@@ -8,9 +8,7 @@ import de.timesnake.basic.proxy.core.group.DisplayGroup;
 import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.Chat;
 import de.timesnake.basic.proxy.util.chat.CommandSender;
-import de.timesnake.basic.proxy.util.chat.NamedTextColor;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.channel.util.listener.ChannelHandler;
@@ -24,10 +22,12 @@ import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.basic.util.chat.Plugin;
+import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.permission.ExPermission;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.time.Duration;
 import java.util.*;
@@ -134,21 +134,25 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
         if (this.getNick() == null) {
             for (DisplayGroup group : this.getMainDisplayGroups()) {
-                component = component.append(Component.text(group.getPrefix()).color(group.getPrefixColor()));
+                if (group.getPrefix() != null) {
+                    component = component.append(Component.text(group.getPrefix()).color(group.getPrefixColor()));
+                }
             }
 
             if (this.getPrefix() != null) {
                 component = component.append(this.getPrefix());
             }
 
-            component = component.append(Component.text(this.getPlayer().getUsername()).color(NamedTextColor.WHITE));
+            component = component.append(Component.text(this.getPlayer().getUsername(), ExTextColor.WHITE));
 
             if (this.getSuffix() != null) {
                 component = component.append(this.getSuffix());
             }
         } else {
             DisplayGroup group = Network.getMemberDisplayGroup();
-            component = component.append(Component.text(group.getPrefix()).color(group.getPrefixColor()));
+            if (group.getPrefix() != null) {
+                component = component.append(Component.text(group.getPrefix(), group.getPrefixColor()));
+            }
             component.append(this.getNick());
 
         }
@@ -162,7 +166,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     public void setPrefix(String prefix) {
         this.dbUser.setPrefix(prefix);
-        this.prefix = Chat.parseStringToComponent(prefix);
+        this.prefix = LegacyComponentSerializer.legacyAmpersand().deserialize(prefix);
     }
 
     public Component getSuffix() {
@@ -171,7 +175,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     public void setSuffix(String suffix) {
         this.dbUser.setSuffix(suffix);
-        this.suffix = Chat.parseStringToComponent(suffix);
+        this.suffix = LegacyComponentSerializer.legacyAmpersand().deserialize(suffix);
     }
 
     public Component getNick() {
@@ -180,7 +184,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     public void setNick(String nick) {
         this.dbUser.setNick(nick);
-        this.nick = Chat.parseStringToComponent(nick);
+        this.nick = LegacyComponentSerializer.legacyAmpersand().deserialize(nick);
     }
 
     public boolean isService() {
@@ -221,6 +225,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         return this.getPlayer().hasPermission(permission);
     }
 
+    @Deprecated
     public void sendMessage(String message) {
         this.player.sendMessage(Component.text(message));
     }
@@ -229,6 +234,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.player.sendMessage(message);
     }
 
+    @Deprecated
     public void sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin plugin, String message) {
         this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin).append(Chat.parseStringToComponent(message)));
     }
@@ -426,15 +432,17 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     public void addCoins(float coins) {
         this.coins += coins;
         this.dbUser.addCoins(coins);
-        this.sendPluginMessage(Plugin.TIME_COINS,
-                ChatColor.PERSONAL + "Added " + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s)");
+        this.sendPluginMessage(Plugin.TIME_COINS, Component.text("Added ", ExTextColor.PERSONAL)
+                .append(Component.text(Chat.roundCoinAmount(coins), ExTextColor.VALUE))
+                .append(Component.text(" timecoin(s)", ExTextColor.PERSONAL)));
     }
 
     public void removeCoins(float coins) {
         this.coins -= coins;
         this.dbUser.removeCoins(coins);
-        this.sendPluginMessage(Plugin.TIME_COINS,
-                ChatColor.PERSONAL + "Removed" + ChatColor.VALUE + coins + ChatColor.PERSONAL + " timecoin(s)");
+        this.sendPluginMessage(Plugin.TIME_COINS, Component.text("Removed ", ExTextColor.PERSONAL)
+                .append(Component.text(Chat.roundCoinAmount(coins), ExTextColor.VALUE))
+                .append(Component.text(" timecoin(s)", ExTextColor.PERSONAL)));
     }
 
     public float getCoins() {
@@ -444,7 +452,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     public void setCoins(float coins) {
         this.coins = coins;
         this.dbUser.setCoins(coins);
-        this.sendPluginMessage(Plugin.TIME_COINS, ChatColor.PERSONAL + "Balance changed to " + ChatColor.VALUE + coins);
+        this.sendPluginMessage(Plugin.TIME_COINS, Component.text("Balance changed to ", ExTextColor.PERSONAL)
+                .append(Component.text(Chat.roundCoinAmount(coins), ExTextColor.VALUE)));
     }
 
     public void connect(RegisteredServer server) {
@@ -540,11 +549,13 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
      */
     public void forceDataProtectionAgreement() {
         this.dpdInfoTask = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
-            this.sendPluginMessage(Plugin.NETWORK, ChatColor.WARNING + "Please accept our data protection declaration");
-            this.sendPluginMessage(Plugin.NETWORK,
-                    ChatColor.WARNING + "Type " + ChatColor.VALUE + "/dpd agree" + ChatColor.PERSONAL + " to accept");
-            this.sendPluginMessage(Plugin.NETWORK,
-                    ChatColor.WARNING + "Type " + ChatColor.VALUE + "/dpd disagree" + ChatColor.PERSONAL + " to deny");
+            this.sendPluginMessage(Plugin.NETWORK, Component.text("Please accept our data protection declaration", ExTextColor.WARNING));
+            this.sendPluginMessage(Plugin.NETWORK, Component.text("Type ", ExTextColor.WARNING)
+                    .append(Component.text("/dpd agree", ExTextColor.VALUE))
+                    .append(Component.text(" to accept", ExTextColor.WARNING)));
+            this.sendPluginMessage(Plugin.NETWORK, Component.text("Type ", ExTextColor.WARNING)
+                    .append(Component.text("/dpd disagree", ExTextColor.VALUE))
+                    .append(Component.text(" to deny", ExTextColor.WARNING)));
             if (!this.getPlayer().isActive()) {
                 this.dpdInfoTask.cancel();
             }

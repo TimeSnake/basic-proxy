@@ -32,10 +32,10 @@ public class Sender extends de.timesnake.library.extension.util.cmd.Sender {
     }
 
     public void sendMessage(Component component) {
-        ((CommandSender) this.cmdSender).sendMessage(component);
+        this.cmdSender.sendMessage(component);
     }
 
     public void sendPluginMessage(Component component) {
-        ((CommandSender) this.cmdSender).sendMessage(Component.text(Chat.getSenderPlugin(this.plugin)).append(component));
+        this.cmdSender.sendMessage(Chat.getSenderPlugin(this.plugin).append(component));
     }
 }

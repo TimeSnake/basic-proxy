@@ -7,10 +7,11 @@ import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import net.kyori.adventure.text.Component;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
             } else if (args.get(0).equalsIgnoreCase("group")) {
                 this.handleGroupPermissionCmd(sender, args);
             } else if (args.get(0).equalsIgnoreCase("reload")) {
-                sender.sendPluginMessage(ChatColor.PERSONAL + "Permissions reloaded");
+                sender.sendPluginMessage(Component.text("Permissions reloaded", ExTextColor.PERSONAL));
                 for (User user : Network.getUsers()) {
                     user.updatePermissions(true);
                 }

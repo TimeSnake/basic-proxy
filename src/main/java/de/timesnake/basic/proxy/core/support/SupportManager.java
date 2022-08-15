@@ -15,10 +15,11 @@ import de.timesnake.channel.util.listener.ListenerType;
 import de.timesnake.channel.util.message.ChannelSupportMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.library.basic.util.Tuple;
-import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import net.kyori.adventure.text.Component;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -76,8 +77,8 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
                 User user = Network.getUser(uuid);
 
                 if (user != null) {
-                    user.sendPluginMessage(Plugin.SUPPORT, ChatColor.WARNING + "New ticket: " + ChatColor.VALUE + "ID" +
-                            " " + id);
+                    user.sendPluginMessage(Plugin.SUPPORT, Component.text("New ticket: ", ExTextColor.WARNING)
+                            .append(Component.text("ID " + id, ExTextColor.VALUE)));
                 }
             }
         }
@@ -98,10 +99,10 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
 
         if (this.ticketListeners.contains(user.getUniqueId())) {
             this.ticketListeners.remove(user.getUniqueId());
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Disabled support messages");
+            sender.sendPluginMessage(Component.text("Disabled support messages", ExTextColor.PERSONAL));
         } else {
             this.ticketListeners.add(user.getUniqueId());
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Enabled support messages");
+            sender.sendPluginMessage(Component.text("Enabled support messages", ExTextColor.PERSONAL));
         }
 
     }

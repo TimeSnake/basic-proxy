@@ -10,11 +10,14 @@ import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
+import net.kyori.adventure.text.Component;
 
 import java.util.Arrays;
 import java.util.UUID;
+
+import static de.timesnake.library.basic.util.chat.ExTextColor.*;
+import static net.kyori.adventure.text.Component.text;
 
 public class PermissionManager {
 
@@ -71,8 +74,10 @@ public class PermissionManager {
             return;
         }
 
-        String message = ChatColor.PERSONAL + "Updated group from " + ChatColor.VALUE + user.getName() +
-                ChatColor.PERSONAL + " to " + ChatColor.VALUE + groupName.toLowerCase();
+        Component message = text("Updated group from ", PERSONAL)
+                .append(text(user.getName(), VALUE))
+                .append(text(" to ", PERSONAL))
+                .append(text(groupName.toLowerCase(), VALUE));
 
         UUID uuid = user.getUniqueId();
 
@@ -88,8 +93,10 @@ public class PermissionManager {
                 sender.sendPluginMessage(message);
 
             } else {
-                sender.sendPluginMessage(ChatColor.VALUE + user.getName() + ChatColor.WARNING + " is " + "already in " +
-                        ChatColor.VALUE + groupName.toLowerCase() + ChatColor.WARNING + " group");
+                sender.sendPluginMessage(text(user.getName(), VALUE)
+                        .append(text(" is already in ", WARNING))
+                        .append(text(groupName.toLowerCase(), VALUE))
+                        .append(text(" group", WARNING)));
             }
         } else if (sender.hasGroupRankLower(Database.getGroups().getPermGroup(groupName))) {
             if (Network.isUserOnline(uuid)) {
@@ -110,8 +117,9 @@ public class PermissionManager {
         }
 
         if (user.getPermGroup() == null) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Player " + ChatColor.VALUE + user.getName() +
-                    ChatColor.WARNING + " hasn't a group");
+            sender.sendPluginMessage(text("Player ", WARNING)
+                    .append(text(user.getName(), VALUE))
+                    .append(text(" hasn't a group", WARNING)));
             return;
         }
 
@@ -120,7 +128,8 @@ public class PermissionManager {
         }
 
         user.removePermGroup(() -> Network.getUser(user.getUniqueId()).updateGroup());
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Removed group from " + ChatColor.VALUE + user.getName());
+        sender.sendPluginMessage(text("Removed group from ", PERSONAL)
+                .append(text(user.getName(), VALUE)));
 
         UUID uuid = user.getUniqueId();
     }
@@ -184,8 +193,9 @@ public class PermissionManager {
 
         DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
         if (Database.getGroups().containsPermGroup(groupName)) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Group " + ChatColor.VALUE + group.getName() +
-                    ChatColor.PERSONAL + " already exists");
+            sender.sendPluginMessage(text("Group ", WARNING)
+                    .append(text(group.getName(), VALUE))
+                    .append(text(" already exists", WARNING)));
         }
 
         if (!sender.hasGroupRankLower(rank)) {
@@ -193,15 +203,16 @@ public class PermissionManager {
         }
 
         if (!(rank > 0)) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Invalid rank (rank: >0) " +
-                    Chat.getMessageCode("H", 110, Plugin.PERMISSION));
+            sender.sendPluginMessage(text("Invalid rank (rank: >0) ", WARNING)
+                    .append(Chat.getMessageCode("H", 110, Plugin.PERMISSION)));
         }
 
         Database.getGroups().addPermGroup(groupName.toLowerCase(), rank);
 
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Group " + ChatColor.VALUE + groupName.toLowerCase() +
-                ChatColor.PERSONAL + " created");
-        sender.sendPluginMessage(ChatColor.WARNING + "Restart all servers to load the new group");
+        sender.sendPluginMessage(text("Group ", PERSONAL)
+                .append(text(groupName.toLowerCase(), VALUE))
+                .append(text(" created", PERSONAL)));
+        sender.sendPluginMessage(text("Restart all servers to load the new group", WARNING));
     }
 
     public void deleteGroup(Sender sender, String groupName) {
@@ -229,8 +240,9 @@ public class PermissionManager {
         }
 
         Database.getGroups().removePermGroup(group.getName());
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Group " + ChatColor.VALUE + group.getName() +
-                ChatColor.PERSONAL + " deleted");
+        sender.sendPluginMessage(text("Group ", PERSONAL)
+                .append(text(group.getName(), VALUE))
+                .append(text(" deleted", PERSONAL)));
         Network.getChannel().sendMessage(new ChannelGroupMessage<>(groupName, MessageType.Group.PERMISSION));
 
     }
@@ -256,8 +268,10 @@ public class PermissionManager {
         }
 
         group.setInheritance(inheritGroup.getName(), () -> Network.getPermGroup(groupName).updatePermissions());
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Added Inheritance " + ChatColor.VALUE + inheritGroup.getName() +
-                ChatColor.PERSONAL + " to " + ChatColor.VALUE + group.getName());
+        sender.sendPluginMessage(text("Added Inheritance ", PERSONAL)
+                .append(text(inheritGroup.getName(), VALUE))
+                .append(text(" to ", PERSONAL))
+                .append(text(group.getName(), VALUE)));
 
     }
 
@@ -277,36 +291,46 @@ public class PermissionManager {
         }
 
         group.removeInheritance(() -> Network.getPermGroup(groupName).updatePermissions());
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Removed inheritance from " + ChatColor.VALUE + group.getName());
+        sender.sendPluginMessage(text("Removed inheritance from ", PERSONAL)
+                .append(text(group.getName(), VALUE)));
     }
 
     private void sendMessagePermGroupNotExists(Sender sender, String groupName) {
-        sender.sendPluginMessage(ChatColor.WARNING + "Group " + ChatColor.VALUE + groupName + ChatColor.PERSONAL +
-                " does not exist");
+        sender.sendPluginMessage(text("Group ", WARNING)
+                .append(text(groupName, VALUE))
+                .append(text(" does not exist", WARNING)));
         sender.sendMessageCommandHelp("Create a group", "perms group <name> create");
     }
 
     private void sendMessageHasAlreadyPermission(Sender sender, String name, String permission) {
-        sender.sendPluginMessage(ChatColor.VALUE + name + ChatColor.WARNING + " has already " + "permission " +
-                ChatColor.VALUE + permission);
+        sender.sendPluginMessage(text(name, VALUE)
+                .append(text(" has already permission ", WARNING))
+                .append(text(permission, VALUE)));
     }
 
     private void sendMessageAddedPermission(Sender sender, String name, String permission, Status.Permission mode,
                                             String... servers) {
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Added permission " + ChatColor.VALUE + permission +
-                ChatColor.PERSONAL + " to " + ChatColor.VALUE + name + ChatColor.PERSONAL + " with mode " +
-                ChatColor.VALUE + mode.getName() + ChatColor.PERSONAL + " on server(s): " + ChatColor.VALUE +
-                Chat.listToString(Arrays.stream(servers).toList()));
+        sender.sendPluginMessage(text("Added permission ", PERSONAL)
+                .append(text(permission, VALUE))
+                .append(text(" to ", PERSONAL))
+                .append(text(name, VALUE))
+                .append(text(" with mode ", PERSONAL))
+                .append(text(mode.getName(), VALUE))
+                .append(text(" on server(s): ", PERSONAL))
+                .append(Chat.listToComponent(Arrays.stream(servers).toList(), VALUE, PERSONAL)));
     }
 
     private void sendMessageRemovedPermission(Sender sender, String name, String permission) {
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Removed permission " + ChatColor.VALUE + permission +
-                ChatColor.PERSONAL + " from " + ChatColor.VALUE + name);
+        sender.sendPluginMessage(text("Removed permission ", PERSONAL)
+                .append(text(permission, VALUE))
+                .append(text(" from ", PERSONAL))
+                .append(text(name, VALUE)));
     }
 
     private void sendMessageHasNotPermission(Sender sender, String name, String permission) {
-        sender.sendPluginMessage(ChatColor.VALUE + name + ChatColor.WARNING + " has not " + "permission " +
-                ChatColor.VALUE + permission);
+        sender.sendPluginMessage(text(name, VALUE)
+                .append(text(" has not permission ", WARNING))
+                .append(text(permission, VALUE)));
     }
 
 }

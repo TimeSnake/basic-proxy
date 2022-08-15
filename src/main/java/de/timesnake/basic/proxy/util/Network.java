@@ -41,6 +41,7 @@ public class Network {
         network.broadcastMessage(msg);
     }
 
+    @Deprecated
     public static void broadcastMessage(Plugin plugin, String msg) {
         network.broadcastMessage(plugin, msg);
     }

@@ -25,9 +25,13 @@ import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.basic.util.server.Server;
 import de.timesnake.library.extension.util.chat.Chat;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 
 import java.text.DateFormat;
@@ -43,7 +47,7 @@ public class UserManager {
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final ConcurrentHashMap<String, Future<PreUser>> preUsers = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Future<String>> prePunishment = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Future<Component>> prePunishment = new ConcurrentHashMap<>();
 
     public UserManager() {
         Network.registerListener(this);
@@ -68,9 +72,9 @@ public class UserManager {
     public void onPostLogin(PostLoginEvent e) {
         Player p = e.getPlayer();
 
-        Future<String> prePunishmentFuture = this.prePunishment.get(p.getUsername());
+        Future<Component> prePunishmentFuture = this.prePunishment.get(p.getUsername());
 
-        String punishment;
+        Component punishment;
         try {
             punishment = prePunishmentFuture.get();
         } catch (InterruptedException | ExecutionException ex) {
@@ -79,7 +83,7 @@ public class UserManager {
         }
 
         if (punishment != null) {
-            p.disconnect(Component.text(punishment));
+            p.disconnect(punishment);
         }
 
 
@@ -100,13 +104,12 @@ public class UserManager {
         Network.runTaskAsync(() -> this.sendJoinMessages(p, user));
 
         for (User userOnline : Network.getNetworkMessageListeners()) {
-            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getUsername() + ChatColor.PUBLIC + " " +
-                    "joined");
+            userOnline.sendPluginMessage(Plugin.NETWORK, Component.text(p.getUsername(), ExTextColor.VALUE)
+                    .append(Component.text(" joined", ExTextColor.PUBLIC)));
         }
 
         Network.printText(Plugin.NETWORK, "Players online " + Network.getUsers().size());
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(),
-                MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
     }
 
     @Subscribe(order = PostOrder.EARLY)
@@ -123,19 +126,16 @@ public class UserManager {
             Network.runTaskAsync(() -> {
                 if (Network.isWork() && !user.hasPermission("network.work.join")) {
                     if (!Database.getUsers().getUser(user.getUniqueId()).hasPermGroup()) {
-                        e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§cService-Work    " +
-                                "Wartungsarbeiten")));
+                        e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§cService-Work    " + "Wartungsarbeiten")));
                         return;
                     }
 
                     DbPermGroup group = user.getPermGroup();
 
-                    while (Database.getGroups().containsPermGroup(group.getName()) && !group.hasPermission("network.work" +
-                            ".join")) {
+                    while (Database.getGroups().containsPermGroup(group.getName()) && !group.hasPermission("network.work" + ".join")) {
                         group = group.getInheritance();
                         if (group == null) {
-                            e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§cService-Work    " +
-                                    "Wartungsarbeiten")));
+                            e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§cService-Work    " + "Wartungsarbeiten")));
                             return;
                         }
                     }
@@ -170,15 +170,13 @@ public class UserManager {
 
         Network.runTaskAsync(() -> {
             for (User userOnline : Network.getNetworkMessageListeners()) {
-                userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + p.getUsername() +
-                        ChatColor.PUBLIC + " left");
+                userOnline.sendPluginMessage(Plugin.NETWORK, Component.text(p.getUsername(), ExTextColor.VALUE)
+                        .append(Component.text(" left", ExTextColor.PUBLIC)));
             }
         });
 
         Network.removeUser(p);
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(),
-                MessageType.Server.ONLINE_PLAYERS,
-                Network.getUsers().size()));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
     }
 
     @Subscribe
@@ -206,28 +204,28 @@ public class UserManager {
         }
 
         for (User userOnline : Network.getNetworkMessageListeners()) {
-            userOnline.sendPluginMessage(Plugin.NETWORK, ChatColor.VALUE + user.getChatNameComponent() +
-                    ChatColor.PUBLIC + " connected to " + ChatColor.VALUE + serverInfo.getName());
+            userOnline.sendPluginMessage(Plugin.NETWORK, user.getChatNameComponent()
+                    .append(Component.text(" connected to ", ExTextColor.PUBLIC))
+                    .append(Component.text(serverInfo.getName(), ExTextColor.VALUE)));
         }
 
     }
 
     private void sendJoinMessages(Player player, User user) {
-        player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING +
-                "You accepted the network rules!"));
+        user.sendPluginMessage(Plugin.NETWORK, Component.text("You accepted the network rules!", ExTextColor.WARNING));
 
         if (user.agreedDataProtection()) {
-            user.sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin.NETWORK, ChatColor.WARNING +
-                    "You accepted our data protection declaration (dpd)");
-            user.sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin.NETWORK, ChatColor.WARNING +
-                    "Type " + ChatColor.VALUE + "/dpd disagree" + ChatColor.WARNING + " to deny our dpd");
+            user.sendPluginMessage(Plugin.NETWORK, Component.text("You accepted our data protection declaration (dpd)", ExTextColor.WARNING));
+            user.sendPluginMessage(Plugin.NETWORK, Component.text("Type ", ExTextColor.WARNING)
+                    .append(Component.text("/dpd disagree", ExTextColor.VALUE))
+                    .append(Component.text(" to deny our dpd", ExTextColor.WARNING)));
         } else {
             user.forceDataProtectionAgreement();
         }
 
         if (player.hasPermission("support.opentickets")) {
-            player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + "§l" +
-                    Database.getSupport().getTickets().size() + ChatColor.PUBLIC + " open tickets"));
+            user.sendPluginMessage(Plugin.SUPPORT, Component.text(Database.getSupport().getTickets().size(), ExTextColor.VALUE)
+                    .append(Component.text(" open tickets", ExTextColor.PERSONAL)));
         }
 
 
@@ -252,29 +250,34 @@ public class UserManager {
             }
 
             if (open > 0) {
-                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + open +
-                        ChatColor.PERSONAL + " of your ticket(s) is/are open."));
+                player.sendMessage(Chat.getSenderPlugin(Plugin.SUPPORT)
+                        .append(Component.text(open, ExTextColor.VALUE))
+                        .append(Component.text(" of your ticket(s) is/are open.", ExTextColor.PERSONAL)));
             }
 
             if (inProcess > 0) {
-                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + inProcess +
-                        ChatColor.PERSONAL + " of your ticket(s) is/are in process."));
+                player.sendMessage(Chat.getSenderPlugin(Plugin.SUPPORT)
+                        .append(Component.text(inProcess, ExTextColor.VALUE))
+                        .append(Component.text(" of your ticket(s) is/are in process.", ExTextColor.PERSONAL)));
             }
 
             if (solved > 0) {
-                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved +
-                        ChatColor.PERSONAL + " of your ticket(s) is/are solved."));
+                player.sendMessage(Chat.getSenderPlugin(Plugin.SUPPORT)
+                        .append(Component.text(solved, ExTextColor.VALUE))
+                        .append(Component.text(" of your ticket(s) is/are solved.", ExTextColor.PERSONAL)));
             }
 
             if (admin > 0) {
-                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.VALUE + solved +
-                        ChatColor.PERSONAL + " of your ticket(s) is/are forwarded to " + "an admin."));
+                player.sendMessage(Chat.getSenderPlugin(Plugin.SUPPORT)
+                        .append(Component.text(solved, ExTextColor.VALUE))
+                        .append(Component.text(" of your ticket(s) is/are forwarded to " + "an admin.", ExTextColor.PERSONAL)));
             }
 
             if (open + inProcess + solved + admin > 0) {
-                player.sendMessage(Component.text(Chat.getSenderPlugin(Plugin.SUPPORT) + ChatColor.PERSONAL + "Use" +
-                        " " +
-                        ChatColor.VALUE + "/ticket(s) " + ChatColor.PUBLIC + "to manage your tickets"));
+                player.sendMessage(Chat.getSenderPlugin(Plugin.SUPPORT)
+                        .append(Component.text("User ", ExTextColor.PERSONAL))
+                        .append(Component.text("/ticket(s) ", ExTextColor.VALUE))
+                        .append(Component.text("to manage your tickets", ExTextColor.PERSONAL)));
             }
         }
     }
@@ -293,13 +296,13 @@ public class UserManager {
     }
 
     public void sendAcceptedRules(Player p) {
-        Title title = Title.title(Component.text(ChatColor.WARNING + "You accepted the Network-Rules"),
-                Component.text(ChatColor.PERSONAL + "For more infos use " + ChatColor.VALUE + "/rules"),
+        Title title = Title.title(Component.text("You accepted the Network-Rules", ExTextColor.WARNING),
+                Component.text("For more infos use ", ExTextColor.PERSONAL).append(Component.text("/rules", ExTextColor.VALUE)),
                 Title.Times.of(Duration.ZERO, Duration.ofSeconds(10), Duration.ofMillis(500)));
         p.showTitle(title);
     }
 
-    public String checkIsPlayerPunished(String name) {
+    public Component checkIsPlayerPunished(String name) {
 
         DbUser user = Database.getUsers().getUser(name);
 
@@ -311,11 +314,20 @@ public class UserManager {
         }
 
         if (type.equals(Type.Punishment.BAN)) {
-            return ChatColor.WARNING + "You were permanently banned." + "\n" +
-                    ChatColor.WARNING + "reason: " + ChatColor.VALUE + user.getPunishment().getReason() + "\n" +
-                    ChatColor.PUBLIC + "For more info use our discord: " + ChatColor.VALUE +
-                    de.timesnake.library.basic.util.server.Server.DISCORD_LINK + "\nor contact us by email: " +
-                    de.timesnake.library.basic.util.server.Server.SUPPORT_EMAIL;
+            return Component.text("You were permanently banned.", ExTextColor.WARNING)
+                    .append(Component.newline())
+                    .append(Component.text("Reason: ", ExTextColor.WARNING))
+                    .append(Component.text(user.getPunishment().getReason(), ExTextColor.VALUE))
+                    .append(Component.newline())
+                    .append(Component.text("For more info use our discord: ", ExTextColor.PERSONAL))
+                    .append(Component.text(de.timesnake.library.basic.util.server.Server.DISCORD_LINK, ExTextColor.VALUE, TextDecoration.UNDERLINED)
+                            .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, de.timesnake.library.basic.util.server.Server.DISCORD_LINK))
+                            .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text("Click to copy"))))
+                    .append(Component.newline())
+                    .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
+                    .append(Component.text(Server.SUPPORT_EMAIL, ExTextColor.VALUE, TextDecoration.UNDERLINED)
+                            .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, Server.SUPPORT_EMAIL))
+                            .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text("Click to copy"))));
 
         } else if (type.equals(Type.Punishment.TEMP_BAN)) {
             Date dateSystem = new Date();
@@ -326,11 +338,22 @@ public class UserManager {
                 Punishments.unbanPlayer(user.getUniqueId());
                 return null;
             } else {
-                return ChatColor.WARNING + "You are banned " + ChatColor.WARNING + "\n" +
-                        "until " + ChatColor.VALUE + dateString + ChatColor.PUBLIC + "." + ChatColor.WARNING + "\n" +
-                        "Reason: " + ChatColor.VALUE + user.getPunishment().getReason() + ChatColor.PUBLIC + "\n" +
-                        "For more info use our discord: " + de.timesnake.library.basic.util.server.Server.DISCORD_LINK + "\n" +
-                        "or contact us by email: " + de.timesnake.library.basic.util.server.Server.SUPPORT_EMAIL;
+                return Component.text("You are banned ", ExTextColor.WARNING)
+                        .append(Component.text("until ", ExTextColor.WARNING))
+                        .append(Component.text(dateString, ExTextColor.VALUE))
+                        .append(Component.text(".", ExTextColor.WARNING))
+                        .append(Component.newline())
+                        .append(Component.text(user.getPunishment().getReason(), ExTextColor.VALUE))
+                        .append(Component.newline())
+                        .append(Component.text("For more info use our discord: ", ExTextColor.PERSONAL))
+                        .append(Component.text(de.timesnake.library.basic.util.server.Server.DISCORD_LINK, ExTextColor.VALUE, TextDecoration.UNDERLINED)
+                                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, de.timesnake.library.basic.util.server.Server.DISCORD_LINK))
+                                .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text("Click to copy"))))
+                        .append(Component.newline())
+                        .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
+                        .append(Component.text(Server.SUPPORT_EMAIL, ExTextColor.VALUE, TextDecoration.UNDERLINED)
+                                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, Server.SUPPORT_EMAIL))
+                                .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text("Click to copy"))));
             }
         }
 

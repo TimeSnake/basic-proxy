@@ -2,7 +2,6 @@ package de.timesnake.basic.proxy.core.server;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
-import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.database.util.Database;
@@ -12,7 +11,6 @@ import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
-import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
@@ -24,6 +22,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import static de.timesnake.library.basic.util.chat.ExTextColor.*;
+import static net.kyori.adventure.text.Component.text;
 
 public class StartCmd implements CommandListener<Sender, Argument> {
 
@@ -41,19 +42,22 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                         return;
                     }
                     if (server == null) {
-                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
-                                ChatColor.WARNING + " doesn't exist!");
+                        sender.sendPluginMessage(text("Server ", WARNING)
+                                .append(text(serverName, VALUE))
+                                .append(text(" doesn't exist!", WARNING)));
                         return;
                     }
                     Status.Server status = server.getStatus();
                     if (status != null && (status.equals(Status.Server.LAUNCHING) || status.equals(Status.Server.LOADING))) {
-                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
-                                ChatColor.WARNING + " is already starting!");
+                        sender.sendPluginMessage(text("Server ", WARNING)
+                                .append(text(serverName, VALUE))
+                                .append(text(" is already starting!", WARNING)));
                         return;
                     }
                     if (!(status == null || status.equals(Status.Server.OFFLINE))) {
-                        sender.sendPluginMessage(ChatColor.WARNING + "Server " + ChatColor.VALUE + serverName +
-                                ChatColor.WARNING + " is already online!");
+                        sender.sendPluginMessage(text("Server ", WARNING)
+                                .append(text(serverName, VALUE))
+                                .append(text(" is already online!", WARNING)));
                         return;
                     }
                     maxPlayers = null;
@@ -71,7 +75,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                         server.setMaxPlayers(maxPlayers);
                         Network.getBukkitCmdHandler().handleServerCmd(sender, server);
                     } else {
-                        sender.sendPluginMessage(ChatColor.WARNING + "No default max-players value found");
+                        sender.sendPluginMessage(text("No default max-players value found", WARNING));
                     }
                 }
                 case "game" -> {
@@ -97,7 +101,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         if (game instanceof DbTmpGame) {
             this.handleStartTempGame(sender, args, (DbTmpGame) game);
         } else {
-            sender.sendPluginMessage(ChatColor.WARNING + "Please use the /start server command to start a non temp " + "game server");
+            sender.sendPluginMessage(text("Please use the /start server command to start a non temp " + "game server", WARNING));
             GameServer gameServer = null;
             for (Server server1 : Network.getServers()) {
                 if (server1.getType().equals(Type.Server.GAME)
@@ -108,7 +112,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             }
 
             if (gameServer == null) {
-                sender.sendPluginMessage(ChatColor.WARNING + "All game servers are in use!");
+                sender.sendPluginMessage(text("All game servers are in use!", WARNING));
                 return;
             }
 
@@ -126,7 +130,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                 gameServer.setMaxPlayers(maxPlayers);
                 Network.getBukkitCmdHandler().handleServerCmd(sender, gameServer);
             } else {
-                sender.sendPluginMessage(ChatColor.WARNING + "No default max-players value found");
+                sender.sendPluginMessage(text("No default max-players value found", WARNING));
             }
 
         }
@@ -150,14 +154,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         boolean kitsEnabled = args.getArgumentByString("kits") != null;
 
         if (gameKitAvailability.equals(Type.Availability.FORBIDDEN) && kitsEnabled) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
-                    " forbid kits");
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text("forbid kits", WARNING)));
             return;
         }
 
         if (gameKitAvailability.equals(Type.Availability.REQUIRED) && !kitsEnabled) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
-                    " require kits");
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text("require kits", WARNING)));
             return;
         }
 
@@ -165,14 +171,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         boolean mapsEnabled = args.getArgumentByString("maps") != null;
 
         if (gameMapAvailability.equals(Type.Availability.FORBIDDEN) && mapsEnabled) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
-                    " forbid maps");
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" forbid maps", WARNING)));
             return;
         }
 
         if (gameMapAvailability.equals(Type.Availability.REQUIRED) && !mapsEnabled) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
-                    " require maps");
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text("require maps", WARNING)));
             return;
         }
 
@@ -184,19 +192,23 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             try {
                 maxServerPlayers = Integer.parseInt(stringMax);
             } catch (NumberFormatException e) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Invalid max player amount");
+                sender.sendPluginMessage(text("Invalid max player amount", WARNING));
                 return;
             }
 
             if (maxServerPlayers > gameMaxPlayers) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Too large max players amount for game " +
-                        ChatColor.VALUE + gameName + ChatColor.WARNING + ", max is " + ChatColor.VALUE + gameMaxPlayers);
+                sender.sendPluginMessage(text("Too large max players amount for game ", WARNING)
+                        .append(text(gameName, VALUE))
+                        .append(text(", max is ", WARNING))
+                        .append(text(gameMaxPlayers, VALUE)));
                 return;
             }
 
             if (maxServerPlayers < gameMinPlayers) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Too small max players amount for game " +
-                        ChatColor.VALUE + gameName + ChatColor.WARNING + ", min is " + ChatColor.VALUE + gameMinPlayers);
+                sender.sendPluginMessage(text("Too small max players amount for game ", WARNING)
+                        .append(text(gameName, VALUE))
+                        .append(text(", min is ", WARNING))
+                        .append(text(gameMinPlayers, VALUE)));
                 return;
             }
         }
@@ -211,7 +223,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             try {
                 playersPerTeam = Integer.parseInt(stringMaxPerTeam);
             } catch (NumberFormatException e) {
-                sender.sendPluginMessage(ChatColor.WARNING + "Invalid max players per team amount");
+                sender.sendPluginMessage(text("Invalid max players per team amount", WARNING));
                 return;
             }
 
@@ -228,14 +240,14 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                 try {
                     teamAmount = Integer.parseInt(teams);
                 } catch (NumberFormatException e) {
-                    sender.sendPluginMessage(ChatColor.WARNING + "Invalid team amount");
+                    sender.sendPluginMessage(text("Invalid team amount", WARNING));
                     return;
                 }
 
                 if (!gameTeamAmounts.contains(teamAmount)) {
-                    sender.sendPluginMessage(ChatColor.WARNING + "Invalid team amount");
-                    sender.sendPluginMessage(ChatColor.PERSONAL + "Available team amounts: " + ChatColor.VALUE +
-                            Chat.listToString(gameTeamAmounts));
+                    sender.sendPluginMessage(text("Invalid team amount", WARNING));
+                    sender.sendPluginMessage(text("Available team amounts: ", PERSONAL)
+                            .append(Chat.listToComponent(gameTeamAmounts, VALUE, PERSONAL)));
                     return;
                 }
             }
@@ -249,14 +261,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         }
 
         if (gameMergeTeams.equals(Type.Availability.FORBIDDEN) && teamMerging) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
-                    " forbid team merging");
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" forbid team merging", WARNING)));
             return;
         }
 
         if (gameMergeTeams.equals(Type.Availability.REQUIRED) && !teamMerging && teamAmount > 0) {
-            sender.sendPluginMessage(ChatColor.WARNING + "Game " + ChatColor.VALUE + gameName + ChatColor.WARNING +
-                    " require team merging");
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" require team merging", WARNING)));
             return;
         }
 
@@ -265,7 +279,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
         // search temp game and lounge server
 
-        sender.sendPluginMessage(ChatColor.PERSONAL + "Creating server...");
+        sender.sendPluginMessage(text("Creating server...", PERSONAL));
 
         Integer finalMaxServerPlayers = maxServerPlayers;
         Integer finalTeamAmount = teamAmount;
@@ -279,9 +293,9 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
             Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.newServer(loungeNetworkServer, true);
             if (!loungeResult.getA().isSuccessful()) {
-                sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while creation a" +
+                sender.sendPluginMessage(text("Error while creation a" +
                         " lounge server! Please contact an administrator (" +
-                        ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")");
+                        ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")", WARNING));
                 return;
             }
 
@@ -298,9 +312,9 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.newServer(gameNetworkServer,
                     mapsEnabled);
             if (!tempServerResult.getA().isSuccessful()) {
-                sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK) + ChatColor.WARNING + "Error while creation a" +
+                sender.sendPluginMessage(text("Error while creation a" +
                         " " + gameName + " server! Please contact an administrator (" +
-                        ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")");
+                        ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")", WARNING));
                 return;
             }
 
@@ -321,16 +335,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             tempGameServer.setPvP(oldPvP);
             tempGameServer.setTwinServer((DbLoungeServer) loungeServer.getDatabase());
 
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Started game " + ChatColor.VALUE + gameName);
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Game server: " + ChatColor.VALUE + tempGameServer.getName());
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Lounge server: " + ChatColor.VALUE + loungeServer.getName());
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Max players: " + ChatColor.VALUE + finalMaxServerPlayers);
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Maps: " + ChatColor.VALUE + mapsEnabled);
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Kits: " + ChatColor.VALUE + kitsEnabled);
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Team amount: " + ChatColor.VALUE + finalTeamAmount);
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Team merging: " + ChatColor.VALUE + teamMerging);
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Max players per team: " + ChatColor.VALUE + finalPlayersPerTeam);
-            sender.sendPluginMessage(ChatColor.PERSONAL + "Old PvP: " + ChatColor.VALUE + oldPvP);
+            sender.sendPluginMessage(text("Started game ", PERSONAL).append(text(gameName, VALUE)));
+            sender.sendPluginMessage(text("Game server: ", PERSONAL).append(text(tempGameServer.getName(), VALUE)));
+            sender.sendPluginMessage(text("Lounge server: ", PERSONAL).append(text(loungeServer.getName(), VALUE)));
+            sender.sendPluginMessage(text("Max players: ", PERSONAL).append(text(finalMaxServerPlayers, VALUE)));
+            sender.sendPluginMessage(text("Maps: ", PERSONAL).append(text(mapsEnabled, VALUE)));
+            sender.sendPluginMessage(text("Kits: ", PERSONAL).append(text(kitsEnabled, VALUE)));
+            sender.sendPluginMessage(text("Team amount: ", PERSONAL).append(text(finalTeamAmount, VALUE)));
+            sender.sendPluginMessage(text("Team merging: ", PERSONAL).append(text(teamMerging, VALUE)));
+            sender.sendPluginMessage(text("Max players per team: ", PERSONAL).append(text(finalPlayersPerTeam, VALUE)));
+            sender.sendPluginMessage(text("Old PvP: ", PERSONAL).append(text(oldPvP, VALUE)));
 
             Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);
 

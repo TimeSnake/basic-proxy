@@ -2,10 +2,11 @@ package de.timesnake.basic.proxy.core.permission;
 
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
-import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import net.kyori.adventure.text.Component;
 
 import java.util.List;
 
@@ -23,9 +24,11 @@ public class PermissionTest implements CommandListener<Sender, Argument> {
         }
 
         if (sender.hasPermission(args.getString(0))) {
-            sender.sendPluginMessage(ChatColor.PERSONAL + "You have the permission " + args.getString(0));
+            sender.sendPluginMessage(Component.text("You have the permission ", ExTextColor.PERSONAL)
+                    .append(Component.text(args.getString(0), ExTextColor.VALUE)));
         } else {
-            sender.sendPluginMessage(ChatColor.PERSONAL + "You have not the permission " + args.getString(0));
+            sender.sendPluginMessage(Component.text("You have not the permission ", ExTextColor.PERSONAL)
+                    .append(Component.text(args.getString(0), ExTextColor.VALUE)));
         }
     }
 

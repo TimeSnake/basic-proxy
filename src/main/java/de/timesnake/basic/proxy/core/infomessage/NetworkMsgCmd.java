@@ -3,10 +3,11 @@ package de.timesnake.basic.proxy.core.infomessage;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import net.kyori.adventure.text.Component;
 
 import java.util.List;
 
@@ -19,9 +20,9 @@ public class NetworkMsgCmd implements CommandListener<Sender, Argument> {
                     User user = sender.getUser();
                     user.setListeningNetworkMessages(!user.isListeningNetworkMessages());
                     if (user.isListeningNetworkMessages()) {
-                        sender.sendPluginMessage(ChatColor.PERSONAL + "Enabled network messages");
+                        sender.sendPluginMessage(Component.text("Enabled network messages", ExTextColor.PERSONAL));
                     } else {
-                        sender.sendPluginMessage(ChatColor.PERSONAL + "Disabled network messages");
+                        sender.sendPluginMessage(Component.text("Disabled network messages", ExTextColor.PERSONAL));
                     }
                 }
             }

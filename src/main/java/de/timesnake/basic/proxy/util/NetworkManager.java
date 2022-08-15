@@ -14,7 +14,6 @@ import de.timesnake.basic.proxy.core.script.CmdFile;
 import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
 import de.timesnake.basic.proxy.core.support.SupportManager;
 import de.timesnake.basic.proxy.core.user.UserManager;
-import de.timesnake.basic.proxy.util.chat.Chat;
 import de.timesnake.basic.proxy.util.chat.CommandHandler;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.PreUser;
@@ -34,12 +33,15 @@ import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.basic.util.server.Task;
+import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.ServerCreationResult;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
@@ -107,7 +109,7 @@ public class NetworkManager implements ChannelListener {
 
         if (!Database.getGroups().containsDisplayGroup(Network.GUEST_DISPLAY_GROUP_NAME)) {
             Database.getGroups().addDisplayGroup(Network.GUEST_DISPLAY_GROUP_NAME, Network.GUEST_DISPLAY_GROUP_RANK,
-                    "Guest", "gray");
+                    "Guest", ExTextColor.GRAY);
         }
 
         if (!Database.getGroups().containsDisplayGroup(Network.MEMBER_DISPLAY_GROUP_NAME)) {
@@ -499,7 +501,7 @@ public class NetworkManager implements ChannelListener {
     }
 
     public final void printText(Plugin plugin, Component text, String... subPlugins) {
-        this.printText(plugin, Chat.parseComponentToString(text), subPlugins);
+        this.printText(plugin, PlainTextComponentSerializer.plainText().serialize(text), subPlugins);
     }
 
     public final void printWarning(Plugin plugin, String warning, String... subPlugins) {
@@ -514,7 +516,7 @@ public class NetworkManager implements ChannelListener {
     }
 
     public final void printWarning(Plugin plugin, Component text, String... subPlugins) {
-        this.printWarning(plugin, Chat.parseComponentToString(text), subPlugins);
+        this.printWarning(plugin, PlainTextComponentSerializer.plainText().serialize(text), subPlugins);
     }
 
     public void runCommand(String command) {

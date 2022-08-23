@@ -2,13 +2,14 @@ package de.timesnake.basic.proxy.util.server;
 
 import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.network.NetworkServer;
 
 import java.nio.file.Path;
 
 public class LoungeServer extends TaskServer {
 
-    public LoungeServer(DbLoungeServer database, Path folderPath) {
-        super(database, folderPath);
+    public LoungeServer(DbLoungeServer database, Path folderPath, NetworkServer networkServer) {
+        super(database, folderPath, networkServer);
     }
 
     @Override

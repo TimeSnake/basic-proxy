@@ -16,6 +16,7 @@ import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.network.NetworkServer;
+import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.ServerCreationResult;
 import net.kyori.adventure.text.Component;
 
@@ -36,6 +37,8 @@ public class Network {
     public static final int MEMBER_PERM_GROUP_RANK = 17;
     public static final String MEMBER_DISPLAY_GROUP_NAME = "member";
     public static final int MEMBER_DISPLAY_GROUP_RANK = 25;
+
+    public static final int WORLDS_PER_BUILD_SERVER = 10;
 
     public static void broadcastMessage(String msg) {
         network.broadcastMessage(msg);
@@ -126,28 +129,28 @@ public class Network {
         network.getServer(port);
     }
 
-    public static Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds) {
-        return network.newServer(server, copyWorlds);
+    public static Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds, boolean syncPlayerData) {
+        return network.newServer(server, copyWorlds, syncPlayerData);
     }
 
-    public static LobbyServer addLobby(int port, String name, Path folderPath) {
-        return network.addLobby(port, name, folderPath);
+    public static LobbyServer addLobby(int port, String name, Path folderPath, NetworkServer networkServer) {
+        return network.addLobby(port, name, folderPath, networkServer);
     }
 
-    public static GameServer addGame(int port, String name, String task, Path folderPath) {
-        return network.addGame(port, name, task, folderPath);
+    public static GameServer addGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
+        return network.addGame(port, name, task, folderPath, networkServer);
     }
 
-    public static LoungeServer addLounge(int port, String name, Path folderPath) {
-        return network.addLounge(port, name, folderPath);
+    public static LoungeServer addLounge(int port, String name, Path folderPath, NetworkServer networkServer) {
+        return network.addLounge(port, name, folderPath, networkServer);
     }
 
-    public static TempGameServer addTempGame(int port, String name, String task, Path folderPath) {
-        return network.addTempGame(port, name, task, folderPath);
+    public static TempGameServer addTempGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
+        return network.addTempGame(port, name, task, folderPath, networkServer);
     }
 
-    public static BuildServer addBuild(int port, String name, String task, Path folderPath) {
-        return network.addBuild(port, name, task, folderPath);
+    public static BuildServer addBuild(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
+        return network.addBuild(port, name, task, folderPath, networkServer);
     }
 
     public static void sendUserToServer(User user, String server) {
@@ -308,6 +311,10 @@ public class Network {
 
     public static boolean isTmuxEnabled() {
         return network.isTmuxEnabled();
+    }
+
+    public static NetworkUtils getNetworkUtils() {
+        return network.getNetworkUtils();
     }
 
     private static final NetworkManager network = NetworkManager.getInstance();

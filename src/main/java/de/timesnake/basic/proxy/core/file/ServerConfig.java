@@ -6,6 +6,7 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.file.ExFile;
 import de.timesnake.database.util.object.Type;
+import de.timesnake.library.network.NetworkServer;
 
 import java.nio.file.Path;
 
@@ -35,16 +36,18 @@ public class ServerConfig extends ExFile {
                 continue;
             }
 
+            NetworkServer networkServer = new NetworkServer(serverName, port, type, Network.getVelocitySecret());
+
             if (Type.Server.TEMP_GAME.equals(type)) {
-                Network.addTempGame(port, serverName, task, folder);
+                Network.addTempGame(port, serverName, task, folder, networkServer);
             } else if (Type.Server.LOUNGE.equals(type)) {
-                Network.addLounge(port, serverName, folder);
+                Network.addLounge(port, serverName, folder, networkServer);
             } else if (Type.Server.GAME.equals(type)) {
-                Network.addGame(port, serverName, task, folder);
+                Network.addGame(port, serverName, task, folder, networkServer);
             } else if (Type.Server.BUILD.equals(type)) {
-                Network.addBuild(port, serverName, task, folder);
+                Network.addBuild(port, serverName, task, folder, networkServer);
             } else if (Type.Server.LOBBY.equals(type)) {
-                Network.addLobby(port, serverName, folder);
+                Network.addLobby(port, serverName, folder, networkServer);
             }
 
             Network.printText(Plugin.NETWORK, "Loaded server " + serverName, "ServerConfig");

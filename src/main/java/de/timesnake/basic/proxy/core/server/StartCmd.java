@@ -291,9 +291,9 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                     new NetworkServer((loungePort % 1000) + Type.Server.LOUNGE.getDatabaseValue() + Network.TMP_SERVER_SUFFIX,
                             loungePort, Type.Server.LOUNGE, Network.getVelocitySecret());
 
-            Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.newServer(loungeNetworkServer, true);
+            Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.newServer(loungeNetworkServer, true, false);
             if (!loungeResult.getA().isSuccessful()) {
-                sender.sendPluginMessage(text("Error while creation a" +
+                sender.sendPluginMessage(text("Error while creating a" +
                         " lounge server! Please contact an administrator (" +
                         ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")", WARNING));
                 return;
@@ -310,9 +310,9 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             }
 
             Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.newServer(gameNetworkServer,
-                    mapsEnabled);
+                    mapsEnabled, false);
             if (!tempServerResult.getA().isSuccessful()) {
-                sender.sendPluginMessage(text("Error while creation a" +
+                sender.sendPluginMessage(text("Error while creating a" +
                         " " + gameName + " server! Please contact an administrator (" +
                         ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")", WARNING));
                 return;

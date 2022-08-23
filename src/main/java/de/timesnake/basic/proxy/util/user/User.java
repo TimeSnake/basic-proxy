@@ -491,6 +491,10 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         });
     }
 
+    public void scheduledConnect(Server server) {
+        server.addWaitingUser(this);
+    }
+
     //cmd
 
     /**

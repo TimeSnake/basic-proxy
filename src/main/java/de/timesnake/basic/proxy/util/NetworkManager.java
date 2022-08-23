@@ -95,6 +95,7 @@ public class NetworkManager implements ChannelListener {
         this.config = new Config();
         this.networkPath = Path.of(this.config.getNetworkPath());
         Database.getNetwork().addNetworkFile("templates", this.networkPath.resolve("templates").toFile());
+        Database.getNetwork().addNetworkFile("network", this.networkPath.toFile());
 
         this.velocitySecret = this.config.getVelocitySecret();
         this.tmuxEnabled = this.config.isTmuxEnabled();
@@ -257,21 +258,21 @@ public class NetworkManager implements ChannelListener {
         getServer(port).setStatus(Database.getServers().getServer(port).getStatus(), false);
     }
 
-    public Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds) {
-        ServerCreationResult result = this.networkUtils.createServer(server, copyWorlds);
+    public Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds, boolean syncPlayerData) {
+        ServerCreationResult result = this.networkUtils.createServer(server, copyWorlds, syncPlayerData);
         Optional<Server> serverOpt = Optional.empty();
         if (result.isSuccessful()) {
             Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
             if (Type.Server.LOBBY.equals(server.getType())) {
-                serverOpt = Optional.of(this.addLobby(server.getPort(), server.getName(), serverPath));
+                serverOpt = Optional.of(this.addLobby(server.getPort(), server.getName(), serverPath, server));
             } else if (Type.Server.LOUNGE.equals(server.getType())) {
-                serverOpt = Optional.of(this.addLounge(server.getPort(), server.getName(), serverPath));
+                serverOpt = Optional.of(this.addLounge(server.getPort(), server.getName(), serverPath, server));
             } else if (Type.Server.GAME.equals(server.getType())) {
-                serverOpt = Optional.of(this.addGame(server.getPort(), server.getName(), server.getTask(), serverPath));
+                serverOpt = Optional.of(this.addGame(server.getPort(), server.getName(), server.getTask(), serverPath, server));
             } else if (Type.Server.BUILD.equals(server.getType())) {
-                serverOpt = Optional.of(this.addBuild(server.getPort(), server.getName(), server.getTask(), serverPath));
+                serverOpt = Optional.of(this.addBuild(server.getPort(), server.getName(), server.getTask(), serverPath, server));
             } else if (Type.Server.TEMP_GAME.equals(server.getType())) {
-                serverOpt = Optional.of(this.addTempGame(server.getPort(), server.getName(), server.getTask(), serverPath));
+                serverOpt = Optional.of(this.addTempGame(server.getPort(), server.getName(), server.getTask(), serverPath, server));
             }
 
             BasicProxy.getServer().registerServer(new ServerInfo(server.getName(), new InetSocketAddress(server.getPort())));
@@ -311,41 +312,41 @@ public class NetworkManager implements ChannelListener {
         return port;
     }
 
-    public LobbyServer addLobby(int port, String name, Path folderPath) {
+    public LobbyServer addLobby(int port, String name, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addLobby(port, name, Status.Server.OFFLINE, folderPath);
-        LobbyServer server = new LobbyServer(Database.getServers().getServer(Type.Server.LOBBY, port), folderPath);
+        LobbyServer server = new LobbyServer(Database.getServers().getServer(Type.Server.LOBBY, port), folderPath, networkServer);
         servers.put(port, server);
         return server;
     }
 
 
-    public GameServer addGame(int port, String name, String task, Path folderPath) {
+    public GameServer addGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addGame(port, name, task, Status.Server.OFFLINE, folderPath);
-        GameServer server = new GameServer(Database.getServers().getServer(Type.Server.GAME, port), folderPath);
+        GameServer server = new GameServer(Database.getServers().getServer(Type.Server.GAME, port), folderPath, networkServer);
         servers.put(port, server);
         return server;
     }
 
 
-    public LoungeServer addLounge(int port, String name, Path folderPath) {
+    public LoungeServer addLounge(int port, String name, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addLounge(port, name, Status.Server.OFFLINE, folderPath);
-        LoungeServer server = new LoungeServer(Database.getServers().getServer(Type.Server.LOUNGE, port), folderPath);
+        LoungeServer server = new LoungeServer(Database.getServers().getServer(Type.Server.LOUNGE, port), folderPath, networkServer);
         servers.put(port, server);
         return server;
     }
 
 
-    public TempGameServer addTempGame(int port, String name, String task, Path folderPath) {
+    public TempGameServer addTempGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addTempGame(port, name, task, Status.Server.OFFLINE, folderPath);
-        TempGameServer server = new TempGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port), folderPath);
+        TempGameServer server = new TempGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port), folderPath, networkServer);
         servers.put(port, server);
         return server;
     }
 
 
-    public BuildServer addBuild(int port, String name, String task, Path folderPath) {
+    public BuildServer addBuild(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addBuild(port, name, task, Status.Server.OFFLINE, folderPath);
-        BuildServer server = new BuildServer(Database.getServers().getServer(Type.Server.BUILD, port), folderPath);
+        BuildServer server = new BuildServer(Database.getServers().getServer(Type.Server.BUILD, port), folderPath, networkServer);
         servers.put(port, server);
         return server;
     }
@@ -576,5 +577,9 @@ public class NetworkManager implements ChannelListener {
 
     public boolean isTmuxEnabled() {
         return tmuxEnabled;
+    }
+
+    public NetworkUtils getNetworkUtils() {
+        return this.networkUtils;
     }
 }

@@ -28,6 +28,7 @@ import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.basic.util.server.Server;
 import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.player.UserList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -174,6 +175,8 @@ public class UserManager {
                         .append(Component.text(" left", ExTextColor.PUBLIC)));
             }
         });
+
+        UserList.LISTS.forEach(l -> l.remove(Network.getUser(p)));
 
         Network.removeUser(p);
         Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));

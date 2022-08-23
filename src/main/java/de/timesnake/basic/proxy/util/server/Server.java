@@ -4,10 +4,13 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Plugin;
+import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.extension.util.player.UserList;
+import de.timesnake.library.network.NetworkServer;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -19,20 +22,25 @@ public abstract class Server extends BukkitConsole {
     protected Type.Server<?> type;
     protected Status.Server status;
     protected Integer maxPlayers;
+    protected NetworkServer networkServer;
 
-    protected Server(DbServer database, Path folderPath) {
+    protected UserList<User> waitingUsers = new UserList<>();
+
+    protected Server(DbServer database, Path folderPath, NetworkServer networkServer) {
         super(database.getName(), folderPath);
         this.database = database;
         this.port = database.getPort();
         this.type = Database.getServers().getServerType(this.port);
         this.status = database.getStatus();
         this.maxPlayers = database.getMaxPlayers();
+        this.networkServer = networkServer;
     }
 
     public DbServer getDatabase() {
         return this.database;
     }
 
+    @Override
     public Integer getPort() {
         return port;
     }
@@ -83,12 +91,14 @@ public abstract class Server extends BukkitConsole {
             }, Duration.ofSeconds(30));
         }
 
+        this.connectWaitingUsers();
     }
 
     public Integer getOnlinePlayers() {
         return this.database.getOnlinePlayers();
     }
 
+    @Override
     public boolean start() {
         this.setStatus(Status.Server.LAUNCHING, true);
         return super.start();
@@ -96,6 +106,7 @@ public abstract class Server extends BukkitConsole {
 
     public void updateStatus() {
         this.status = database.getStatus();
+        this.connectWaitingUsers();
     }
 
     public Type.Server<?> getType() {
@@ -106,4 +117,25 @@ public abstract class Server extends BukkitConsole {
         return BasicProxy.getServer().getServer(this.name).get();
     }
 
+    public NetworkServer getNetworkServer() {
+        return networkServer;
+    }
+
+    private void connectWaitingUsers() {
+        if (this.status.equals(Status.Server.ONLINE) || this.status.equals(Status.Server.SERVICE)
+                || this.status.equals(Status.Server.IN_GAME) || this.status.equals(Status.Server.PRE_GAME)
+                || this.status.equals(Status.Server.POST_GAME)) {
+            this.waitingUsers.forEach(u -> u.connect(this.getBungeeInfo()));
+            this.waitingUsers.clear();
+        }
+    }
+
+    public void addWaitingUser(User user) {
+        this.waitingUsers.add(user);
+        this.connectWaitingUsers();
+    }
+
+    public void removeWaitingUser(User user) {
+        this.waitingUsers.remove(user);
+    }
 }

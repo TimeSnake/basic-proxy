@@ -1,6 +1,7 @@
 package de.timesnake.basic.proxy.util.server;
 
 import de.timesnake.database.util.server.DbTaskServer;
+import de.timesnake.library.network.NetworkServer;
 
 import java.nio.file.Path;
 
@@ -8,8 +9,8 @@ public abstract class TaskServer extends Server {
 
     protected String task;
 
-    protected TaskServer(DbTaskServer database, Path folderPath) {
-        super(database, folderPath);
+    protected TaskServer(DbTaskServer database, Path folderPath, NetworkServer networkServer) {
+        super(database, folderPath, networkServer);
         this.task = database.getTask();
     }
 

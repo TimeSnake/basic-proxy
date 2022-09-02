@@ -26,7 +26,7 @@ public class LoungeServer extends TaskServer {
 
     @Override
     public void updateStatus() {
-        super.status = super.database.getStatus();
+        super.updateStatus();
         if (super.status.equals(Status.Server.OFFLINE)) {
             ((DbLoungeServer) super.database).setTask(null);
         }

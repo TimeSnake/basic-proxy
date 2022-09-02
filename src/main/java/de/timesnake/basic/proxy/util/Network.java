@@ -1,6 +1,7 @@
 package de.timesnake.basic.proxy.util;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.file.ServerConfig;
 import de.timesnake.basic.proxy.core.group.DisplayGroup;
 import de.timesnake.basic.proxy.core.group.PermGroup;
@@ -286,12 +287,12 @@ public class Network {
         return network.getBukkitCmdHandler();
     }
 
-    public static void runTaskLater(Task task, Duration delay) {
-        network.runTaskLater(task, delay);
+    public static ScheduledTask runTaskLater(Task task, Duration delay) {
+        return network.runTaskLater(task, delay);
     }
 
-    public static void runTaskAsync(Task task) {
-        network.runTaskAsync(task);
+    public static ScheduledTask runTaskAsync(Task task) {
+        return network.runTaskAsync(task);
     }
 
     public static int getOnlineLobbys() {

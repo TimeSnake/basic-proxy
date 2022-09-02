@@ -1,6 +1,7 @@
 package de.timesnake.basic.proxy.util.server;
 
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Plugin;
@@ -25,6 +26,8 @@ public abstract class Server extends BukkitConsole {
     protected NetworkServer networkServer;
 
     protected UserList<User> waitingUsers = new UserList<>();
+
+    protected ScheduledTask startTimeoutTask;
 
     protected Server(DbServer database, Path folderPath, NetworkServer networkServer) {
         super(database.getName(), folderPath);
@@ -72,18 +75,21 @@ public abstract class Server extends BukkitConsole {
         }
         this.status = serverStatus;
 
+        if (this.status.isRunning() && this.startTimeoutTask != null) {
+            this.startTimeoutTask.cancel();
+            this.startTimeoutTask = null;
+        }
 
         if (this.status == Status.Server.LAUNCHING) {
-            Network.runTaskLater(() -> {
+            this.startTimeoutTask = Network.runTaskLater(() -> {
                 if (status == Status.Server.LAUNCHING || status == Status.Server.OFFLINE) {
                     Network.printWarning(Plugin.NETWORK, "Failed to start server " + this.getName());
                     this.setStatus(Status.Server.OFFLINE, true);
                     return;
                 }
 
-                Network.runTaskLater(() -> {
-                    if (status == Status.Server.LAUNCHING || status == Status.Server.OFFLINE
-                            || status.equals(Status.Server.LOADING)) {
+                this.startTimeoutTask = Network.runTaskLater(() -> {
+                    if (!status.isRunning()) {
                         Network.printWarning(Plugin.NETWORK, "Failed to start server " + this.getName());
                         this.setStatus(Status.Server.OFFLINE, true);
                     }
@@ -106,6 +112,11 @@ public abstract class Server extends BukkitConsole {
 
     public void updateStatus() {
         this.status = database.getStatus();
+
+        if (this.status.isRunning() && this.startTimeoutTask != null) {
+            this.startTimeoutTask.cancel();
+            this.startTimeoutTask = null;
+        }
         this.connectWaitingUsers();
     }
 
@@ -122,9 +133,7 @@ public abstract class Server extends BukkitConsole {
     }
 
     private void connectWaitingUsers() {
-        if (this.status.equals(Status.Server.ONLINE) || this.status.equals(Status.Server.SERVICE)
-                || this.status.equals(Status.Server.IN_GAME) || this.status.equals(Status.Server.PRE_GAME)
-                || this.status.equals(Status.Server.POST_GAME)) {
+        if (this.status.isRunning()) {
             this.waitingUsers.forEach(u -> u.connect(this.getBungeeInfo()));
             this.waitingUsers.clear();
         }

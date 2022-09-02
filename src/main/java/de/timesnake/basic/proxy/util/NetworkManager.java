@@ -2,6 +2,7 @@ package de.timesnake.basic.proxy.util;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.ServerInfo;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.channel.ChannelPingPong;
 import de.timesnake.basic.proxy.core.file.Config;
 import de.timesnake.basic.proxy.core.file.ServerConfig;
@@ -458,12 +459,12 @@ public class NetworkManager implements ChannelListener {
         return this.displayGroups.get(Network.MEMBER_DISPLAY_GROUP_NAME);
     }
 
-    public void runTaskLater(Task task, Duration delay) {
-        BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run).delay(delay).schedule();
+    public ScheduledTask runTaskLater(Task task, Duration delay) {
+        return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run).delay(delay).schedule();
     }
 
-    public void runTaskAsync(Task task) {
-        BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run).schedule();
+    public ScheduledTask runTaskAsync(Task task) {
+        return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run).schedule();
     }
 
     @ChannelHandler(type = {ListenerType.SERVER_PERMISSION, ListenerType.SERVER_STATUS})

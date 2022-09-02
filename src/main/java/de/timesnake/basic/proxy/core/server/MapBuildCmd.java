@@ -16,6 +16,7 @@ import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.ServerCreationResult;
 import net.kyori.adventure.text.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,10 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
 
         List<String> worldNames = Network.getNetworkUtils().getWorldNames(Type.Server.BUILD, null);
 
+        if (!args.isLengthEquals(1, true)) {
+            return;
+        }
+
         String worldName = args.getString(0);
 
         if (!worldNames.contains(worldName)) {
@@ -42,11 +47,12 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
         boolean worldLoaded = false;
 
         for (Server server : Network.getServers().stream().filter(s -> s.getType().equals(Type.Server.BUILD)).toList()) {
-            if (((BuildServer) server).getLoadedWorlds().contains(worldName)) {
+            Collection<String> loadedWorlds = ((BuildServer) server).getDatabase().getWorldNames();
+            if (loadedWorlds.contains(worldName)) {
                 buildServer = ((BuildServer) server);
                 worldLoaded = true;
                 break;
-            } else if (((BuildServer) server).getLoadedWorlds().size() < Network.WORLDS_PER_BUILD_SERVER) {
+            } else if (loadedWorlds.size() < Network.WORLDS_PER_BUILD_SERVER) {
                 buildServer = ((BuildServer) server);
             }
         }
@@ -56,7 +62,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
                 int port = Network.nextEmptyPort();
                 Tuple<ServerCreationResult, Optional<Server>> result =
                         Network.newServer(new NetworkServer("build" + (port % 1000), port, Type.Server.BUILD,
-                                Network.getVelocitySecret()), false, true);
+                                Network.getVelocitySecret()).setPlayerTrackingRange(128), false, true);
 
                 if (!result.getA().isSuccessful()) {
                     sender.sendPluginMessage(Component.text("Error while creating a" +
@@ -89,7 +95,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
             } else {
                 sender.sendPluginMessage(Component.text("Loading world ", ExTextColor.PERSONAL)
                         .append(Component.text(worldName, ExTextColor.VALUE))
-                        .append(Component.text(". You will be teleported in a few moments.", ExTextColor.PERSONAL)));
+                        .append(Component.text(". You will be moved in a few moments.", ExTextColor.PERSONAL)));
                 sender.getUser().scheduledConnect(buildServer);
             }
         }

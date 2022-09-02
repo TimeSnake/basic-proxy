@@ -16,21 +16,24 @@ repositories {
     }
 
     maven {
-        url = uri('https://repo.maven.apache.org/maven2/')
+        url = uri 'https://repo.maven.apache.org/maven2/'
     }
     mavenCentral()
 }
 
 dependencies {
-    implementation 'de.timesnake:library-basic:1.0-SNAPSHOT'
-    implementation 'de.timesnake:library-extension:1.0-SNAPSHOT'
-    implementation 'de.timesnake:library-network:1.0-SNAPSHOT-all'
-    compileOnly 'de.timesnake:channel-proxy:1.0-SNAPSHOT'
-    compileOnly 'de.timesnake:channel-api:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:database-proxy:1.0-SNAPSHOT'
     compileOnly 'de.timesnake:database-api:1.0-SNAPSHOT'
-    compileOnly 'com.velocitypowered:velocity-api:3.1.1'
+
+    compileOnly 'de.timesnake:channel-proxy:1.0-SNAPSHOT'
+    compileOnly 'de.timesnake:channel-api:1.0-SNAPSHOT'
+
+    implementation 'de.timesnake:library-network:1.0-SNAPSHOT-all'
+    implementation 'de.timesnake:library-extension:1.0-SNAPSHOT'
+    implementation 'de.timesnake:library-basic:1.0-SNAPSHOT'
+
     annotationProcessor 'com.velocitypowered:velocity-api:3.1.1'
+    compileOnly 'com.velocitypowered:velocity-api:3.1.1'
 }
 
 group = 'de.timesnake'

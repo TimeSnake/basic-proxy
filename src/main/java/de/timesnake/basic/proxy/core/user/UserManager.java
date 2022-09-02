@@ -110,7 +110,7 @@ public class UserManager {
         }
 
         Network.printText(Plugin.NETWORK, "Players online " + Network.getUsers().size());
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getName(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
     }
 
     @Subscribe(order = PostOrder.EARLY)
@@ -179,7 +179,7 @@ public class UserManager {
         UserList.LISTS.forEach(l -> l.remove(Network.getUser(p)));
 
         Network.removeUser(p);
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getPort(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(Network.getName(), MessageType.Server.ONLINE_PLAYERS, Network.getUsers().size()));
     }
 
     @Subscribe

@@ -20,7 +20,7 @@ public class ChannelCmdHandler implements ChannelListener {
         } else if (msg.getMessageType().equals(MessageType.Server.RESTART)) {
             if (msg.getValue() != null) {
                 Integer delaySec = (Integer) msg.getValue();
-                Server server = Network.getServer(msg.getPort());
+                Server server = Network.getServer(msg.getName());
                 String name = server.getName();
                 Network.printText(Plugin.SYSTEM, "Scheduled restart of server " + name + " (" + delaySec + "s)");
                 int maxPlayers = server.getMaxPlayers();

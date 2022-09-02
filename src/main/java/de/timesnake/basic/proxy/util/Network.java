@@ -61,6 +61,10 @@ public class Network {
         return network.getPort();
     }
 
+    public static String getName() {
+        return network.getName();
+    }
+
     public static User getUser(UUID uuid) {
         return network.getUser(uuid);
     }
@@ -105,8 +109,13 @@ public class Network {
         return network.getServers();
     }
 
+    @Deprecated
     public static Collection<Integer> getNotOfflineServerPorts() {
         return network.getNotOfflineServerPorts();
+    }
+
+    public static Collection<String> getNotOfflineServerNames() {
+        return network.getNotOfflineServerNames();
     }
 
     public static Server getServer(Integer port) {

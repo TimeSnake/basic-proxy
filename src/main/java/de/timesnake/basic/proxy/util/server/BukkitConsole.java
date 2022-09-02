@@ -41,12 +41,12 @@ public abstract class BukkitConsole {
     }
 
     public void stop() {
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, "stop"
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getName(), MessageType.Server.COMMAND, "stop"
         ));
     }
 
     public void execute(String cmd) {
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getPort(), MessageType.Server.COMMAND, cmd));
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getName(), MessageType.Server.COMMAND, cmd));
     }
 
     public String getName() {

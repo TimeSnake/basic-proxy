@@ -257,9 +257,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     public void setServer(String server) {
         this.dbUser.setServer(server);
-        this.server = Network.getServer(server);
-        Integer port = this.server != null ? this.server.getPort() : null;
-        Network.getChannel().setUserServer(this.getUniqueId(), port);
+        Network.getChannel().setUserServer(this.getUniqueId(), server);
     }
 
     public Server getServerLast() {
@@ -500,7 +498,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     /**
      * @param cmd Command without slash
      */
-    public void executeCommand(String cmd) {
+    public void runBukkitCommand(String cmd) {
         Network.getChannel().sendMessage(new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.COMMAND, cmd));
     }
 
@@ -568,7 +566,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     }
 
     @ChannelHandler(type = {ListenerType.USER_SERVICE, ListenerType.USER_PERMISSION, ListenerType.USER_SWITCH_NAME,
-            ListenerType.USER_SWITCH_PORT}, filtered = true)
+            ListenerType.USER_SWITCH_PORT, ListenerType.USER_PROXY_COMMAND}, filtered = true)
     public void onUserMessage(ChannelUserMessage<?> msg) {
         MessageType<?> type = msg.getMessageType();
         if (type.equals(MessageType.User.SERVICE)) {
@@ -579,6 +577,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
             Network.sendUserToServer(this, (String) msg.getValue());
         } else if (type.equals(MessageType.User.SWITCH_PORT)) {
             Network.sendUserToServer(this, (Integer) msg.getValue());
+        } else if (type.equals(MessageType.User.PROXY_COMMAND)) {
+            BasicProxy.getServer().getCommandManager().executeAsync(this.getPlayer(), ((String) msg.getValue()));
         }
     }
 

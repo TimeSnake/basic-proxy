@@ -21,6 +21,11 @@ public class BuildServer extends TaskServer {
     }
 
     @Override
+    public DbBuildServer getDatabase() {
+        return (DbBuildServer) super.getDatabase();
+    }
+
+    @Override
     public String getServerTask() {
         return super.getType().getDatabaseValue();
     }
@@ -37,9 +42,7 @@ public class BuildServer extends TaskServer {
             return false;
         }
 
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getPort(), MessageType.Server.LOAD_WORLD, worldName));
-
-        this.loadedWorlds.add(worldName);
+        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getName(), MessageType.Server.LOAD_WORLD, worldName));
         return true;
     }
 }

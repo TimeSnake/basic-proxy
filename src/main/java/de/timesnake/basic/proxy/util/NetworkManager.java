@@ -31,6 +31,7 @@ import de.timesnake.database.util.group.DbDisplayGroup;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
+import de.timesnake.library.basic.util.MultiKeyMap;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.chat.ExTextColor;
@@ -64,7 +65,7 @@ public class NetworkManager implements ChannelListener {
     private final ArrayList<User> networkMessageListeners = new ArrayList<>();
     private final ArrayList<User> privateMessageListeners = new ArrayList<>();
     private final ArrayList<User> supportMessageListeners = new ArrayList<>();
-    private final HashMap<Integer, Server> servers = new HashMap<>();
+    private final MultiKeyMap<String, Integer, Server> servers = new MultiKeyMap<>();
     private final Map<String, Path> tmpDirsByServerName = new HashMap<>();
     private final CommandHandler commandHandler = new CommandHandler();
     private final PermissionManager permissionManager = new PermissionManager();
@@ -178,6 +179,9 @@ public class NetworkManager implements ChannelListener {
         return 25565;
     }
 
+    public String getName() {
+        return this.getChannel().getProxyName();
+    }
 
     public User getUser(UUID uuid) {
         return users.get(uuid);
@@ -219,32 +223,41 @@ public class NetworkManager implements ChannelListener {
         return servers.values();
     }
 
+    @Deprecated
     public Collection<Integer> getNotOfflineServerPorts() {
         Collection<Integer> ports = new HashSet<>();
         for (Server server : this.getServers()) {
-            if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE) && !server.getStatus().equals(Status.Server.LAUNCHING)) {
+            if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
+                    && !server.getStatus().equals(Status.Server.LAUNCHING)) {
                 ports.add(server.getPort());
             }
         }
         return ports;
     }
 
+    public Collection<String> getNotOfflineServerNames() {
+        Collection<String> names = new HashSet<>();
+        for (Server server : this.getServers()) {
+            if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
+                    && !server.getStatus().equals(Status.Server.LAUNCHING)) {
+                names.add(server.getName());
+            }
+        }
+        return names;
+    }
+
+
     public Server getServer(Integer port) {
-        return servers.get(port);
+        return servers.get2(port);
     }
 
 
     public Server getServer(String name) {
-        for (Server server : servers.values()) {
-            if (server.getName().equalsIgnoreCase(name)) {
-                return server;
-            }
-        }
-        return null;
+        return servers.get1(name);
     }
 
     public Server getServer(DbServer server) {
-        return servers.get(server.getPort());
+        return servers.get1(server.getName());
     }
 
     public void updateServerTaskAll() {
@@ -308,14 +321,14 @@ public class NetworkManager implements ChannelListener {
 
     public int nextEmptyPort() {
         int port = Network.PORT_BASE;
-        while (this.servers.containsKey(port)) port++;
+        while (this.servers.containsKey2(port)) port++;
         return port;
     }
 
     public LobbyServer addLobby(int port, String name, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addLobby(port, name, Status.Server.OFFLINE, folderPath);
         LobbyServer server = new LobbyServer(Database.getServers().getServer(Type.Server.LOBBY, port), folderPath, networkServer);
-        servers.put(port, server);
+        servers.put(name, port, server);
         return server;
     }
 
@@ -323,7 +336,7 @@ public class NetworkManager implements ChannelListener {
     public GameServer addGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addGame(port, name, task, Status.Server.OFFLINE, folderPath);
         GameServer server = new GameServer(Database.getServers().getServer(Type.Server.GAME, port), folderPath, networkServer);
-        servers.put(port, server);
+        servers.put(name, port, server);
         return server;
     }
 
@@ -331,7 +344,7 @@ public class NetworkManager implements ChannelListener {
     public LoungeServer addLounge(int port, String name, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addLounge(port, name, Status.Server.OFFLINE, folderPath);
         LoungeServer server = new LoungeServer(Database.getServers().getServer(Type.Server.LOUNGE, port), folderPath, networkServer);
-        servers.put(port, server);
+        servers.put(name, port, server);
         return server;
     }
 
@@ -339,7 +352,7 @@ public class NetworkManager implements ChannelListener {
     public TempGameServer addTempGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addTempGame(port, name, task, Status.Server.OFFLINE, folderPath);
         TempGameServer server = new TempGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port), folderPath, networkServer);
-        servers.put(port, server);
+        servers.put(name, port, server);
         return server;
     }
 
@@ -347,7 +360,7 @@ public class NetworkManager implements ChannelListener {
     public BuildServer addBuild(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
         Database.getServers().addBuild(port, name, task, Status.Server.OFFLINE, folderPath);
         BuildServer server = new BuildServer(Database.getServers().getServer(Type.Server.BUILD, port), folderPath, networkServer);
-        servers.put(port, server);
+        servers.put(name, port, server);
         return server;
     }
 
@@ -459,12 +472,12 @@ public class NetworkManager implements ChannelListener {
         if (type.equals(MessageType.Server.PERMISSION)) {
 
             for (User user : getUsers()) {
-                if (user.getServer().getPort().equals(msg.getPort())) {
+                if (user.getServer().getName().equals(msg.getName())) {
                     user.updatePermissions(false);
                 }
             }
         } else if (type.equals(MessageType.Server.STATUS)) {
-            Server server = this.getServer(msg.getPort());
+            Server server = this.getServer(msg.getName());
             server.updateStatus();
 
             if (server.getType().equals(Type.Server.LOBBY)) {
@@ -476,13 +489,13 @@ public class NetworkManager implements ChannelListener {
             }
 
             if (msg.getValue() != null && msg.getValue().equals(Status.Server.OFFLINE)) {
-                getServer(msg.getPort()).setStatus(Status.Server.OFFLINE, true);
+                getServer(msg.getName()).setStatus(Status.Server.OFFLINE, true);
             }
         }
     }
 
     @ChannelHandler(type = ListenerType.LISTENER_UNREGISTER)
-    public void onChannelRegisterMessage(ChannelListenerMessage<Integer> msg) {
+    public void onChannelRegisterMessage(ChannelListenerMessage<String> msg) {
         if (msg.getMessageType().equals(MessageType.Listener.UNREGISTER_SERVER)) {
             Server server = this.getServer(msg.getValue());
             server.setStatus(Status.Server.OFFLINE, true);

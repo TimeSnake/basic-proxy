@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 public class SupportManager implements ChannelListener, CommandListener<Sender, Argument> {
 
-    private final HashMap<Integer, Tuple<Integer, ScheduledTask>> lockedTicketsById = new HashMap<>();
+    private final HashMap<Integer, Tuple<String, ScheduledTask>> lockedTicketsById = new HashMap<>();
 
     private final Set<UUID> ticketListeners = new HashSet<>();
 
@@ -41,29 +41,29 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
     @ChannelHandler(type = ListenerType.SUPPORT)
     public void onSupportMessage(ChannelSupportMessage<?> msg) {
         if (msg.getMessageType().equals(MessageType.Support.TICKET_LOCK)) {
-            Integer port = msg.getPort();
+            String name = msg.getName();
             Integer id = (Integer) msg.getValue();
-            Tuple<Integer, ScheduledTask> value = this.lockedTicketsById.get(id);
-            if (value != null && !value.getA().equals(port)) {
-                Network.getChannel().sendMessage(new ChannelSupportMessage<>(port, MessageType.Support.REJECT, id));
+            Tuple<String, ScheduledTask> value = this.lockedTicketsById.get(id);
+            if (value != null && !value.getA().equals(name)) {
+                Network.getChannel().sendMessage(new ChannelSupportMessage<>(name, MessageType.Support.REJECT, id));
             } else {
                 ScheduledTask task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(),
                         () -> this.lockedTicketsById.remove(id)).delay(3, TimeUnit.MINUTES).schedule();
 
-                this.lockedTicketsById.put(id, new Tuple<>(port, task));
+                this.lockedTicketsById.put(id, new Tuple<>(name, task));
             }
         } else if (msg.getMessageType().equals(MessageType.Support.SUBMIT)) {
-            Integer port = msg.getPort();
+            String name = msg.getName();
             Integer id = (Integer) msg.getValue();
 
-            Tuple<Integer, ScheduledTask> tuple = this.lockedTicketsById.get(id);
+            Tuple<String, ScheduledTask> tuple = this.lockedTicketsById.get(id);
 
-            if (tuple == null || tuple.getA() == null || !tuple.getA().equals(port)) {
-                Network.getChannel().sendMessage(new ChannelSupportMessage<>(port, MessageType.Support.REJECT, id));
+            if (tuple == null || tuple.getA() == null || !tuple.getA().equals(name)) {
+                Network.getChannel().sendMessage(new ChannelSupportMessage<>(name, MessageType.Support.REJECT, id));
                 return;
             }
 
-            Network.getChannel().sendMessage(new ChannelSupportMessage<>(port, MessageType.Support.ACCEPT, id));
+            Network.getChannel().sendMessage(new ChannelSupportMessage<>(name, MessageType.Support.ACCEPT, id));
 
             ScheduledTask task = this.lockedTicketsById.remove(id).getB();
 

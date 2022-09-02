@@ -19,7 +19,7 @@ public class ChannelPingPong implements ChannelTimeOutListener {
         if (task != null) {
             task.cancel();
         }
-        ((Channel) NetworkChannel.getChannel()).getPingPong().ping(Network.getNotOfflineServerPorts());
+        ((Channel) NetworkChannel.getChannel()).getPingPong().ping(Network.getNotOfflineServerNames());
         task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
             ((Channel) NetworkChannel.getChannel()).getPingPong().checkPong();
             this.startPingPong();
@@ -27,8 +27,8 @@ public class ChannelPingPong implements ChannelTimeOutListener {
     }
 
     @Override
-    public void onServerTimeOut(Integer port) {
-        Network.getServer(port).setStatus(Status.Server.OFFLINE, true);
-        Network.printText(Plugin.NETWORK, port + " timed out on channel ping");
+    public void onServerTimeOut(String name) {
+        Network.getServer(name).setStatus(Status.Server.OFFLINE, true);
+        Network.printText(Plugin.NETWORK, name + " timed out on channel ping");
     }
 }

@@ -309,6 +309,10 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                 gameNetworkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());
             }
 
+            if (game.getInfo().getMaxHealth() != null) {
+                gameNetworkServer.setMaxHealth(game.getInfo().getMaxHealth());
+            }
+
             Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.newServer(gameNetworkServer,
                     mapsEnabled, false);
             if (!tempServerResult.getA().isSuccessful()) {
@@ -338,12 +342,12 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             sender.sendPluginMessage(text("Started game ", PERSONAL).append(text(gameName, VALUE)));
             sender.sendPluginMessage(text("Game server: ", PERSONAL).append(text(tempGameServer.getName(), VALUE)));
             sender.sendPluginMessage(text("Lounge server: ", PERSONAL).append(text(loungeServer.getName(), VALUE)));
-            sender.sendPluginMessage(text("Max players: ", PERSONAL).append(text(finalMaxServerPlayers, VALUE)));
+            sender.sendPluginMessage(text("Max players: ", PERSONAL).append(text("" + finalMaxServerPlayers, VALUE)));
             sender.sendPluginMessage(text("Maps: ", PERSONAL).append(text(mapsEnabled, VALUE)));
             sender.sendPluginMessage(text("Kits: ", PERSONAL).append(text(kitsEnabled, VALUE)));
             sender.sendPluginMessage(text("Team amount: ", PERSONAL).append(text(finalTeamAmount, VALUE)));
             sender.sendPluginMessage(text("Team merging: ", PERSONAL).append(text(teamMerging, VALUE)));
-            sender.sendPluginMessage(text("Max players per team: ", PERSONAL).append(text(finalPlayersPerTeam, VALUE)));
+            sender.sendPluginMessage(text("Max players per team: ", PERSONAL).append(text("" + finalPlayersPerTeam, VALUE)));
             sender.sendPluginMessage(text("Old PvP: ", PERSONAL).append(text(oldPvP, VALUE)));
 
             Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);

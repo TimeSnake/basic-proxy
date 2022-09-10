@@ -120,6 +120,8 @@ public class BasicProxy {
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "build", new MapBuildCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
 
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "network", new NetworkCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+
         EventManager em = server.getEventManager();
 
         em.register(this, new MotdManager());

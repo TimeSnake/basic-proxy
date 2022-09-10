@@ -12,6 +12,7 @@ import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.proxy.channel.Channel;
+import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.chat.Plugin;
@@ -19,6 +20,7 @@ import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.ServerCreationResult;
+import de.timesnake.library.network.ServerInitResult;
 import net.kyori.adventure.text.Component;
 
 import java.nio.file.Path;
@@ -140,7 +142,7 @@ public class Network {
     }
 
     public static Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds, boolean syncPlayerData) {
-        return network.newServer(server, copyWorlds, syncPlayerData);
+        return network.createTmpServer(server, copyWorlds, syncPlayerData);
     }
 
     public static LobbyServer addLobby(int port, String name, Path folderPath, NetworkServer networkServer) {
@@ -155,7 +157,7 @@ public class Network {
         return network.addLounge(port, name, folderPath, networkServer);
     }
 
-    public static TempGameServer addTempGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
+    public static TmpGameServer addTempGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
         return network.addTempGame(port, name, task, folderPath, networkServer);
     }
 
@@ -325,6 +327,18 @@ public class Network {
 
     public static NetworkUtils getNetworkUtils() {
         return network.getNetworkUtils();
+    }
+
+    public static ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {
+        return network.createPlayerServer(uuid, type, task, name);
+    }
+
+    public static Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid, NetworkServer server) {
+        return network.loadPlayerServer(uuid, server);
+    }
+
+    public static Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(NetworkServer server) {
+        return network.loadPublicPlayerServer(server);
     }
 
     private static final NetworkManager network = NetworkManager.getInstance();

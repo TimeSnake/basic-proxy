@@ -5,7 +5,7 @@ import de.timesnake.library.network.NetworkServer;
 
 import java.nio.file.Path;
 
-public class GameServer extends TaskServer {
+public abstract class GameServer extends TaskServer {
 
     public GameServer(DbNonTmpGameServer database, Path folderPath, NetworkServer networkServer) {
         super(database, folderPath, networkServer);

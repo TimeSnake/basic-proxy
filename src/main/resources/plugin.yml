@@ -70,4 +70,6 @@ commands:
   dg:
 
   build:
+
+  network:
      

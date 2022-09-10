@@ -7,7 +7,7 @@ import de.timesnake.library.network.NetworkServer;
 
 import java.nio.file.Path;
 
-public class TempGameServer extends PvPServer {
+public class TmpGameServer extends PvPServer {
 
     protected boolean kitsEnabled;
     protected boolean mapsEnabled;
@@ -16,7 +16,7 @@ public class TempGameServer extends PvPServer {
     protected Integer maxPlayersPerTeam;
     private DbLoungeServer twinServer;
 
-    public TempGameServer(DbTmpGameServer database, Path folderPath, NetworkServer networkServer) {
+    public TmpGameServer(DbTmpGameServer database, Path folderPath, NetworkServer networkServer) {
         super(database, folderPath, networkServer);
         this.twinServer = database.getTwinServer();
     }

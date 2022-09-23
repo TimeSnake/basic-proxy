@@ -31,7 +31,48 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
 
         switch (args.getString(0).toLowerCase()) {
             case "create_own_game" -> this.handleCreateOwnGameCmd(sender, args);
+            case "create_public_game" -> this.handleCreatePublicGameCmd(sender, args);
         }
+    }
+
+    private void handleCreatePublicGameCmd(Sender sender, Arguments<Argument> args) {
+        if (!sender.hasPermission("network.create.public_game")) {
+            return;
+        }
+
+        if (!args.isLengthHigherEquals(3, true)) {
+            return;
+        }
+
+        DbGame game = Database.getGames().getGame(args.getString(1).toLowerCase());
+
+        if (!(game instanceof DbNonTmpGame nonTmpGame)) {
+            sender.sendPluginMessage(Component.text("Unsupported game type", WARNING));
+            return;
+        }
+
+        Collection<String> serverNames = Network.getNetworkUtils().getPublicPlayerServerNames(Type.Server.GAME,
+                nonTmpGame.getName());
+
+        String serverName = args.get(2).toLowerCase();
+
+        if (serverNames.contains(serverName)) {
+            sender.sendMessageAlreadyExist(serverName, 129, "server");
+            return;
+        }
+
+        ServerInitResult result = Network.createPublicPlayerServer(Type.Server.GAME, ((DbNonTmpGame) game).getName(),
+                serverName);
+
+        if (!result.isSuccessful()) {
+            sender.sendPluginMessage(Component.text("Error while creating server (" +
+                    ((ServerInitResult.Fail) result).getReason() + ")", WARNING));
+            return;
+        }
+
+        sender.sendPluginMessage(Component.text("Created server ", PERSONAL)
+                .append(Component.text(serverName, ExTextColor.VALUE))
+                .append(Component.text(" (" + serverName + ")", ExTextColor.QUICK_INFO)));
     }
 
     private void handleCreateOwnGameCmd(Sender sender, Arguments<Argument> args) {

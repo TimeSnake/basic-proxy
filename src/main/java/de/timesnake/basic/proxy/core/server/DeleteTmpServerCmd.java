@@ -26,7 +26,7 @@ public class DeleteTmpServerCmd implements CommandListener<Sender, Argument> {
 
         String serverName = args.getString(0);
 
-        boolean result = Network.deleteServer(serverName);
+        boolean result = Network.deleteServer(serverName, false);
 
         if (result) {
             sender.sendPluginMessage(Component.text("Deleted server ", ExTextColor.PERSONAL)

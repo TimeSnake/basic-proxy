@@ -141,7 +141,7 @@ public class Network {
         network.getServer(port);
     }
 
-    public static Tuple<ServerCreationResult, Optional<Server>> newServer(NetworkServer server, boolean copyWorlds, boolean syncPlayerData) {
+    public static Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean copyWorlds, boolean syncPlayerData) {
         return network.createTmpServer(server, copyWorlds, syncPlayerData);
     }
 
@@ -313,8 +313,8 @@ public class Network {
         return network.getTmpDirsByServerName();
     }
 
-    public static boolean deleteServer(String name) {
-        return network.deleteServer(name);
+    public static boolean deleteServer(String name, boolean force) {
+        return network.deleteServer(name, force);
     }
 
     public static Path getNetworkPath() {
@@ -329,6 +329,10 @@ public class Network {
         return network.getNetworkUtils();
     }
 
+    public static ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task, String name) {
+        return network.createPublicPlayerServer(type, task, name);
+    }
+
     public static ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {
         return network.createPlayerServer(uuid, type, task, name);
     }
@@ -339,6 +343,10 @@ public class Network {
 
     public static Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(NetworkServer server) {
         return network.loadPublicPlayerServer(server);
+    }
+
+    public static boolean killAndDeleteServer(String serverName, Long pid) {
+        return network.killAndDeleteServer(serverName, pid);
     }
 
     private static final NetworkManager network = NetworkManager.getInstance();

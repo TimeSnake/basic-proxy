@@ -61,14 +61,20 @@ public class NetworkManager implements ChannelListener {
     }
 
     private static final NetworkManager instance = new NetworkManager();
+
     private final HashMap<String, PermGroup> permGroups = new HashMap<>();
     private final HashMap<String, DisplayGroup> displayGroups = new HashMap<>();
+
     private final ConcurrentHashMap<UUID, User> users = new ConcurrentHashMap<>();
+
     private final ArrayList<User> networkMessageListeners = new ArrayList<>();
     private final ArrayList<User> privateMessageListeners = new ArrayList<>();
     private final ArrayList<User> supportMessageListeners = new ArrayList<>();
+
     private final MultiKeyMap<String, Integer, Server> servers = new MultiKeyMap<>();
+
     private final Map<String, Path> tmpDirsByServerName = new HashMap<>();
+
     private final CommandHandler commandHandler = new CommandHandler();
     private final PermissionManager permissionManager = new PermissionManager();
     private final BukkitCmdHandler bukkitCmdHandler = new BukkitCmdHandler();
@@ -283,6 +289,10 @@ public class NetworkManager implements ChannelListener {
         return new Tuple<>(result, serverOpt);
     }
 
+    public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task, String name) {
+        return this.networkUtils.initPublicPlayerServer(type, task, name);
+    }
+
     public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {
         return this.networkUtils.initPlayerServer(uuid, type, task, name);
     }
@@ -342,14 +352,14 @@ public class NetworkManager implements ChannelListener {
         return newServer;
     }
 
-    public boolean deleteServer(String name) {
+    public boolean deleteServer(String name, boolean force) {
         if (!this.tmpDirsByServerName.containsKey(name)) {
             return false;
         }
 
         Server server = this.getServer(name);
 
-        if (!server.getStatus().equals(Status.Server.OFFLINE)) {
+        if (!force && !server.getStatus().equals(Status.Server.OFFLINE)) {
             return false;
         }
 
@@ -364,6 +374,22 @@ public class NetworkManager implements ChannelListener {
         BasicProxy.getLogger().info("Deleted tmp server " + name);
 
         return true;
+    }
+
+    public boolean killAndDeleteServer(String name, Long pid) {
+        Optional<ProcessHandle> process = ProcessHandle.of(pid);
+
+        if (process.isEmpty()) {
+            return false;
+        }
+
+        if (!process.get().destroy()) {
+            return false;
+        }
+
+        BasicProxy.getLogger().info("Killed server " + name);
+
+        return this.deleteServer(name, true);
     }
 
     public int nextEmptyPort() {

@@ -61,7 +61,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
             if (buildServer == null) {
                 int port = Network.nextEmptyPort();
                 Tuple<ServerCreationResult, Optional<Server>> result =
-                        Network.newServer(new NetworkServer("build" + (port % 1000), port, Type.Server.BUILD,
+                        Network.createTmpServer(new NetworkServer("build" + (port % 1000), port, Type.Server.BUILD,
                                 Network.getVelocitySecret()).setPlayerTrackingRange(128), false, true);
 
                 if (!result.getA().isSuccessful()) {

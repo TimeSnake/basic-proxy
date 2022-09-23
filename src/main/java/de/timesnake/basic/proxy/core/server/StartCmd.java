@@ -31,8 +31,6 @@ import static net.kyori.adventure.text.Component.text;
 
 public class StartCmd implements CommandListener<Sender, Argument> {
 
-    private static final String KITS = "kits";
-
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         if (args.isLengthHigherEquals(2, true)) {
@@ -70,16 +68,22 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         Server server = Network.getServer(serverName);
 
         if (server == null) {
-            sender.sendPluginMessage(text("Server ", WARNING).append(text(serverName, VALUE)).append(text(" doesn't exist!", WARNING)));
+            sender.sendPluginMessage(text("Server ", WARNING)
+                    .append(text(serverName, VALUE))
+                    .append(text(" doesn't exist!", WARNING)));
             return;
         }
         Status.Server status = server.getStatus();
         if (status != null && (status.equals(Status.Server.LAUNCHING) || status.equals(Status.Server.LOADING))) {
-            sender.sendPluginMessage(text("Server ", WARNING).append(text(serverName, VALUE)).append(text(" is already starting!", WARNING)));
+            sender.sendPluginMessage(text("Server ", WARNING)
+                    .append(text(serverName, VALUE))
+                    .append(text(" is already starting!", WARNING)));
             return;
         }
         if (status.isRunning()) {
-            sender.sendPluginMessage(text("Server ", WARNING).append(text(serverName, VALUE)).append(text(" is already online!", WARNING)));
+            sender.sendPluginMessage(text("Server ", WARNING)
+                    .append(text(serverName, VALUE))
+                    .append(text(" is already online!", WARNING)));
             return;
         }
 
@@ -132,7 +136,8 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
-        Collection<String> serverNames = Network.getNetworkUtils().getOwnerServerNames(user.getUniqueId(), Type.Server.GAME, ((DbNonTmpGame) game).getName());
+        Collection<String> serverNames = Network.getNetworkUtils().getOwnerServerNames(user.getUniqueId(),
+                Type.Server.GAME, ((DbNonTmpGame) game).getName());
 
         String serverName = args.getString(2);
 
@@ -142,17 +147,22 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         }
 
         int port = Network.nextEmptyPort();
-        NetworkServer networkServer = new NetworkServer(user.getUniqueId().hashCode() + serverName, port, Type.Server.GAME, Network.getVelocitySecret()).setTask(((DbNonTmpGame) game).getName()).setMaxPlayers(20).allowNether(true).allowEnd(true);
+        NetworkServer networkServer = new NetworkServer(user.getUniqueId().hashCode() + "_" + serverName, port,
+                Type.Server.GAME, Network.getVelocitySecret()).setFolderName(serverName)
+                .setTask(((DbNonTmpGame) game).getName()).setMaxPlayers(20).allowNether(true).allowEnd(true);
 
         sender.sendPluginMessage(Component.text("Loading server ", PERSONAL).append(Component.text(serverName, VALUE)));
         Tuple<ServerCreationResult, Optional<Server>> result = Network.loadPlayerServer(user.getUniqueId(), networkServer);
 
         if (!result.getA().isSuccessful()) {
-            sender.sendPluginMessage(Component.text("Error while loading server (" + ((ServerCreationResult.Fail) result.getA()).getReason(), WARNING));
+            sender.sendPluginMessage(Component.text("Error while loading server (" +
+                    ((ServerCreationResult.Fail) result.getA()).getReason(), WARNING));
             return;
         }
 
-        sender.sendPluginMessage(Component.text("Loaded server ", PERSONAL).append(Component.text(serverName, VALUE)).append(Component.text(", you will be moved in a few moments", PERSONAL)));
+        sender.sendPluginMessage(Component.text("Loaded server ", PERSONAL)
+                .append(Component.text(serverName, VALUE))
+                .append(Component.text(", you will be moved in a few moments", PERSONAL)));
 
         NonTmpGameServer server = (NonTmpGameServer) result.getB().get();
         server.setMaxPlayers(((DbNonTmpGame) game).getMaxPlayers());
@@ -191,17 +201,21 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         }
 
         int port = Network.nextEmptyPort();
-        NetworkServer networkServer = new NetworkServer(serverName, port, Type.Server.GAME, Network.getVelocitySecret()).setTask(((DbNonTmpGame) game).getName()).setMaxPlayers(20).allowNether(true).allowEnd(true);
+        NetworkServer networkServer = new NetworkServer(serverName, port, Type.Server.GAME,
+                Network.getVelocitySecret()).setTask(((DbNonTmpGame) game).getName()).setMaxPlayers(20).allowNether(true).allowEnd(true);
 
         sender.sendPluginMessage(Component.text("Loading server ", PERSONAL).append(Component.text(serverName, VALUE)));
         Tuple<ServerCreationResult, Optional<Server>> result = Network.loadPublicPlayerServer(networkServer);
 
         if (!result.getA().isSuccessful()) {
-            sender.sendPluginMessage(Component.text("Error while loading server (" + ((ServerCreationResult.Fail) result.getA()).getReason(), WARNING));
+            sender.sendPluginMessage(Component.text("Error while loading server (" +
+                    ((ServerCreationResult.Fail) result.getA()).getReason(), WARNING));
             return;
         }
 
-        sender.sendPluginMessage(Component.text("Loaded server ", PERSONAL).append(Component.text(serverName, VALUE)).append(Component.text(", you will be moved in a few moments", PERSONAL)));
+        sender.sendPluginMessage(Component.text("Loaded server ", PERSONAL)
+                .append(Component.text(serverName, VALUE))
+                .append(Component.text(", you will be moved in a few moments", PERSONAL)));
 
         NonTmpGameServer server = (NonTmpGameServer) result.getB().get();
         server.setMaxPlayers(((DbNonTmpGame) game).getMaxPlayers());
@@ -224,45 +238,100 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         }
 
         if (game instanceof DbTmpGame) {
-            this.handleStartTempGame(sender, args, (DbTmpGame) game);
+            this.handleStartTmpGame(sender, args, (DbTmpGame) game);
         } else {
-            sender.sendPluginMessage(text("Please use the /start server command to start a non temp " + "game server", WARNING));
-            GameServer gameServer = null;
-            for (Server server1 : Network.getServers()) {
-                if (server1.getType().equals(Type.Server.GAME) && (server1.getStatus() == null || server1.getStatus().equals(Status.Server.OFFLINE)) && ((GameServer) server1).getTask().equals(gameType)) {
-                    gameServer = (GameServer) server1;
-                }
-            }
-
-            if (gameServer == null) {
-                sender.sendPluginMessage(text("All game servers are in use!", WARNING));
-                return;
-            }
-
-            gameServer.setTask(gameType);
-            Integer maxPlayers = null;
-
-            if (args.isLengthEquals(3, false) && args.get(2).isInt(true)) {
-                maxPlayers = args.get(2).toInt();
-            } else if (Database.getGames().containsGame(gameType)) {
-                maxPlayers = Database.getGames().getGame(gameType).getInfo().getMaxPlayers();
-            }
-
-            if (maxPlayers != null) {
-                gameServer.setMaxPlayers(maxPlayers);
-                Network.getBukkitCmdHandler().handleServerCmd(sender, gameServer);
-            } else {
-                sender.sendPluginMessage(text("No default max-players value found", WARNING));
-            }
-
+            this.handleStartNonTmpGame(sender, args, (DbNonTmpGame) game);
         }
     }
 
-    private void handleStartPublicGame(Sender sender, Arguments<Argument> args, DbGame game) {
+    private void handleStartNonTmpGame(Sender sender, Arguments<Argument> args, DbNonTmpGame game) {
+        if (game.isOwnable()) {
+            sender.sendPluginMessage(text("Unsupported game type"));
+            return;
+        }
 
+
+        String gameName = game.getName();
+        Integer gameMaxPlayers = game.getMaxPlayers();
+
+        Type.Availability gameKitAvailability = game.getKitAvailability();
+        Type.Availability gameMapAvailability = game.getMapAvailability();
+
+        // kits
+        boolean kitsEnabled = args.getArgumentByString("kits") != null;
+
+        if (gameKitAvailability.equals(Type.Availability.FORBIDDEN) && kitsEnabled) {
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" forbid kits", WARNING)));
+            return;
+        }
+
+        if (gameKitAvailability.equals(Type.Availability.REQUIRED) && !kitsEnabled) {
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" require kits", WARNING)));
+            return;
+        }
+
+        // maps
+        boolean mapsEnabled = args.getArgumentByString("maps") != null;
+
+        if (gameMapAvailability.equals(Type.Availability.FORBIDDEN) && mapsEnabled) {
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" forbid maps", WARNING)));
+            return;
+        }
+
+        if (gameMapAvailability.equals(Type.Availability.REQUIRED) && !mapsEnabled) {
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" require maps", WARNING)));
+            return;
+        }
+
+        boolean oldPvP = args.getArgumentByString("oldpvp") != null || args.getArgumentByString("1.8pvp") != null;
+        boolean netherEnd = game.isNetherAndEndAllowed();
+
+        sender.sendPluginMessage(text("Creating server...", PERSONAL));
+
+
+        Network.runTaskAsync(() -> {
+            int port = Network.nextEmptyPort();
+            NetworkServer networkServer = new NetworkServer((port % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
+                    port, Type.Server.GAME, Network.getVelocitySecret()).setTask(gameName).allowEnd(netherEnd).allowNether(netherEnd);
+
+            if (game.getInfo().getPlayerTrackingRange() != null) {
+                networkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());
+            }
+
+            if (game.getInfo().getMaxHealth() != null) {
+                networkServer.setMaxHealth(game.getInfo().getMaxHealth());
+            }
+
+            Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(networkServer, mapsEnabled, false);
+            if (!result.getA().isSuccessful()) {
+                sender.sendPluginMessage(text("Error while creating a" + " game server! " +
+                        "Please contact an administrator (" + ((ServerCreationResult.Fail) result.getA()).getReason() + ")", WARNING));
+                return;
+            }
+
+            NonTmpGameServer server = (NonTmpGameServer) result.getB().get();
+
+            server.setTaskSynchronized(gameName);
+            server.setMaxPlayers(gameMaxPlayers);
+
+            sender.sendPluginMessage(text("Started game ", PERSONAL).append(text(gameName, VALUE)));
+            sender.sendPluginMessage(text("Game server: ", PERSONAL).append(text(server.getName(), VALUE)));
+            sender.sendPluginMessage(text("Max players: ", PERSONAL).append(text("" + gameMaxPlayers, VALUE)));
+            sender.sendPluginMessage(text("Old PvP: ", PERSONAL).append(text(oldPvP, VALUE)));
+
+            Network.getBukkitCmdHandler().handleServerCmd(sender, server);
+        });
     }
 
-    private void handleStartTempGame(Sender sender, Arguments<Argument> args, DbTmpGame game) {
+    private void handleStartTmpGame(Sender sender, Arguments<Argument> args, DbTmpGame game) {
 
         String gameName = game.getName();
         Type.Availability gameKitAvailability = game.getKitAvailability();
@@ -276,12 +345,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         boolean kitsEnabled = args.getArgumentByString("kits") != null;
 
         if (gameKitAvailability.equals(Type.Availability.FORBIDDEN) && kitsEnabled) {
-            sender.sendPluginMessage(text("Game ", WARNING).append(text(gameName, VALUE)).append(text("forbid kits", WARNING)));
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" forbid kits", WARNING)));
             return;
         }
 
         if (gameKitAvailability.equals(Type.Availability.REQUIRED) && !kitsEnabled) {
-            sender.sendPluginMessage(text("Game ", WARNING).append(text(gameName, VALUE)).append(text("require kits", WARNING)));
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" require kits", WARNING)));
             return;
         }
 
@@ -289,12 +362,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         boolean mapsEnabled = args.getArgumentByString("maps") != null;
 
         if (gameMapAvailability.equals(Type.Availability.FORBIDDEN) && mapsEnabled) {
-            sender.sendPluginMessage(text("Game ", WARNING).append(text(gameName, VALUE)).append(text(" forbid maps", WARNING)));
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" forbid maps", WARNING)));
             return;
         }
 
         if (gameMapAvailability.equals(Type.Availability.REQUIRED) && !mapsEnabled) {
-            sender.sendPluginMessage(text("Game ", WARNING).append(text(gameName, VALUE)).append(text("require maps", WARNING)));
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" require maps", WARNING)));
             return;
         }
 
@@ -311,12 +388,18 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             }
 
             if (maxServerPlayers > gameMaxPlayers) {
-                sender.sendPluginMessage(text("Too large max players amount for game ", WARNING).append(text(gameName, VALUE)).append(text(", max is ", WARNING)).append(text(gameMaxPlayers, VALUE)));
+                sender.sendPluginMessage(text("Too large max players amount for game ", WARNING)
+                        .append(text(gameName, VALUE))
+                        .append(text(", max is ", WARNING))
+                        .append(text(gameMaxPlayers, VALUE)));
                 return;
             }
 
             if (maxServerPlayers < gameMinPlayers) {
-                sender.sendPluginMessage(text("Too small max players amount for game ", WARNING).append(text(gameName, VALUE)).append(text(", min is ", WARNING)).append(text(gameMinPlayers, VALUE)));
+                sender.sendPluginMessage(text("Too small max players amount for game ", WARNING)
+                        .append(text(gameName, VALUE))
+                        .append(text(", min is ", WARNING))
+                        .append(text(gameMinPlayers, VALUE)));
                 return;
             }
         }
@@ -354,7 +437,8 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
                 if (!gameTeamAmounts.contains(teamAmount)) {
                     sender.sendPluginMessage(text("Invalid team amount", WARNING));
-                    sender.sendPluginMessage(text("Available team amounts: ", PERSONAL).append(Chat.listToComponent(gameTeamAmounts, VALUE, PERSONAL)));
+                    sender.sendPluginMessage(text("Available team amounts: ", PERSONAL)
+                            .append(Chat.listToComponent(gameTeamAmounts, VALUE, PERSONAL)));
                     return;
                 }
             }
@@ -368,12 +452,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         }
 
         if (gameMergeTeams.equals(Type.Availability.FORBIDDEN) && teamMerging) {
-            sender.sendPluginMessage(text("Game ", WARNING).append(text(gameName, VALUE)).append(text(" forbid team merging", WARNING)));
+            sender.sendPluginMessage(text("Game ", WARNING)
+                    .append(text(gameName, VALUE))
+                    .append(text(" forbid team merging", WARNING)));
             return;
         }
 
         if (gameMergeTeams.equals(Type.Availability.REQUIRED) && !teamMerging && teamAmount > 0) {
-            sender.sendPluginMessage(text("Game ", WARNING).append(text(gameName, VALUE)).append(text(" require team merging", WARNING)));
+            sender.sendPluginMessage(text("Game ", WARNING).
+                    append(text(gameName, VALUE))
+                    .append(text(" require team merging", WARNING)));
             return;
         }
 
@@ -390,17 +478,22 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
         Network.runTaskAsync(() -> {
             int loungePort = Network.nextEmptyPort();
-            NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) + Type.Server.LOUNGE.getDatabaseValue() + Network.TMP_SERVER_SUFFIX, loungePort, Type.Server.LOUNGE, Network.getVelocitySecret());
+            NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
+                    Type.Server.LOUNGE.getDatabaseValue() + Network.TMP_SERVER_SUFFIX, loungePort, Type.Server.LOUNGE,
+                    Network.getVelocitySecret());
 
-            Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.newServer(loungeNetworkServer, true, false);
+            Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.createTmpServer(loungeNetworkServer, true, false);
+
             if (!loungeResult.getA().isSuccessful()) {
-                sender.sendPluginMessage(text("Error while creating a" + " lounge server! Please contact an administrator (" + ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")", WARNING));
+                sender.sendPluginMessage(text("Error while creating a" + " lounge server! " +
+                        "Please contact an administrator (" + ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")", WARNING));
                 return;
             }
 
             int tempGamePort = Network.nextEmptyPort();
 
-            NetworkServer gameNetworkServer = new NetworkServer((tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX, tempGamePort, Type.Server.TEMP_GAME, Network.getVelocitySecret()).setTask(gameName);
+            NetworkServer gameNetworkServer = new NetworkServer((tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
+                    tempGamePort, Type.Server.TEMP_GAME, Network.getVelocitySecret()).setTask(gameName);
 
             if (game.getInfo().getPlayerTrackingRange() != null) {
                 gameNetworkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());
@@ -410,9 +503,10 @@ public class StartCmd implements CommandListener<Sender, Argument> {
                 gameNetworkServer.setMaxHealth(game.getInfo().getMaxHealth());
             }
 
-            Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.newServer(gameNetworkServer, mapsEnabled, false);
+            Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.createTmpServer(gameNetworkServer, mapsEnabled, false);
             if (!tempServerResult.getA().isSuccessful()) {
-                sender.sendPluginMessage(text("Error while creating a" + " " + gameName + " server! Please contact an administrator (" + ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")", WARNING));
+                sender.sendPluginMessage(text("Error while creating a" + " " + gameName + " server! Please contact an administrator (" +
+                        ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")", WARNING));
                 return;
             }
 

@@ -52,7 +52,9 @@ import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 public class NetworkManager implements ChannelListener {
 
@@ -376,20 +378,29 @@ public class NetworkManager implements ChannelListener {
         return true;
     }
 
-    public boolean killAndDeleteServer(String name, Long pid) {
+    public CompletableFuture<Boolean> killAndDeleteServer(String name, Long pid) {
         Optional<ProcessHandle> process = ProcessHandle.of(pid);
 
         if (process.isEmpty()) {
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
 
         if (!process.get().destroy()) {
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
 
-        BasicProxy.getLogger().info("Killed server " + name);
+        CompletableFuture<ProcessHandle> future = process.get().onExit();
 
-        return this.deleteServer(name, true);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                return false;
+            }
+
+            BasicProxy.getLogger().info("Killed server " + name);
+            return this.deleteServer(name, true);
+        });
     }
 
     public int nextEmptyPort() {

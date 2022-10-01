@@ -10,6 +10,7 @@ import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.library.basic.util.chat.Plugin;
 
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 
 public class ChannelCmdHandler implements ChannelListener {
 
@@ -56,9 +57,17 @@ public class ChannelCmdHandler implements ChannelListener {
                 return;
             }
 
-            if (!Network.killAndDeleteServer(serverName, pid)) {
-                Network.printWarning(Plugin.NETWORK, "Server " + serverName + " could not be killed and deleted");
-            }
+            Network.runTaskAsync(() -> {
+                try {
+                    if (!Network.killAndDeleteServer(serverName, pid).get()) {
+                        Network.printWarning(Plugin.NETWORK, "Server " + serverName + " could not be killed and deleted");
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                    Network.printWarning(Plugin.NETWORK, "Server " + serverName + " could not be killed and deleted");
+                }
+            });
+
         }
     }
 }

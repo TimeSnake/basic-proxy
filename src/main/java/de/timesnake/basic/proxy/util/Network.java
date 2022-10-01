@@ -26,6 +26,7 @@ import net.kyori.adventure.text.Component;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class Network {
 
@@ -345,7 +346,7 @@ public class Network {
         return network.loadPublicPlayerServer(server);
     }
 
-    public static boolean killAndDeleteServer(String serverName, Long pid) {
+    public static CompletableFuture<Boolean> killAndDeleteServer(String serverName, Long pid) {
         return network.killAndDeleteServer(serverName, pid);
     }
 

@@ -7,7 +7,7 @@ import de.timesnake.channel.util.listener.ChannelListener;
 import de.timesnake.channel.util.listener.ListenerType;
 import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
-import de.timesnake.library.basic.util.chat.Plugin;
+import de.timesnake.library.extension.util.chat.Plugin;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;

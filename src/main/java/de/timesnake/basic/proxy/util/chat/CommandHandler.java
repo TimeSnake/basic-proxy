@@ -9,7 +9,7 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
-import de.timesnake.library.basic.util.chat.Plugin;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -26,6 +26,7 @@ public class CommandHandler {
 
     public void addCommand(Object mainClass, String cmd, CommandListener<Sender, Argument> listener,
                            Plugin basicPlugin) {
+        listener.loadCodes(basicPlugin);
         this.commands.put(cmd, new ExCommand<>(cmd, listener, basicPlugin));
         Command command = new Command();
         CommandMeta commandMeta = BasicProxy.getCommandManager().metaBuilder(cmd).plugin(mainClass).build();
@@ -34,6 +35,7 @@ public class CommandHandler {
 
     public void addCommand(Object mainClass, String cmd, List<String> aliases,
                            CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
+        listener.loadCodes(basicPlugin);
         ExCommand<Sender, Argument> exCommand = new ExCommand<>(cmd, listener, basicPlugin);
         this.commands.put(cmd, exCommand);
 

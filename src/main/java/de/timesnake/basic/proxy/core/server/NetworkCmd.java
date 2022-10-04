@@ -9,6 +9,8 @@ import de.timesnake.database.util.game.DbNonTmpGame;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -22,6 +24,9 @@ import static de.timesnake.library.basic.util.chat.ExTextColor.PERSONAL;
 import static de.timesnake.library.basic.util.chat.ExTextColor.WARNING;
 
 public class NetworkCmd implements CommandListener<Sender, Argument> {
+
+    private Code.Help serverAlreadyExists;
+    private Code.Permission createOwnPerm;
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
@@ -57,7 +62,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
         String serverName = args.get(2).toLowerCase();
 
         if (serverNames.contains(serverName)) {
-            sender.sendMessageAlreadyExist(serverName, 129, "server");
+            sender.sendMessageAlreadyExist(serverName, this.serverAlreadyExists, "server");
             return;
         }
 
@@ -76,7 +81,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
     }
 
     private void handleCreateOwnGameCmd(Sender sender, Arguments<Argument> args) {
-        if (!sender.hasPermission("network.create.own_game", 52)) {
+        if (!sender.hasPermission(this.createOwnPerm)) {
             return;
         }
 
@@ -110,7 +115,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
         String serverName = args.get(2).toLowerCase();
 
         if (serverNames.contains(user.getUniqueId().hashCode() + serverName)) {
-            sender.sendMessageAlreadyExist(serverName, 129, "server");
+            sender.sendMessageAlreadyExist(serverName, this.serverAlreadyExists, "server");
             return;
         }
 
@@ -147,5 +152,11 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
         }
 
         return List.of();
+    }
+
+    @Override
+    public void loadCodes(Plugin plugin) {
+        this.serverAlreadyExists = plugin.createHelpCode("prx", "Server name already exists");
+        this.createOwnPerm = plugin.createPermssionCode("prx", "network.create.own_game");
     }
 }

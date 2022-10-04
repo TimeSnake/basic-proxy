@@ -4,6 +4,8 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -12,12 +14,19 @@ import java.util.List;
 
 public class PunishCmd implements CommandListener<Sender, Argument> {
 
+    private Code.Permission mutePerm;
+    private Code.Permission kickPerm;
+    private Code.Permission unmutePerm;
+    private Code.Permission tempbanPerm;
+    private Code.Permission banPerm;
+    private Code.Permission unbanPerm;
+
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         switch (cmd.getName().toLowerCase()) {
             case "netmute":
             case "mute":
-                if (sender.hasPermission("punish.netmute", 15)) {
+                if (sender.hasPermission(this.mutePerm)) {
                     if (args.isLengthHigherEquals(2, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
                             Punishments.mutePlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
@@ -29,7 +38,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
 
             case "netkick":
             case "kick":
-                if (sender.hasPermission("punish.netkick", 14)) {
+                if (sender.hasPermission(this.kickPerm)) {
                     if (args.isLengthHigherEquals(2, true)) {
                         if (args.get(0).isPlayerName(true)) {
                             Punishments.kickPlayer(sender, args.get(0).toUser(), args.toMessage(1));
@@ -40,7 +49,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
 
             case "netunmute":
             case "unmute":
-                if (sender.hasPermission("punish.netunmute", 18)) {
+                if (sender.hasPermission(this.unmutePerm)) {
                     if (args.isLengthHigherEquals(1, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
                             Punishments.unmutePlayer(sender, args.get(0).toDbUser());
@@ -56,7 +65,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
             case "nettmpban":
             case "tempban":
             case "tmpban":
-                if (sender.hasPermission("punish.nettempban", 16)) {
+                if (sender.hasPermission(this.tempbanPerm)) {
                     if (args.isLengthHigherEquals(3, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
                             Punishments.tempBanPlayer(sender, args.get(0).toDbUser(), args.get(1).getString(),
@@ -72,7 +81,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
 
             case "netban":
             case "ban":
-                if (sender.hasPermission("punish.netban", 13)) {
+                if (sender.hasPermission(this.banPerm)) {
                     if (args.isLengthHigherEquals(2, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
                             Punishments.banPlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
@@ -87,7 +96,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
             case "unban":
             case "pardon":
             case "netpardon":
-                if (sender.hasPermission("punish.netunban", 17)) {
+                if (sender.hasPermission(this.unbanPerm)) {
                     if (args.isLengthEquals(1, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
                             Punishments.unbanPlayer(sender, args.get(0).toDbUser().getUniqueId());
@@ -116,5 +125,15 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
             return List.of("1year;1month;1day;1hour;1min;1sec");
         }
         return null;
+    }
+
+    @Override
+    public void loadCodes(Plugin plugin) {
+        this.mutePerm = plugin.createPermssionCode("pun", "punish.netmute");
+        this.unmutePerm = plugin.createPermssionCode("pun", "punish.netunmute");
+        this.kickPerm = plugin.createPermssionCode("pun", "punish.kick");
+        this.tempbanPerm = plugin.createPermssionCode("pun", "punish.tempban");
+        this.banPerm = plugin.createPermssionCode("pun", "punish.ban");
+        this.unbanPerm = plugin.createPermssionCode("pun", "punish.unban");
     }
 }

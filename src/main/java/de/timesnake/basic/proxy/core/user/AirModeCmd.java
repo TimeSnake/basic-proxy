@@ -5,6 +5,8 @@ import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -14,9 +16,11 @@ import java.util.List;
 
 public class AirModeCmd implements CommandListener<Sender, Argument> {
 
+    private Code.Permission perm;
+
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        if (sender.hasPermission("air", 1)) {
+        if (sender.hasPermission(this.perm)) {
             if (sender.isPlayer(false)) {
                 User user = sender.getUser();
                 if (user.isAirMode()) {
@@ -53,5 +57,10 @@ public class AirModeCmd implements CommandListener<Sender, Argument> {
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         return null;
+    }
+
+    @Override
+    public void loadCodes(Plugin plugin) {
+        this.perm = plugin.createPermssionCode("air", "air");
     }
 }

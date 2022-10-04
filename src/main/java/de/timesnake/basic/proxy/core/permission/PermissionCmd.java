@@ -8,6 +8,7 @@ import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -158,6 +159,11 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
             return null;
         }
         return null;
+    }
+
+    @Override
+    public void loadCodes(Plugin plugin) {
+
     }
 
 }

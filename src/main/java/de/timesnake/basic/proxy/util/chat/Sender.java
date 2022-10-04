@@ -4,8 +4,8 @@ import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.chat.Plugin;
 import net.kyori.adventure.text.Component;
 
 public class Sender extends de.timesnake.library.extension.util.cmd.Sender {

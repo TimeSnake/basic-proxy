@@ -14,6 +14,7 @@ import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -38,6 +39,10 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     private boolean cancelable = false;
     private int requiredVotes = 1;
     private ScheduledTask task;
+
+    private Code.Permission helloPerm;
+    private Code.Permission shutdownPerm;
+    private Code.Permission autoShutdownPerm;
 
     public AutoShutdown() {
         NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
@@ -156,7 +161,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
         if (cmd.getName().equalsIgnoreCase("hello")
                 || cmd.getName().equalsIgnoreCase("hallo")
                 || cmd.getName().equalsIgnoreCase("hi")) {
-            if (sender.hasPermission("network.hello", 35)) {
+            if (sender.hasPermission(this.helloPerm)) {
                 if (sender.isConsole(false)) {
                     this.cancelShutdown();
                     return;
@@ -184,11 +189,11 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
                 }
             }
         } else if (cmd.getName().equalsIgnoreCase("shutdown")) {
-            if (sender.hasPermission("network.shutdown", 41)) {
+            if (sender.hasPermission(this.shutdownPerm)) {
                 this.beginShutdown();
             }
         } else if (cmd.getName().equalsIgnoreCase("autoshutdown")) {
-            if (sender.hasPermission("network.autoshutdown", 10)) {
+            if (sender.hasPermission(this.autoShutdownPerm)) {
                 if (args.isLengthEquals(1, false) && args.get(0).isInt(true)) {
                     this.requiredVotes = args.get(0).toInt();
                     if (this.requiredVotes <= 0) {
@@ -224,5 +229,12 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         return List.of();
+    }
+
+    @Override
+    public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
+        this.helloPerm = plugin.createPermssionCode("ntw", "network.hello");
+        this.shutdownPerm = plugin.createPermssionCode("ntw", "network.shutdown");
+        this.autoShutdownPerm = plugin.createPermssionCode("ntw", "network.autoshutdown");
     }
 }

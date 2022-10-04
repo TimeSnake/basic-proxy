@@ -7,7 +7,7 @@ import de.timesnake.channel.core.NetworkChannel;
 import de.timesnake.channel.proxy.channel.Channel;
 import de.timesnake.channel.proxy.listener.ChannelTimeOutListener;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.basic.util.chat.Plugin;
+import de.timesnake.library.extension.util.chat.Plugin;
 
 import java.util.concurrent.TimeUnit;
 

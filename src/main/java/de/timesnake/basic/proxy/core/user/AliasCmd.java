@@ -8,6 +8,7 @@ import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -81,7 +82,7 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         if (args.isLengthHigherEquals(1, true)) {
             if (Database.getUsers().containsUser(args.get(0).getString())) {
-                if (sender.hasPermission("alias.other", 48)) {
+                if (sender.hasPermission("alias.other")) {
                     if (args.isLengthEquals(3, false)) {
                         AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), args.get(2));
                     } else {
@@ -118,6 +119,11 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
             return List.of("info", "prefix", "suffix", "nick");
         }
         return null;
+    }
+
+    @Override
+    public void loadCodes(Plugin plugin) {
+
     }
 
 }

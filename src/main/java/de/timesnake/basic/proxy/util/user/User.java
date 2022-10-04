@@ -23,8 +23,9 @@ import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.ExTextColor;
-import de.timesnake.library.basic.util.chat.Plugin;
 import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.permission.ExPermission;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -213,11 +214,11 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         return chatName.toString();
     }
 
-    public Sender getAsSender(de.timesnake.library.basic.util.chat.Plugin plugin) {
+    public Sender getAsSender(de.timesnake.library.extension.util.chat.Plugin plugin) {
         return new Sender(new CommandSender(player), plugin);
     }
 
-    public boolean hasPermission(String permission, Integer code, Plugin plugin) {
+    public boolean hasPermission(String permission, Code.Permission code, Plugin plugin) {
         return this.getAsSender(plugin).hasPermission(permission, code);
     }
 
@@ -235,11 +236,11 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     }
 
     @Deprecated
-    public void sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin plugin, String message) {
+    public void sendPluginMessage(de.timesnake.library.extension.util.chat.Plugin plugin, String message) {
         this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin).append(Chat.parseStringToComponent(message)));
     }
 
-    public void sendPluginMessage(de.timesnake.library.basic.util.chat.Plugin plugin, Component message) {
+    public void sendPluginMessage(de.timesnake.library.extension.util.chat.Plugin plugin, Component message) {
         this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin).append(message));
     }
 

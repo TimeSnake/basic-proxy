@@ -11,6 +11,7 @@ import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.chat.Code;
 import net.kyori.adventure.text.Component;
 
 import java.util.Arrays;
@@ -21,10 +22,34 @@ import static net.kyori.adventure.text.Component.text;
 
 public class PermissionManager {
 
+    private final Code.Permission playerAddPerm;
+    private final Code.Permission playerRemovePerm;
+    private final Code.Permission playerGroupSetPerm;
+    private final Code.Permission playerGroupRemovePerm;
+    private final Code.Permission groupAddPerm;
+    private final Code.Permission groupRemovePerm;
+    private final Code.Permission groupCreatePerm;
+    private final Code.Permission groupDeletePerm;
+    private final Code.Permission groupInheritanceSetPerm;
+    private final Code.Permission groupInheritanceRemovePerm;
+
+    public PermissionManager() {
+        this.playerAddPerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.player.add");
+        this.playerRemovePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.player.remove");
+        this.playerGroupSetPerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.player.group.set");
+        this.playerGroupRemovePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.player.group.remove");
+        this.groupAddPerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.add");
+        this.groupRemovePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.remove");
+        this.groupCreatePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.create");
+        this.groupDeletePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.delete");
+        this.groupInheritanceSetPerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.inheritance.set");
+        this.groupInheritanceRemovePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.inheritance.remove");
+    }
+
     public void addPlayerPermission(Sender sender, DbUser user, String permission, Status.Permission mode,
                                     String... servers) {
 
-        if (!sender.hasPermission("permission.player.add", 20)) {
+        if (!sender.hasPermission(this.playerAddPerm)) {
             return;
         }
 
@@ -45,7 +70,7 @@ public class PermissionManager {
 
     public void removePlayerPermission(Sender sender, DbUser user, String permission) {
 
-        if (!sender.hasPermission("permission.player.remove", 21)) {
+        if (!sender.hasPermission(this.playerRemovePerm)) {
             return;
         }
 
@@ -66,7 +91,7 @@ public class PermissionManager {
     }
 
     public void setPlayerGroup(Sender sender, DbUser user, String groupName) {
-        if (!sender.hasPermission("permission.player.group.set", 22)) {
+        if (!sender.hasPermission(this.playerGroupSetPerm)) {
             return;
         }
 
@@ -112,7 +137,7 @@ public class PermissionManager {
 
     public void removePlayerGroup(Sender sender, DbUser user) {
 
-        if (!sender.hasPermission("permission.player.group.remove", 23)) {
+        if (!sender.hasPermission(this.playerGroupRemovePerm)) {
             return;
         }
 
@@ -136,7 +161,7 @@ public class PermissionManager {
 
     public void addGroupPermission(Sender sender, String groupName, String permission, Status.Permission mode,
                                    String... servers) {
-        if (!sender.hasPermission("permission.group.add", 24)) {
+        if (!sender.hasPermission(this.groupAddPerm)) {
             return;
         }
 
@@ -162,7 +187,7 @@ public class PermissionManager {
     }
 
     public void removeGroupPermission(Sender sender, String groupName, String permission) {
-        if (!sender.hasPermission("permission.group.remove", 25)) {
+        if (!sender.hasPermission(this.groupRemovePerm)) {
             return;
         }
 
@@ -187,7 +212,7 @@ public class PermissionManager {
     }
 
     public void createGroup(Sender sender, String groupName, int rank) {
-        if (!sender.hasPermission("permission.group.create", 26)) {
+        if (!sender.hasPermission(this.groupCreatePerm)) {
             return;
         }
 
@@ -216,7 +241,7 @@ public class PermissionManager {
     }
 
     public void deleteGroup(Sender sender, String groupName) {
-        if (!sender.hasPermission("permission.group.delete", 27)) {
+        if (!sender.hasPermission(this.groupDeletePerm)) {
             return;
         }
 
@@ -248,7 +273,7 @@ public class PermissionManager {
     }
 
     public void setGroupInheritance(Sender sender, String groupName, String inheritGroupName) {
-        if (!sender.hasPermission("permission.group.inheritance.set", 28)) {
+        if (!sender.hasPermission(this.groupInheritanceSetPerm)) {
             return;
         }
 
@@ -276,7 +301,7 @@ public class PermissionManager {
     }
 
     public void removeGroupInheritance(Sender sender, String groupName) {
-        if (!sender.hasPermission("permission.group.inheritance.remove", 29)) {
+        if (!sender.hasPermission(this.groupInheritanceRemovePerm)) {
             return;
         }
 

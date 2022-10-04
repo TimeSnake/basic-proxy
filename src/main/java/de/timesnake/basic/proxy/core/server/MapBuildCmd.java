@@ -9,6 +9,8 @@ import de.timesnake.database.util.object.Type;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -24,9 +26,11 @@ import static de.timesnake.library.basic.util.chat.ExTextColor.WARNING;
 
 public class MapBuildCmd implements CommandListener<Sender, Argument> {
 
+    private Code.Permission perm;
+
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        if (!sender.hasPermission("network.start.build", 50)) {
+        if (!sender.hasPermission(this.perm)) {
             return;
         }
 
@@ -107,5 +111,10 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
             return Network.getNetworkUtils().getWorldNames(Type.Server.BUILD, null);
         }
         return List.of();
+    }
+
+    @Override
+    public void loadCodes(Plugin plugin) {
+        this.perm = plugin.createPermssionCode("prx", "network.start.build");
     }
 }

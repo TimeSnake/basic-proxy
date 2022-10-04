@@ -4,7 +4,7 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.server.DbBuildServer;
-import de.timesnake.library.basic.util.chat.Plugin;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.WorldSyncResult;
 

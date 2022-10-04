@@ -3,7 +3,7 @@ package de.timesnake.basic.proxy.core.script;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.file.ExFile;
-import de.timesnake.library.basic.util.chat.Plugin;
+import de.timesnake.library.extension.util.chat.Plugin;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;

@@ -75,5 +75,10 @@ public class RuleCmd implements CommandListener<Sender, Argument> {
         return List.of();
     }
 
+    @Override
+    public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
+
+    }
+
 
 }

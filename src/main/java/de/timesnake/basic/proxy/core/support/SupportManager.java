@@ -16,6 +16,7 @@ import de.timesnake.channel.util.message.ChannelSupportMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -29,6 +30,8 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
     private final HashMap<Integer, Tuple<String, ScheduledTask>> lockedTicketsById = new HashMap<>();
 
     private final Set<UUID> ticketListeners = new HashSet<>();
+
+    private Code.Permission msgPerm;
 
     public SupportManager() {
         Network.getCommandHandler().addCommand(BasicProxy.getPlugin(),
@@ -93,7 +96,7 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
 
         User user = sender.getUser();
 
-        if (!sender.hasPermission("support.message", 31)) {
+        if (!sender.hasPermission(this.msgPerm)) {
             return;
         }
 
@@ -110,6 +113,11 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         return null;
+    }
+
+    @Override
+    public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
+        this.msgPerm = plugin.createPermssionCode("sup", "support.message");
     }
 
     @Subscribe

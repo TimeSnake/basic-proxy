@@ -14,6 +14,8 @@ import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -31,30 +33,35 @@ import static net.kyori.adventure.text.Component.text;
 
 public class StartCmd implements CommandListener<Sender, Argument> {
 
+    private Code.Permission serverPerm;
+    private Code.Permission ownGamePerm;
+    private Code.Permission publicGamePerm;
+    private Code.Permission gamePerm;
+
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         if (args.isLengthHigherEquals(2, true)) {
             switch (args.get(0).toLowerCase()) {
                 case "server" -> {
-                    if (!sender.hasPermission("network.start.server", 46)) {
+                    if (!sender.hasPermission(this.serverPerm)) {
                         return;
                     }
                     this.handleStartServer(sender, args);
                 }
                 case "own_game" -> {
-                    if (!sender.hasPermission("network.start.own_game", 51)) {
+                    if (!sender.hasPermission(this.ownGamePerm)) {
                         return;
                     }
                     this.handleStartOwnGameServer(sender, args);
                 }
                 case "public_game" -> {
-                    if (!sender.hasPermission("network.start.public_game", 53)) {
+                    if (!sender.hasPermission(this.publicGamePerm)) {
                         return;
                     }
                     this.handleStartPublicGameServer(sender, args);
                 }
                 case "game" -> {
-                    if (!sender.hasPermission("network.start.game", 47)) {
+                    if (!sender.hasPermission(this.gamePerm)) {
                         return;
                     }
                     this.handleStartGame(sender, args);
@@ -580,5 +587,13 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             }
         }
         return null;
+    }
+
+    @Override
+    public void loadCodes(Plugin plugin) {
+        this.serverPerm = plugin.createPermssionCode("prx", "network.start.server");
+        this.gamePerm = plugin.createPermssionCode("prx", "network.start.game");
+        this.ownGamePerm = plugin.createPermssionCode("prx", "network.start.own_game");
+        this.publicGamePerm = plugin.createPermssionCode("prx", "network.start.public_game");
     }
 }

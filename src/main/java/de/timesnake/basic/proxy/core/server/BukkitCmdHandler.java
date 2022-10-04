@@ -7,6 +7,7 @@ import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.chat.Chat;
+import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
@@ -18,9 +19,11 @@ import static net.kyori.adventure.text.Component.text;
 
 public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
 
+    private Code.Permission cmdPerm;
+
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        if (!sender.hasPermission("network.server.cmd", 32)) {
+        if (!sender.hasPermission(this.cmdPerm)) {
             return;
         }
 
@@ -73,6 +76,11 @@ public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> arguments) {
         return null;
+    }
+
+    @Override
+    public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
+        this.cmdPerm = plugin.createPermssionCode("prx", "network.server.cmd");
     }
 
     public void startServer(Sender sender, Arguments<Argument> args) {

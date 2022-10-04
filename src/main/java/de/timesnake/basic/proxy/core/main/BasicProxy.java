@@ -104,23 +104,23 @@ public class BasicProxy {
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "channelmsg", List.of("channelmsgs", "channelmessage", "channelmessages"), new ChannelBroadcastCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "permcheck", new PermissionTest(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "permcheck", new PermissionTest(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "air", List.of("airmode", "am"), new AirModeCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "air", List.of("airmode", "am"), new AirModeCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "rule", List.of("rules", "regeln", "regel"), new RuleCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "rule", List.of("rules", "regeln", "regel"), new RuleCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "pid", new PidCmd(), de.timesnake.basic.proxy.util.chat.Plugin.SYSTEM);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "kickall", new KickAllCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "dtmp", List.of("delete_tmp"), new DeleteTmpServerCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "dtmp", List.of("delete_tmp"), new DeleteTmpServerCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "dgroup", List.of("displaygroup", "dg"), new DisplayGroupCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "build", new MapBuildCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "build", new MapBuildCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "network", new NetworkCmd(), de.timesnake.library.basic.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "network", new NetworkCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 
         EventManager em = server.getEventManager();
 

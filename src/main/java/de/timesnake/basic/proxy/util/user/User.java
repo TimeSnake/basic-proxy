@@ -29,6 +29,8 @@ import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.permission.ExPermission;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.*;
@@ -90,10 +92,6 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         Network.getChannel().addListener(this, () -> Collections.singleton(this.getUniqueId()));
     }
 
-    public DbUser getDbUser() {
-        return this.dbUser;
-    }
-
     public boolean isAirMode() {
         return airMode;
     }
@@ -107,6 +105,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         Network.getChannel().removeListener(this);
     }
 
+    @NotNull
     public PermGroup getGroup() {
         return permGroup;
     }
@@ -161,6 +160,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     }
 
+    @Nullable
     public Component getPrefix() {
         return prefix;
     }
@@ -170,6 +170,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.prefix = LegacyComponentSerializer.legacyAmpersand().deserialize(prefix);
     }
 
+    @Nullable
     public Component getSuffix() {
         return suffix;
     }
@@ -179,6 +180,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.suffix = LegacyComponentSerializer.legacyAmpersand().deserialize(suffix);
     }
 
+    @Nullable
     public Component getNick() {
         return nick;
     }
@@ -200,14 +202,17 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.updatePermissions(true);
     }
 
+    @NotNull
     public Player getPlayer() {
         return player;
     }
 
+    @NotNull
     public Component getChatNameComponent() {
         return chatName;
     }
 
+    @NotNull
     @Override
     @Deprecated
     public String getChatName() {
@@ -244,14 +249,17 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin).append(message));
     }
 
+    @NotNull
     public UUID getUniqueId() {
         return this.player.getUniqueId();
     }
 
+    @NotNull
     public DbUser getDatabase() {
         return this.dbUser;
     }
 
+    @Nullable
     public Server getServer() {
         return this.server;
     }
@@ -261,6 +269,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         Network.getChannel().setUserServer(this.getUniqueId(), server);
     }
 
+    @Nullable
     public Server getServerLast() {
         return serverLast;
     }
@@ -270,6 +279,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.serverLast = Network.getServer(serverLast);
     }
 
+    @Nullable
     public Server getLobby() {
         return lobby;
     }
@@ -279,6 +289,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.lobby = Network.getServer(lobby);
     }
 
+    @NotNull
     public String getName() {
         return this.player.getUsername();
     }
@@ -291,6 +302,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.dbUser.setTeam(null);
     }
 
+    @NotNull
     public Collection<ExPermission> getPermissions() {
         return permissions;
     }
@@ -348,15 +360,18 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         }
     }
 
+    @NotNull
     public DisplayGroup getMasterDisplayGroup() {
         return displayGroups.first();
     }
 
+    @NotNull
     public List<DisplayGroup> getMainDisplayGroups() {
         return this.displayGroups.stream().filter(displayGroup -> displayGroup.isShowAlways()
                 || displayGroup.equals(this.getMasterDisplayGroup())).sorted().limit(DisplayGroup.MAX_PREFIX_LENGTH).toList();
     }
 
+    @NotNull
     public SortedSet<DisplayGroup> getDisplayGroups() {
         return displayGroups;
     }
@@ -375,6 +390,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.updateChatName();
     }
 
+    @Nullable
     public String getLastChatMessage() {
         return lastChatMessage;
     }
@@ -529,6 +545,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
      *
      * @return the {@link DataProtectionAgreement}
      */
+    @Nullable
     public DataProtectionAgreement getDataProtectionAgreement() {
         return this.dataProtectionAgreement;
     }

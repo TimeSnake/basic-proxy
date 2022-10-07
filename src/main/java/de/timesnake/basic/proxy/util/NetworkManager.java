@@ -165,6 +165,16 @@ public class NetworkManager implements ChannelListener {
         this.cmdFile.executeStartCommands();
 
         this.networkUtils = new NetworkUtils(this.networkPath);
+
+        Tuple<ServerCreationResult, Optional<Server>> res = this.createTmpServer(
+                new NetworkServer("lobby0", 25001, Type.Server.LOBBY, this.getVelocitySecret())
+                        .setMaxPlayers(50), true, false, false);
+
+        if (res.getA().isSuccessful()) {
+            this.printText(Plugin.NETWORK, "Created lobby0 server");
+        } else {
+            this.printWarning(Plugin.NETWORK, ((ServerCreationResult.Fail) res.getA()).getReason());
+        }
     }
 
     public void broadcastMessage(String msg) {
@@ -281,14 +291,20 @@ public class NetworkManager implements ChannelListener {
         getServer(port).setStatus(Database.getServers().getServer(port).getStatus(), false);
     }
 
-    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean copyWorlds, boolean syncPlayerData) {
+    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean copyWorlds,
+                                                                         boolean syncPlayerData, boolean registerServer) {
         ServerCreationResult result = this.networkUtils.createServer(server, copyWorlds, syncPlayerData);
         Optional<Server> serverOpt = Optional.empty();
         if (result.isSuccessful()) {
             Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-            serverOpt = Optional.ofNullable(this.addServer(server, serverPath));
+            serverOpt = Optional.ofNullable(this.addServer(server, serverPath, registerServer));
         }
         return new Tuple<>(result, serverOpt);
+    }
+
+    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean copyWorlds,
+                                                                         boolean syncPlayerData) {
+        return this.createTmpServer(server, copyWorlds, syncPlayerData, true);
     }
 
     public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task, String name) {
@@ -304,7 +320,7 @@ public class NetworkManager implements ChannelListener {
         Optional<Server> serverOpt = Optional.empty();
         if (result.isSuccessful()) {
             Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-            serverOpt = Optional.ofNullable(this.addServer(server, serverPath));
+            serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
         }
         return new Tuple<>(result, serverOpt);
     }
@@ -314,7 +330,7 @@ public class NetworkManager implements ChannelListener {
         Optional<Server> serverOpt = Optional.empty();
         if (result.isSuccessful()) {
             Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-            serverOpt = Optional.ofNullable(this.addServer(server, serverPath));
+            serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
         }
         return new Tuple<>(result, serverOpt);
     }
@@ -333,7 +349,7 @@ public class NetworkManager implements ChannelListener {
         return this.loadPublicPlayerServer(server);
     }
 
-    private Server addServer(NetworkServer server, Path serverPath) {
+    private Server addServer(NetworkServer server, Path serverPath, boolean registerServer) {
         Server newServer = null;
         if (Type.Server.LOBBY.equals(server.getType())) {
             newServer = this.addLobby(server.getPort(), server.getName(), serverPath, server);
@@ -347,7 +363,9 @@ public class NetworkManager implements ChannelListener {
             newServer = this.addTempGame(server.getPort(), server.getName(), server.getTask(), serverPath, server);
         }
 
-        BasicProxy.getServer().registerServer(new ServerInfo(server.getName(), new InetSocketAddress(server.getPort())));
+        if (registerServer) {
+            BasicProxy.getServer().registerServer(new ServerInfo(server.getName(), new InetSocketAddress(server.getPort())));
+        }
 
         this.tmpDirsByServerName.put(server.getName(), serverPath);
 
@@ -587,8 +605,10 @@ public class NetworkManager implements ChannelListener {
     public void onChannelRegisterMessage(ChannelListenerMessage<String> msg) {
         if (msg.getMessageType().equals(MessageType.Listener.UNREGISTER_SERVER)) {
             Server server = this.getServer(msg.getValue());
-            server.setStatus(Status.Server.OFFLINE, true);
-            this.printText(Plugin.NETWORK, "Updated status from server " + server.getName() + " to offline");
+            if (server != null) {
+                server.setStatus(Status.Server.OFFLINE, true);
+                this.printText(Plugin.NETWORK, "Updated status from server " + server.getName() + " to offline");
+            }
         }
     }
 

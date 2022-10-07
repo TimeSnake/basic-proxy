@@ -41,8 +41,7 @@ public abstract class BukkitConsole {
     }
 
     public void stop() {
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getName(), MessageType.Server.COMMAND, "stop"
-        ));
+        this.execute("stop");
     }
 
     public void execute(String cmd) {

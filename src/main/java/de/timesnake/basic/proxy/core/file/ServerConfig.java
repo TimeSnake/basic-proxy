@@ -22,6 +22,10 @@ public class ServerConfig extends ExFile {
         for (RegisteredServer server : BasicProxy.getServer().getAllServers()) {
             String serverName = server.getServerInfo().getName();
             String path = ExFile.toPath("servers", serverName);
+            if (!this.config.containsTable("servers." + serverName)) {
+                continue;
+            }
+
             int port = super.getLong(ExFile.toPath(path, "port")).intValue();
             String typeString = super.getString(ExFile.toPath(path, "type"));
             String task = super.getString(ExFile.toPath(path, "task"));

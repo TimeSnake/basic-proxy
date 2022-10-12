@@ -19,7 +19,6 @@
 package de.timesnake.basic.proxy.util;
 
 import com.velocitypowered.api.proxy.Player;
-import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.channel.ChannelPingPong;
 import de.timesnake.basic.proxy.core.file.Config;
@@ -39,19 +38,11 @@ import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.core.NetworkChannel;
 import de.timesnake.channel.proxy.channel.Channel;
-import de.timesnake.channel.util.listener.ChannelHandler;
-import de.timesnake.channel.util.listener.ChannelListener;
-import de.timesnake.channel.util.listener.ListenerType;
-import de.timesnake.channel.util.message.ChannelListenerMessage;
-import de.timesnake.channel.util.message.ChannelServerMessage;
-import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbDisplayGroup;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
-import de.timesnake.library.basic.util.MultiKeyMap;
-import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.basic.util.server.Task;
@@ -63,18 +54,14 @@ import de.timesnake.library.network.ServerCreationResult;
 import de.timesnake.library.network.ServerInitResult;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.apache.commons.io.FileUtils;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 
-public class NetworkManager implements ChannelListener {
+public class NetworkManager {
 
     public static NetworkManager getInstance() {
         return instance;
@@ -91,35 +78,31 @@ public class NetworkManager implements ChannelListener {
     private final ArrayList<User> privateMessageListeners = new ArrayList<>();
     private final ArrayList<User> supportMessageListeners = new ArrayList<>();
 
-    private final MultiKeyMap<String, Integer, Server> servers = new MultiKeyMap<>();
-
-    private final Map<String, Path> tmpDirsByServerName = new HashMap<>();
-
     private final CommandHandler commandHandler = new CommandHandler();
     private final PermissionManager permissionManager = new PermissionManager();
     private final BukkitCmdHandler bukkitCmdHandler = new BukkitCmdHandler();
     private final ChannelPingPong channelPingPong = new ChannelPingPong();
-
     public ServerConfig serverConfig;
-    private CmdFile cmdFile;
-    private boolean isWork = false;
     private Integer maxPlayersLobby = 20;
     private Integer maxPlayersBuild = 20;
     private UserManager userManager;
     private AutoShutdown autoShutdown;
     private SupportManager supportManager;
-    private int onlineLobbys = 0;
-    private Config config;
-    private Path networkPath;
     private String velocitySecret;
     private boolean tmuxEnabled;
+    private CmdFile cmdFile;
+    private Config config;
+    private Path networkPath;
     private NetworkUtils networkUtils;
+
+    private ServerManager serverManager;
+
+    private boolean isWork = false;
+
 
     public void onEnable() {
 
         this.userManager = new UserManager();
-
-        this.getChannel().addListener(this);
 
         this.config = new Config();
         this.networkPath = Path.of(this.config.getNetworkPath());
@@ -171,6 +154,8 @@ public class NetworkManager implements ChannelListener {
         maxPlayersLobby = serverConfig.getMaxPlayersLobby();
         maxPlayersBuild = serverConfig.getMaxPlayersBuild();
 
+        this.serverManager = new ServerManager();
+
         this.channelPingPong.startPingPong();
         this.getChannel().addTimeOutListener(this.channelPingPong);
 
@@ -199,7 +184,6 @@ public class NetworkManager implements ChannelListener {
         BasicProxy.getServer().sendMessage(net.kyori.adventure.text.Component.text(msg));
     }
 
-
     public void broadcastMessage(Plugin plugin, String msg) {
         BasicProxy.getServer().sendMessage(Chat.getSenderPlugin(plugin).append(Component.text(msg)));
     }
@@ -225,16 +209,13 @@ public class NetworkManager implements ChannelListener {
         return users.get(uuid);
     }
 
-
     public User getUser(Player p) {
         return users.get(p.getUniqueId());
     }
 
-
     public boolean isUserOnline(UUID uuid) {
         return users.containsKey(uuid);
     }
-
 
     public PermGroup getPermGroup(String name) {
         return permGroups.get(name);
@@ -256,235 +237,6 @@ public class NetworkManager implements ChannelListener {
         return users.values();
     }
 
-
-    public Collection<Server> getServers() {
-        return servers.values();
-    }
-
-    @Deprecated
-    public Collection<Integer> getNotOfflineServerPorts() {
-        Collection<Integer> ports = new HashSet<>();
-        for (Server server : this.getServers()) {
-            if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
-                    && !server.getStatus().equals(Status.Server.LAUNCHING)) {
-                ports.add(server.getPort());
-            }
-        }
-        return ports;
-    }
-
-    public Collection<String> getNotOfflineServerNames() {
-        Collection<String> names = new HashSet<>();
-        for (Server server : this.getServers()) {
-            if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
-                    && !server.getStatus().equals(Status.Server.LAUNCHING)) {
-                names.add(server.getName());
-            }
-        }
-        return names;
-    }
-
-
-    public Server getServer(Integer port) {
-        return servers.get2(port);
-    }
-
-
-    public Server getServer(String name) {
-        return servers.get1(name);
-    }
-
-    public Server getServer(DbServer server) {
-        return servers.get1(server.getName());
-    }
-
-    public void updateServerTaskAll() {
-        for (Server server : servers.values()) {
-            server.setStatus(Database.getServers().getServer(server.getName()).getStatus(), false);
-        }
-
-    }
-
-    public void updateServerTask(int port) {
-        getServer(port).setStatus(Database.getServers().getServer(port).getStatus(), false);
-    }
-
-    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean copyWorlds,
-                                                                         boolean syncPlayerData, boolean registerServer) {
-        ServerCreationResult result = this.networkUtils.createServer(server, copyWorlds, syncPlayerData);
-        Optional<Server> serverOpt = Optional.empty();
-        if (result.isSuccessful()) {
-            Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-            serverOpt = Optional.ofNullable(this.addServer(server, serverPath, registerServer));
-        }
-        return new Tuple<>(result, serverOpt);
-    }
-
-    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean copyWorlds,
-                                                                         boolean syncPlayerData) {
-        return this.createTmpServer(server, copyWorlds, syncPlayerData, true);
-    }
-
-    public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task, String name) {
-        return this.networkUtils.initPublicPlayerServer(type, task, name);
-    }
-
-    public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {
-        return this.networkUtils.initPlayerServer(uuid, type, task, name);
-    }
-
-    public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid, NetworkServer server) {
-        ServerCreationResult result = this.networkUtils.createPlayerServer(uuid, server);
-        Optional<Server> serverOpt = Optional.empty();
-        if (result.isSuccessful()) {
-            Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-            serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
-        }
-        return new Tuple<>(result, serverOpt);
-    }
-
-    public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(NetworkServer server) {
-        ServerCreationResult result = this.networkUtils.createPublicPlayerServer(server);
-        Optional<Server> serverOpt = Optional.empty();
-        if (result.isSuccessful()) {
-            Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-            serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
-        }
-        return new Tuple<>(result, serverOpt);
-    }
-
-    public Tuple<ServerCreationResult, Optional<Server>> loadPlayerGameServer(UUID uuid, NetworkServer server) {
-        Tuple<ServerCreationResult, Optional<Server>> result = this.loadPlayerServer(uuid, server);
-
-        if (result.getA().isSuccessful()) {
-            ((NonTmpGameServer) result.getB().get()).setOwnerUuid(uuid);
-        }
-
-        return result;
-    }
-
-    public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerGameServer(NetworkServer server) {
-        return this.loadPublicPlayerServer(server);
-    }
-
-    private Server addServer(NetworkServer server, Path serverPath, boolean registerServer) {
-        Server newServer = null;
-        if (Type.Server.LOBBY.equals(server.getType())) {
-            newServer = this.addLobby(server.getPort(), server.getName(), serverPath, server);
-        } else if (Type.Server.LOUNGE.equals(server.getType())) {
-            newServer = this.addLounge(server.getPort(), server.getName(), serverPath, server);
-        } else if (Type.Server.GAME.equals(server.getType())) {
-            newServer = this.addGame(server.getPort(), server.getName(), server.getTask(), serverPath, server);
-        } else if (Type.Server.BUILD.equals(server.getType())) {
-            newServer = this.addBuild(server.getPort(), server.getName(), server.getTask(), serverPath, server);
-        } else if (Type.Server.TEMP_GAME.equals(server.getType())) {
-            newServer = this.addTempGame(server.getPort(), server.getName(), server.getTask(), serverPath, server);
-        }
-
-        if (registerServer) {
-            BasicProxy.getServer().registerServer(new ServerInfo(server.getName(), new InetSocketAddress(server.getPort())));
-        }
-
-        this.tmpDirsByServerName.put(server.getName(), serverPath);
-
-        return newServer;
-    }
-
-    public boolean deleteServer(String name, boolean force) {
-        if (!this.tmpDirsByServerName.containsKey(name)) {
-            return false;
-        }
-
-        Server server = this.getServer(name);
-
-        if (!force && !server.getStatus().equals(Status.Server.OFFLINE)) {
-            return false;
-        }
-
-        BasicProxy.getServer().unregisterServer(server.getBungeeInfo().getServerInfo());
-
-        try {
-            FileUtils.deleteDirectory(this.tmpDirsByServerName.get(name).toFile());
-        } catch (IOException ex) {
-            return false;
-        }
-
-        BasicProxy.getLogger().info("Deleted tmp server " + name);
-
-        return true;
-    }
-
-    public CompletableFuture<Boolean> killAndDeleteServer(String name, Long pid) {
-        Optional<ProcessHandle> process = ProcessHandle.of(pid);
-
-        if (process.isEmpty()) {
-            return CompletableFuture.completedFuture(false);
-        }
-
-        if (!process.get().destroy()) {
-            return CompletableFuture.completedFuture(false);
-        }
-
-        CompletableFuture<ProcessHandle> future = process.get().onExit();
-
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                return false;
-            }
-
-            BasicProxy.getLogger().info("Killed server " + name);
-            return this.deleteServer(name, true);
-        });
-    }
-
-    public int nextEmptyPort() {
-        int port = Network.PORT_BASE;
-        while (this.servers.containsKey2(port)) port++;
-        return port;
-    }
-
-    public LobbyServer addLobby(int port, String name, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addLobby(port, name, Status.Server.OFFLINE, folderPath);
-        LobbyServer server = new LobbyServer(Database.getServers().getServer(Type.Server.LOBBY, port), folderPath, networkServer);
-        servers.put(name, port, server);
-        return server;
-    }
-
-
-    public GameServer addGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addGame(port, name, task, Status.Server.OFFLINE, folderPath);
-        GameServer server = new NonTmpGameServer(Database.getServers().getServer(Type.Server.GAME, port), folderPath, networkServer);
-        servers.put(name, port, server);
-        return server;
-    }
-
-
-    public LoungeServer addLounge(int port, String name, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addLounge(port, name, Status.Server.OFFLINE, folderPath);
-        LoungeServer server = new LoungeServer(Database.getServers().getServer(Type.Server.LOUNGE, port), folderPath, networkServer);
-        servers.put(name, port, server);
-        return server;
-    }
-
-
-    public TmpGameServer addTempGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addTempGame(port, name, task, Status.Server.OFFLINE, folderPath);
-        TmpGameServer server = new TmpGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port), folderPath, networkServer);
-        servers.put(name, port, server);
-        return server;
-    }
-
-
-    public BuildServer addBuild(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addBuild(port, name, task, Status.Server.OFFLINE, folderPath);
-        BuildServer server = new BuildServer(Database.getServers().getServer(Type.Server.BUILD, port), folderPath, networkServer);
-        servers.put(name, port, server);
-        return server;
-    }
-
-
     public void sendUserToServer(User user, String server) {
         user.connect(BasicProxy.getServer().getServer(server).get());
     }
@@ -493,14 +245,12 @@ public class NetworkManager implements ChannelListener {
         user.connect(BasicProxy.getServer().getServer(this.getServer(port).getName()).get());
     }
 
-
     public void removeUser(Player p) {
         if (users.get(p.getUniqueId()) != null) {
             users.get(p.getUniqueId()).quit();
         }
         users.remove(p.getUniqueId());
     }
-
 
     public User addUser(Player p, PreUser user) {
         users.put(p.getUniqueId(), new User(p, user));
@@ -511,56 +261,45 @@ public class NetworkManager implements ChannelListener {
         return isWork;
     }
 
-
     public void setWork(boolean isWork) {
         this.isWork = isWork;
     }
-
 
     public ArrayList<User> getNetworkMessageListeners() {
         return networkMessageListeners;
     }
 
-
     public ArrayList<User> getPrivateMessageListeners() {
         return privateMessageListeners;
     }
-
 
     public ArrayList<User> getSupportMessageListeners() {
         return supportMessageListeners;
     }
 
-
     public void addNetworkMessageListener(User user) {
         networkMessageListeners.add(user);
     }
-
 
     public void addPrivateMessageListener(User user) {
         privateMessageListeners.add(user);
     }
 
-
     public void addSupportMessageListener(User user) {
         supportMessageListeners.add(user);
     }
-
 
     public void removeNetworkMessageListener(User user) {
         networkMessageListeners.remove(user);
     }
 
-
     public void removePrivateMessageListener(User user) {
         privateMessageListeners.remove(user);
     }
 
-
     public void removeSupportMessageListener(User user) {
         supportMessageListeners.remove(user);
     }
-
 
     public PermGroup getGuestPermGroup() {
         return this.permGroups.get(Network.GUEST_PERM_GROUP_NAME);
@@ -584,50 +323,6 @@ public class NetworkManager implements ChannelListener {
 
     public ScheduledTask runTaskAsync(Task task) {
         return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run).schedule();
-    }
-
-    @ChannelHandler(type = {ListenerType.SERVER_PERMISSION, ListenerType.SERVER_STATUS})
-    public void onServerMessage(ChannelServerMessage<?> msg) {
-        MessageType<?> type = msg.getMessageType();
-        if (type.equals(MessageType.Server.PERMISSION)) {
-
-            for (User user : getUsers()) {
-                if (user.getServer().getName().equals(msg.getName())) {
-                    user.updatePermissions(false);
-                }
-            }
-        } else if (type.equals(MessageType.Server.STATUS)) {
-            Server server = this.getServer(msg.getName());
-
-            if (server == null) {
-                return;
-            }
-
-            server.updateStatus();
-
-            if (server.getType().equals(Type.Server.LOBBY)) {
-                if (server.getStatus().equals(Status.Server.ONLINE)) {
-                    this.onlineLobbys++;
-                } else if (server.getStatus().equals(Status.Server.OFFLINE)) {
-                    this.onlineLobbys--;
-                }
-            }
-
-            if (msg.getValue() != null && msg.getValue().equals(Status.Server.OFFLINE)) {
-                getServer(msg.getName()).setStatus(Status.Server.OFFLINE, true);
-            }
-        }
-    }
-
-    @ChannelHandler(type = ListenerType.LISTENER_UNREGISTER)
-    public void onChannelRegisterMessage(ChannelListenerMessage<String> msg) {
-        if (msg.getMessageType().equals(MessageType.Listener.UNREGISTER_SERVER)) {
-            Server server = this.getServer(msg.getValue());
-            if (server != null) {
-                server.setStatus(Status.Server.OFFLINE, true);
-                this.printText(Plugin.NETWORK, "Updated status from server " + server.getName() + " to offline");
-            }
-        }
     }
 
     public final void printText(Plugin plugin, String text, String... subPlugins) {
@@ -672,16 +367,13 @@ public class NetworkManager implements ChannelListener {
         return (Channel) NetworkChannel.getChannel();
     }
 
-
     public Integer getMaxPlayersLobby() {
         return maxPlayersLobby;
     }
 
-
     public Integer getMaxPlayersBuild() {
         return maxPlayersBuild;
     }
-
 
     public ServerConfig getServerConfig() {
         return serverConfig;
@@ -699,16 +391,8 @@ public class NetworkManager implements ChannelListener {
         return this.bukkitCmdHandler;
     }
 
-    public int getOnlineLobbys() {
-        return onlineLobbys;
-    }
-
     public String getVelocitySecret() {
         return velocitySecret;
-    }
-
-    public Map<String, Path> getTmpDirsByServerName() {
-        return tmpDirsByServerName;
     }
 
     public Path getNetworkPath() {
@@ -722,4 +406,65 @@ public class NetworkManager implements ChannelListener {
     public NetworkUtils getNetworkUtils() {
         return this.networkUtils;
     }
+
+    public ServerManager getServerManager() {
+        return serverManager;
+    }
+
+    // server manager
+
+    public int getOnlineLobbys() {
+        return getServerManager().getOnlineLobbys();
+    }
+
+    public Collection<Server> getServers() {return getServerManager().getServers();}
+
+    @Deprecated
+    public Collection<Integer> getNotOfflineServerPorts() {return getServerManager().getNotOfflineServerPorts();}
+
+    public Collection<String> getNotOfflineServerNames() {return getServerManager().getNotOfflineServerNames();}
+
+    public Server getServer(Integer port) {return getServerManager().getServer(port);}
+
+    public Server getServer(String name) {return getServerManager().getServer(name);}
+
+    public Server getServer(DbServer server) {return getServerManager().getServer(server);}
+
+    public void updateServerTaskAll() {getServerManager().updateServerTaskAll();}
+
+    public void updateServerTask(int port) {getServerManager().updateServerTask(port);}
+
+    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean copyWorlds, boolean syncPlayerData, boolean registerServer) {return getServerManager().createTmpServer(server, copyWorlds, syncPlayerData, registerServer);}
+
+    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean copyWorlds, boolean syncPlayerData) {return getServerManager().createTmpServer(server, copyWorlds, syncPlayerData);}
+
+    public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task, String name) {return getServerManager().createPublicPlayerServer(type, task, name);}
+
+    public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {return getServerManager().createPlayerServer(uuid, type, task, name);}
+
+    public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid, NetworkServer server) {return getServerManager().loadPlayerServer(uuid, server);}
+
+    public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(NetworkServer server) {return getServerManager().loadPublicPlayerServer(server);}
+
+    public Tuple<ServerCreationResult, Optional<Server>> loadPlayerGameServer(UUID uuid, NetworkServer server) {return getServerManager().loadPlayerGameServer(uuid, server);}
+
+    public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerGameServer(NetworkServer server) {return getServerManager().loadPublicPlayerGameServer(server);}
+
+    public boolean deleteServer(String name, boolean force) {return getServerManager().deleteServer(name, force);}
+
+    public CompletableFuture<Boolean> killAndDeleteServer(String name, Long pid) {return getServerManager().killAndDeleteServer(name, pid);}
+
+    public int nextEmptyPort() {return getServerManager().nextEmptyPort();}
+
+    public LobbyServer addLobby(int port, String name, Path folderPath, NetworkServer networkServer) {return getServerManager().addLobby(port, name, folderPath, networkServer);}
+
+    public GameServer addGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {return getServerManager().addGame(port, name, task, folderPath, networkServer);}
+
+    public LoungeServer addLounge(int port, String name, Path folderPath, NetworkServer networkServer) {return getServerManager().addLounge(port, name, folderPath, networkServer);}
+
+    public TmpGameServer addTempGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {return getServerManager().addTempGame(port, name, task, folderPath, networkServer);}
+
+    public BuildServer addBuild(int port, String name, String task, Path folderPath, NetworkServer networkServer) {return getServerManager().addBuild(port, name, task, folderPath, networkServer);}
+
+    public Map<String, Path> getTmpDirsByServerName() {return getServerManager().getTmpDirsByServerName();}
 }

@@ -27,10 +27,10 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
+import de.timesnake.library.extension.util.cmd.*;
+import net.kyori.adventure.text.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,6 +103,43 @@ public class CommandHandler {
         return new ArrayList<>(Database.getGames().getGamesName());
     }
 
+    public static class Arguments extends de.timesnake.library.extension.util.cmd.Arguments<Argument> {
+
+        public Arguments(Sender sender, String[] args) {
+            super(sender, args);
+        }
+
+        public Arguments(Sender sender, LinkedList<Argument> args) {
+            super(sender, args);
+        }
+
+        public Arguments(de.timesnake.library.extension.util.cmd.Arguments<Argument> args) {
+            super(args);
+        }
+
+        public Arguments(Sender sender, Argument... args) {
+            super(sender, args);
+        }
+
+        @Override
+        public Argument createArgument(de.timesnake.library.extension.util.cmd.Sender sender, String arg) {
+            return new Argument((Sender) sender, arg);
+        }
+    }
+
+    public static class ExArguments extends de.timesnake.library.extension.util.cmd.ExArguments<Argument> {
+
+        public ExArguments(de.timesnake.library.extension.util.cmd.Sender sender, String[] args,
+                           boolean allowDuplicateOptions) {
+            super(sender, args, allowDuplicateOptions);
+        }
+
+        @Override
+        public Argument createArgument(de.timesnake.library.extension.util.cmd.Sender sender, String arg) {
+            return new Argument(((Sender) sender), arg);
+        }
+    }
+
     private class Command implements SimpleCommand {
 
         public Command() {
@@ -114,13 +151,14 @@ public class CommandHandler {
             if (commands.containsKey(invocation.alias())) {
                 ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
                 Sender sender = new Sender(new CommandSender(invocation.source()), basicCmd.getPlugin());
-                LinkedList<Argument> extendedArgs = new LinkedList<>();
-                for (String arg : invocation.arguments()) {
-                    extendedArgs.add(new Argument(sender, arg));
-                }
-                List<String> tab = basicCmd.getListener().getTabCompletion(basicCmd, new Arguments<>(sender,
-                        extendedArgs));
-                return tab != null ? tab : List.of();
+                String cmdName = invocation.alias().toLowerCase();
+                String[] args = invocation.arguments();
+
+                return switch (basicCmd.getListener().getArgumentType(cmdName, args)) {
+                    case DEFAULT -> basicCmd.getListener().getTabCompletion(basicCmd, new Arguments(sender, args));
+                    case EXTENDED -> basicCmd.getListener().getTabCompletion(basicCmd, new ExArguments(sender, args,
+                            basicCmd.getListener().allowDuplicates(cmdName, args)));
+                };
             }
             return List.of();
         }
@@ -130,11 +168,21 @@ public class CommandHandler {
             if (commands.containsKey(invocation.alias())) {
                 ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
                 Sender sender = new Sender(new CommandSender(invocation.source()), basicCmd.getPlugin());
-                LinkedList<Argument> extendedArgs = new LinkedList<>();
-                for (String arg : invocation.arguments()) {
-                    extendedArgs.addLast(new Argument(sender, arg));
+                String cmdName = invocation.alias().toLowerCase();
+                String[] args = invocation.arguments();
+
+                try {
+                    switch (basicCmd.getListener().getArgumentType(cmdName, args)) {
+                        case DEFAULT -> basicCmd.getListener().onCommand(sender, basicCmd, new Arguments(sender, args));
+                        case EXTENDED ->
+                                basicCmd.getListener().onCommand(sender, basicCmd, new ExArguments(sender, args,
+                                        basicCmd.getListener().allowDuplicates(cmdName, args)));
+                    }
+                } catch (CommandExitException ignored) {
+
+                } catch (ArgumentParseException | DuplicateOptionException e) {
+                    sender.sendPluginMessage(Component.text(e.getMessage(), ExTextColor.WARNING));
                 }
-                basicCmd.getListener().onCommand(sender, basicCmd, new Arguments<>(sender, extendedArgs));
             }
         }
     }

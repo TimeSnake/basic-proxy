@@ -154,11 +154,14 @@ public class CommandHandler {
                 String cmdName = invocation.alias().toLowerCase();
                 String[] args = invocation.arguments();
 
-                return switch (basicCmd.getListener().getArgumentType(cmdName, args)) {
+                List<String> suggestions = switch (basicCmd.getListener().getArgumentType(cmdName, args)) {
                     case DEFAULT -> basicCmd.getListener().getTabCompletion(basicCmd, new Arguments(sender, args));
                     case EXTENDED -> basicCmd.getListener().getTabCompletion(basicCmd, new ExArguments(sender, args,
                             basicCmd.getListener().allowDuplicates(cmdName, args)));
                 };
+                if (suggestions != null) {
+                    return suggestions;
+                }
             }
             return List.of();
         }

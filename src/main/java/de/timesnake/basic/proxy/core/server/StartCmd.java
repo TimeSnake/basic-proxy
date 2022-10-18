@@ -171,10 +171,17 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
+        boolean netherEnd = ((DbNonTmpGame) game).isNetherAndEndAllowed();
+        Integer viewDistance = ((DbNonTmpGame) game).getViewDistance();
+
         int port = Network.nextEmptyPort();
         NetworkServer networkServer = new NetworkServer(user.getUniqueId().hashCode() + "_" + serverName, port,
                 Type.Server.GAME, Network.getVelocitySecret()).setFolderName(serverName)
-                .setTask(((DbNonTmpGame) game).getName()).setMaxPlayers(20).allowNether(true).allowEnd(true);
+                .setTask(((DbNonTmpGame) game).getName()).setMaxPlayers(20).allowNether(netherEnd).allowEnd(netherEnd);
+
+        if (viewDistance != null) {
+            networkServer.setViewDistance(viewDistance).setSimulationDistance(viewDistance);
+        }
 
         sender.sendPluginMessage(Component.text("Loading server ", PERSONAL).append(Component.text(serverName, VALUE)));
         Tuple<ServerCreationResult, Optional<Server>> result = Network.loadPlayerServer(user.getUniqueId(), networkServer);
@@ -207,7 +214,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
-        if (!(game instanceof DbNonTmpGame nonTmpGame)) {
+        if (!(game instanceof DbNonTmpGame)) {
             sender.sendPluginMessage(Component.text("Unsupported game type", WARNING));
             return;
         }
@@ -225,9 +232,17 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
+        boolean netherEnd = ((DbNonTmpGame) game).isNetherAndEndAllowed();
+        Integer viewDistance = ((DbNonTmpGame) game).getViewDistance();
+
         int port = Network.nextEmptyPort();
         NetworkServer networkServer = new NetworkServer(serverName, port, Type.Server.GAME,
-                Network.getVelocitySecret()).setTask(((DbNonTmpGame) game).getName()).setMaxPlayers(20).allowNether(true).allowEnd(true);
+                Network.getVelocitySecret()).setTask(((DbNonTmpGame) game).getName()).setMaxPlayers(20)
+                .allowNether(netherEnd).allowEnd(netherEnd);
+
+        if (viewDistance != null) {
+            networkServer.setViewDistance(viewDistance).setSimulationDistance(viewDistance);
+        }
 
         sender.sendPluginMessage(Component.text("Loading server ", PERSONAL).append(Component.text(serverName, VALUE)));
         Tuple<ServerCreationResult, Optional<Server>> result = Network.loadPublicPlayerServer(networkServer);
@@ -318,6 +333,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
         boolean oldPvP = args.getArgumentByString("oldpvp") != null || args.getArgumentByString("1.8pvp") != null;
         boolean netherEnd = game.isNetherAndEndAllowed();
+        Integer viewDistance = game.getViewDistance();
 
         sender.sendPluginMessage(text("Creating server...", PERSONAL));
 
@@ -325,7 +341,12 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         Network.runTaskAsync(() -> {
             int port = Network.nextEmptyPort();
             NetworkServer networkServer = new NetworkServer((port % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
-                    port, Type.Server.GAME, Network.getVelocitySecret()).setTask(gameName).allowEnd(netherEnd).allowNether(netherEnd);
+                    port, Type.Server.GAME, Network.getVelocitySecret()).setTask(gameName)
+                    .allowEnd(netherEnd).allowNether(netherEnd);
+
+            if (viewDistance != null) {
+                networkServer.setViewDistance(viewDistance).setSimulationDistance(viewDistance);
+            }
 
             if (game.getInfo().getPlayerTrackingRange() != null) {
                 networkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());

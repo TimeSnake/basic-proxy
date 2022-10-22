@@ -141,11 +141,13 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         String gameType = args.get(1).toLowerCase();
 
         // check game
-        DbGame game = Database.getGames().getGame(gameType).toLocal();
+        DbGame game = Database.getGames().getGame(gameType);
         if (!game.exists()) {
             sender.sendMessageGameNotExist(gameType);
             return;
         }
+
+        game = game.toLocal();
 
         if (!(game instanceof DbNonTmpGame nonTmpGame)) {
             sender.sendPluginMessage(Component.text("Unsupported game type", WARNING));
@@ -208,11 +210,13 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         String gameType = args.get(1).toLowerCase();
 
         // check game
-        DbGame game = Database.getGames().getGame(gameType).toLocal();
+        DbGame game = Database.getGames().getGame(gameType);
         if (!game.exists()) {
             sender.sendMessageGameNotExist(gameType);
             return;
         }
+
+        game = game.toLocal();
 
         if (!(game instanceof DbNonTmpGame)) {
             sender.sendPluginMessage(Component.text("Unsupported game type", WARNING));
@@ -271,11 +275,13 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         String gameType = args.get(1).toLowerCase();
 
         // check game
-        DbGame game = Database.getGames().getGame(gameType).toLocal();
+        DbGame game = Database.getGames().getGame(gameType);
         if (!game.exists()) {
             sender.sendMessageGameNotExist(gameType);
             return;
         }
+
+        game = game.toLocal();
 
         if (game instanceof DbTmpGame) {
             this.handleStartTmpGame(sender, args, (DbTmpGame) game);

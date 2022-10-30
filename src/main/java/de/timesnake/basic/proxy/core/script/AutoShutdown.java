@@ -123,9 +123,9 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
 
     public void warnShutdown() {
         this.cancelable = true;
-        Network.broadcastMessage(Plugin.NETWORK, Component.text("§lWrite ", ExTextColor.WARNING)
-                .append(Component.text("/hello", ExTextColor.VALUE, TextDecoration.UNDERLINED))
-                .append(Component.text(" to keep the server online.", ExTextColor.WARNING)));
+
+        Network.broadcastMessage(Plugin.NETWORK, Component.text("The server will shutdown in 1 minute ",
+                ExTextColor.WARNING, TextDecoration.BOLD));
 
         Component text = Chat.getSenderPlugin(Plugin.NETWORK)
                 .append(Component.text("Write ", ExTextColor.WARNING))
@@ -138,7 +138,6 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
             user.getPlayer().sendMessage(text);
         }
 
-        Network.broadcastMessage(Plugin.NETWORK, Component.text("The server will shutdown in 1 minute ", ExTextColor.WARNING, TextDecoration.BOLD));
         task.cancel();
         task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), this::beginShutdown).delay(1,
                 TimeUnit.MINUTES).schedule();

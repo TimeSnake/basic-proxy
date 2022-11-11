@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * timesnake.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -18,15 +18,20 @@
 
 package de.timesnake.basic.proxy.util.chat;
 
+import de.timesnake.library.basic.util.LogHelper;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Plugin extends de.timesnake.library.extension.util.chat.Plugin {
 
-    public static final Plugin GAME = new Plugin("Game", "PSG");
-    public static final Plugin SUPPORT = new Plugin("Support", "PSS");
-    public static final Plugin PUNISH = new Plugin("Punish", "PSP");
-    public static final Plugin PERMISSION = new Plugin("Perm", "PSR");
-    public static final Plugin ALIAS = new Plugin("Alias", "PSA");
+    public static final Plugin GAME = new Plugin("Game", "PSG", LogHelper.getLogger("Game", Level.INFO));
+    public static final Plugin SUPPORT = new Plugin("Support", "PSS", LogHelper.getLogger("Support", Level.INFO));
+    public static final Plugin PUNISH = new Plugin("Punish", "PSP", LogHelper.getLogger("Punish", Level.INFO));
+    public static final Plugin PERMISSION = new Plugin("Perm", "PSR", LogHelper.getLogger("Perm", Level.INFO));
+    public static final Plugin ALIAS = new Plugin("Alias", "PSA", LogHelper.getLogger("Alias", Level.INFO));
 
-    protected Plugin(String name, String code) {
-        super(name, code);
+    protected Plugin(String name, String code, Logger logger) {
+        super(name, code, logger);
     }
 }

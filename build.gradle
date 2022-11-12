@@ -24,12 +24,15 @@ dependencies {
     compileOnly project(':channel-proxy')
     compileOnly project(':channel-api')
 
-    implementation 'de.timesnake:library-network:1.0-SNAPSHOT-all'
+    implementation project(':library-network')
     implementation project(':library-extension')
     implementation project(':library-basic')
 
     annotationProcessor project.velocity
     compileOnly project.velocity
+
+    compileOnly 'commons-io:commons-io:2.11.0'
+    compileOnly project.freemarker
 }
 
 group = project.group

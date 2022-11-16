@@ -34,7 +34,6 @@ archivesBaseName = 'basic-proxy'
 
 task buildFatJar(type: Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    baseName = archivesBaseName
     classifier = "all"
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar

@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -220,8 +220,7 @@ public class Punishments {
             Type.Punishment type = user.getPunishment().getType();
             if (type == null) {
                 user.setPunishment(Type.Punishment.MUTE, new Date(), sender.getName(), reason, "ALL");
-                Network.getChannel().sendMessageToServer(user.getServer().getPort(),
-                        new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.PUNISH));
+                Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.PUNISH));
                 String name = user.getName();
                 sender.sendPluginMessage(text("You muted ", PERSONAL)
                         .append(text(name, VALUE))
@@ -245,8 +244,7 @@ public class Punishments {
             Type.Punishment type = user.getPunishment().getType();
             if (type.equals(Type.Punishment.MUTE)) {
                 user.getPunishment().delete();
-                Network.getChannel().sendMessageToServer(user.getServer().getPort(),
-                        new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.PUNISH));
+                Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.PUNISH));
                 sender.sendPluginMessage(text("You unmuted ", PERSONAL)
                         .append(text(user.getName(), VALUE)));
 

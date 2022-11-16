@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@ import de.timesnake.basic.proxy.util.chat.CommandHandler;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.channel.proxy.channel.Channel;
+import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Tuple;
@@ -264,7 +264,7 @@ public class Network {
         network.registerListener(listener);
     }
 
-    public static Channel getChannel() {
+    public static ProxyChannel getChannel() {
         return network.getChannel();
     }
 

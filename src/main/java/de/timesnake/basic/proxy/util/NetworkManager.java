@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@ import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.core.NetworkChannel;
-import de.timesnake.channel.proxy.channel.Channel;
+import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbDisplayGroup;
 import de.timesnake.database.util.group.DbPermGroup;
@@ -363,8 +363,8 @@ public class NetworkManager {
         BasicProxy.getEventManager().register(BasicProxy.getPlugin(), listener);
     }
 
-    public Channel getChannel() {
-        return (Channel) NetworkChannel.getChannel();
+    public ProxyChannel getChannel() {
+        return (ProxyChannel) NetworkChannel.getChannel();
     }
 
     public Integer getMaxPlayersLobby() {

@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -28,7 +28,6 @@ import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginManager;
 import com.velocitypowered.api.proxy.ProxyServer;
-import de.timesnake.basic.proxy.core.channel.ChannelBroadcastCmd;
 import de.timesnake.basic.proxy.core.channel.ChannelCmdHandler;
 import de.timesnake.basic.proxy.core.coins.CoinsCmd;
 import de.timesnake.basic.proxy.core.group.DisplayGroupCmd;
@@ -119,8 +118,6 @@ public class BasicProxy {
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "netmessages", List.of("netmsg", "networkmsg", "networkmessages", "networkmessage", "netmsgs"), new NetworkMsgCmd(), de.timesnake.basic.proxy.util.chat.Plugin.SUPPORT);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "timecoins", new CoinsCmd(), de.timesnake.basic.proxy.util.chat.Plugin.TIME_COINS);
-
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "channelmsg", List.of("channelmsgs", "channelmessage", "channelmessages"), new ChannelBroadcastCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "permcheck", new PermissionTest(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 

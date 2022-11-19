@@ -21,15 +21,16 @@ package de.timesnake.basic.proxy.util;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.channel.ChannelPingPong;
+import de.timesnake.basic.proxy.core.file.CmdFile;
 import de.timesnake.basic.proxy.core.file.Config;
 import de.timesnake.basic.proxy.core.file.ServerConfig;
 import de.timesnake.basic.proxy.core.group.DisplayGroup;
 import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
+import de.timesnake.basic.proxy.core.network.AutoShutdown;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
-import de.timesnake.basic.proxy.core.script.AutoShutdown;
-import de.timesnake.basic.proxy.core.script.CmdFile;
-import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
+import de.timesnake.basic.proxy.core.punishment.PunishmentManager;
+import de.timesnake.basic.proxy.core.server.ServerCmd;
 import de.timesnake.basic.proxy.core.support.SupportManager;
 import de.timesnake.basic.proxy.core.user.UserManager;
 import de.timesnake.basic.proxy.util.chat.CommandHandler;
@@ -80,7 +81,7 @@ public class NetworkManager {
 
     private final CommandHandler commandHandler = new CommandHandler();
     private final PermissionManager permissionManager = new PermissionManager();
-    private final BukkitCmdHandler bukkitCmdHandler = new BukkitCmdHandler();
+    private final ServerCmd serverCmd = new ServerCmd();
     private final ChannelPingPong channelPingPong = new ChannelPingPong();
     public ServerConfig serverConfig;
     private Integer maxPlayersLobby = 20;
@@ -94,6 +95,7 @@ public class NetworkManager {
     private Config config;
     private Path networkPath;
     private NetworkUtils networkUtils;
+    private PunishmentManager punishmentManager;
 
     private ServerManager serverManager;
 
@@ -130,6 +132,7 @@ public class NetworkManager {
                     null, null);
         }
 
+        this.punishmentManager = new PunishmentManager();
 
         for (DbPermGroup dbGroup : Database.getGroups().getPermGroups()) {
             PermGroup group = new PermGroup(dbGroup);
@@ -387,8 +390,8 @@ public class NetworkManager {
         return this.permissionManager;
     }
 
-    public BukkitCmdHandler getBukkitCmdHandler() {
-        return this.bukkitCmdHandler;
+    public ServerCmd getBukkitCmdHandler() {
+        return this.serverCmd;
     }
 
     public String getVelocitySecret() {
@@ -467,4 +470,8 @@ public class NetworkManager {
     public BuildServer addBuild(int port, String name, String task, Path folderPath, NetworkServer networkServer) {return getServerManager().addBuild(port, name, task, folderPath, networkServer);}
 
     public Map<String, Path> getTmpDirsByServerName() {return getServerManager().getTmpDirsByServerName();}
+
+    public PunishmentManager getPunishmentManager() {
+        return punishmentManager;
+    }
 }

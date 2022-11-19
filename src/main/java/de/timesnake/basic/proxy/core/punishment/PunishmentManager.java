@@ -41,9 +41,54 @@ import static de.timesnake.library.basic.util.chat.ExTextColor.*;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
-public class Punishments {
+public class PunishmentManager {
 
-    public static void unbanPlayer(UUID uuid) {
+    private static Date getTempBanDate(String dateToAdd, Date date) {
+        int years = 0;
+        int months = 0;
+        int days = 0;
+        int hours = 0;
+        int minutes = 0;
+        int seconds = 0;
+        String[] splitDate = dateToAdd.split(";");
+
+        for (String s : splitDate) {
+            if (s.toLowerCase().endsWith("sec")) {
+                seconds = getTimeFromString("sec", s);
+            } else if (s.toLowerCase().endsWith("min")) {
+                minutes = getTimeFromString("min", s);
+            } else if (s.toLowerCase().endsWith("hour")) {
+                hours = getTimeFromString("hour", s);
+            } else if (s.toLowerCase().endsWith("day")) {
+                days = getTimeFromString("day", s);
+            } else if (s.toLowerCase().endsWith("month")) {
+                months = getTimeFromString("month", s);
+            } else {
+                if (!s.toLowerCase().endsWith("year")) {
+                    return null;
+                }
+
+                years = getTimeFromString("year", s);
+            }
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.YEAR, years);
+        cal.add(Calendar.MONTH, months);
+        cal.add(Calendar.DATE, days);
+        cal.add(Calendar.HOUR, hours);
+        cal.add(Calendar.MINUTE, minutes);
+        cal.add(Calendar.SECOND, seconds);
+        return cal.getTime();
+    }
+
+    private static int getTimeFromString(String type, String time) {
+        time = time.replace(type, "");
+        return Integer.parseInt(time);
+    }
+
+    public void unbanPlayer(UUID uuid) {
         DbUser user = Database.getUsers().getUser(uuid);
         Type.Punishment type = user.getPunishment().getType();
         if (type != null) {
@@ -64,7 +109,7 @@ public class Punishments {
 
     }
 
-    public static void unbanPlayer(Sender sender, UUID uuid) {
+    public void unbanPlayer(Sender sender, UUID uuid) {
         DbUser user = Database.getUsers().getUser(uuid);
         if (sender.hasGroupRankLower(user)) {
             Type.Punishment type = user.getPunishment().getType();
@@ -91,7 +136,7 @@ public class Punishments {
 
     }
 
-    public static void banPlayer(Sender sender, DbUser user, String reason) {
+    public void banPlayer(Sender sender, DbUser user, String reason) {
         if (sender.hasGroupRankLower(user)) {
             Type.Punishment type = user.getPunishment().getType();
             if (type == null) {
@@ -106,7 +151,7 @@ public class Punishments {
 
     }
 
-    private static void banPlayerChecked(Sender sender, DbUser user, String reason) {
+    private void banPlayerChecked(Sender sender, DbUser user, String reason) {
         user.setPunishment(Type.Punishment.BAN, new Date(), sender.getName(), reason, "All");
         String name = user.getName();
 
@@ -129,7 +174,7 @@ public class Punishments {
                 .append(text(reason, VALUE)));
     }
 
-    public static void tempBanPlayer(Sender sender, DbUser user, String date, String reason) {
+    public void tempBanPlayer(Sender sender, DbUser user, String date, String reason) {
         if (sender.hasGroupRankLower(user)) {
             Type.Punishment type = user.getPunishment().getType();
             if (type == null) {
@@ -144,7 +189,7 @@ public class Punishments {
 
     }
 
-    private static void tempBanPlayerChecked(Sender sender, DbUser user, String date, String reason) {
+    private void tempBanPlayerChecked(Sender sender, DbUser user, String date, String reason) {
         Type.Punishment type = user.getPunishment().getType();
         Date datePunish = getTempBanDate(date, new Date());
         if (datePunish != null) {
@@ -198,7 +243,7 @@ public class Punishments {
 
     }
 
-    public static void kickPlayer(Sender sender, User user, String reason) {
+    public void kickPlayer(Sender sender, User user, String reason) {
         if (sender.hasGroupRankLower(user.getUniqueId())) {
             user.getPlayer().disconnect(text(ChatColor.WARNING + "You were kicked with reason: " +
                     ChatColor.VALUE + reason));
@@ -215,7 +260,7 @@ public class Punishments {
 
     }
 
-    public static void mutePlayer(Sender sender, DbUser user, String reason) {
+    public void mutePlayer(Sender sender, DbUser user, String reason) {
         if (sender.hasGroupRankLower(user)) {
             Type.Punishment type = user.getPunishment().getType();
             if (type == null) {
@@ -239,7 +284,7 @@ public class Punishments {
 
     }
 
-    public static void unmutePlayer(Sender sender, DbUser user) {
+    public void unmutePlayer(Sender sender, DbUser user) {
         if (sender.hasGroupRankLower(user)) {
             Type.Punishment type = user.getPunishment().getType();
             if (type.equals(Type.Punishment.MUTE)) {
@@ -259,52 +304,7 @@ public class Punishments {
 
     }
 
-    private static Date getTempBanDate(String dateToAdd, Date date) {
-        int years = 0;
-        int months = 0;
-        int days = 0;
-        int hours = 0;
-        int minutes = 0;
-        int seconds = 0;
-        String[] splitDate = dateToAdd.split(";");
-
-        for (String s : splitDate) {
-            if (s.toLowerCase().endsWith("sec")) {
-                seconds = getTimeFromString("sec", s);
-            } else if (s.toLowerCase().endsWith("min")) {
-                minutes = getTimeFromString("min", s);
-            } else if (s.toLowerCase().endsWith("hour")) {
-                hours = getTimeFromString("hour", s);
-            } else if (s.toLowerCase().endsWith("day")) {
-                days = getTimeFromString("day", s);
-            } else if (s.toLowerCase().endsWith("month")) {
-                months = getTimeFromString("month", s);
-            } else {
-                if (!s.toLowerCase().endsWith("year")) {
-                    return null;
-                }
-
-                years = getTimeFromString("year", s);
-            }
-        }
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.YEAR, years);
-        cal.add(Calendar.MONTH, months);
-        cal.add(Calendar.DATE, days);
-        cal.add(Calendar.HOUR, hours);
-        cal.add(Calendar.MINUTE, minutes);
-        cal.add(Calendar.SECOND, seconds);
-        return cal.getTime();
-    }
-
-    private static int getTimeFromString(String type, String time) {
-        time = time.replace(type, "");
-        return Integer.parseInt(time);
-    }
-
-    private static void broadcastMessage(Component msg) {
+    private void broadcastMessage(Component msg) {
         Network.broadcastMessage(Plugin.PUNISH, msg);
     }
 }

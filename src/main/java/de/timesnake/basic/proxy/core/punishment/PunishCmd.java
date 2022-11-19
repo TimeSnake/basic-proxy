@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -47,7 +47,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
                 if (sender.hasPermission(this.mutePerm)) {
                     if (args.isLengthHigherEquals(2, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
-                            Punishments.mutePlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
+                            Network.getPunishmentManager().mutePlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
                             return;
                         }
                     } else sender.sendMessageCommandHelp("Mute a player", "netmute <player> <reason>");
@@ -59,7 +59,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
                 if (sender.hasPermission(this.kickPerm)) {
                     if (args.isLengthHigherEquals(2, true)) {
                         if (args.get(0).isPlayerName(true)) {
-                            Punishments.kickPlayer(sender, args.get(0).toUser(), args.toMessage(1));
+                            Network.getPunishmentManager().kickPlayer(sender, args.get(0).toUser(), args.toMessage(1));
                         }
                     } else sender.sendMessageCommandHelp("Kick a player", "netkick <player> <reason>");
                 }
@@ -70,7 +70,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
                 if (sender.hasPermission(this.unmutePerm)) {
                     if (args.isLengthHigherEquals(1, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
-                            Punishments.unmutePlayer(sender, args.get(0).toDbUser());
+                            Network.getPunishmentManager().unmutePlayer(sender, args.get(0).toDbUser());
                             return;
                         }
                     } else {
@@ -86,7 +86,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
                 if (sender.hasPermission(this.tempbanPerm)) {
                     if (args.isLengthHigherEquals(3, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
-                            Punishments.tempBanPlayer(sender, args.get(0).toDbUser(), args.get(1).getString(),
+                            Network.getPunishmentManager().tempBanPlayer(sender, args.get(0).toDbUser(), args.get(1).getString(),
                                     args.toMessage(2));
                         }
                     } else {
@@ -102,7 +102,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
                 if (sender.hasPermission(this.banPerm)) {
                     if (args.isLengthHigherEquals(2, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
-                            Punishments.banPlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
+                            Network.getPunishmentManager().banPlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
                         }
                     } else {
                         sender.sendMessageCommandHelp("Ban a player", "netban <player> <reason>");
@@ -117,7 +117,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
                 if (sender.hasPermission(this.unbanPerm)) {
                     if (args.isLengthEquals(1, true)) {
                         if (args.get(0).isPlayerDatabaseName(true)) {
-                            Punishments.unbanPlayer(sender, args.get(0).toDbUser().getUniqueId());
+                            Network.getPunishmentManager().unbanPlayer(sender, args.get(0).toDbUser().getUniqueId());
                             return;
                         } else {
                             sender.sendMessageCommandHelp("Unban a player", "unban <player>");

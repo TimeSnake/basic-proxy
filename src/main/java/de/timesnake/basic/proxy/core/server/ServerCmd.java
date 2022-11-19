@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -35,7 +35,7 @@ import java.util.List;
 import static de.timesnake.library.basic.util.chat.ExTextColor.*;
 import static net.kyori.adventure.text.Component.text;
 
-public class BukkitCmdHandler implements CommandListener<Sender, Argument> {
+public class ServerCmd implements CommandListener<Sender, Argument> {
 
     private Code.Permission cmdPerm;
 

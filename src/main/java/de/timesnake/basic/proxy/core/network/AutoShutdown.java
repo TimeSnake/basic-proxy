@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -16,14 +16,14 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.timesnake.basic.proxy.core.script;
+package de.timesnake.basic.proxy.core.network;
 
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
-import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
+import de.timesnake.basic.proxy.core.server.ServerCmd;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
 import de.timesnake.basic.proxy.util.chat.Argument;
@@ -149,7 +149,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
         task.cancel();
         task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
             Network.broadcastMessage(Plugin.NETWORK, Component.text("§lSHUTDOWN", ExTextColor.WARNING));
-            new BukkitCmdHandler().stopAllServers();
+            new ServerCmd().stopAllServers();
             shutdown();
         }).delay(10, TimeUnit.SECONDS).schedule();
     }

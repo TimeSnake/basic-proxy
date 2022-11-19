@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -16,49 +16,43 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.timesnake.basic.proxy.core.infomessage;
+package de.timesnake.basic.proxy.core.punishment;
 
+import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
-import net.kyori.adventure.text.Component;
 
 import java.util.List;
 
-public class NetworkMsgCmd implements CommandListener<Sender, Argument> {
+public class KickAllCmd implements CommandListener<Sender, Argument> {
 
     private Code.Permission perm;
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        if (sender.hasPermission(this.perm)) {
-            if (sender.isPlayer(true)) {
-                if (args.isLengthEquals(0, true)) {
-                    User user = sender.getUser();
-                    user.setListeningNetworkMessages(!user.isListeningNetworkMessages());
-                    if (user.isListeningNetworkMessages()) {
-                        sender.sendPluginMessage(Component.text("Enabled network messages", ExTextColor.PERSONAL));
-                    } else {
-                        sender.sendPluginMessage(Component.text("Disabled network messages", ExTextColor.PERSONAL));
-                    }
-                }
-            }
+        if (!sender.hasPermission(this.perm)) {
+            return;
         }
+
+        for (User user : Network.getUsers()) {
+            Network.getPunishmentManager().kickPlayer(sender, user, "Network reset");
+        }
+        Network.setWork(true);
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> arguments) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         return null;
     }
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("ntw", "network.message");
+        this.perm = plugin.createPermssionCode("prx", "network.kickall");
     }
 }

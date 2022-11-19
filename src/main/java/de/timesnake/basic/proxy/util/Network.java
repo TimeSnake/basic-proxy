@@ -24,7 +24,8 @@ import de.timesnake.basic.proxy.core.file.ServerConfig;
 import de.timesnake.basic.proxy.core.group.DisplayGroup;
 import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
-import de.timesnake.basic.proxy.core.server.BukkitCmdHandler;
+import de.timesnake.basic.proxy.core.punishment.PunishmentManager;
+import de.timesnake.basic.proxy.core.server.ServerCmd;
 import de.timesnake.basic.proxy.util.chat.CommandHandler;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.PreUser;
@@ -304,7 +305,7 @@ public class Network {
         network.printText(plugin, text, subPlugins);
     }
 
-    public static BukkitCmdHandler getBukkitCmdHandler() {
+    public static ServerCmd getBukkitCmdHandler() {
         return network.getBukkitCmdHandler();
     }
 
@@ -366,6 +367,10 @@ public class Network {
 
     public static CompletableFuture<Boolean> killAndDeleteServer(String serverName, Long pid) {
         return network.killAndDeleteServer(serverName, pid);
+    }
+
+    public static PunishmentManager getPunishmentManager() {
+        return network.getPunishmentManager();
     }
 
     private static final NetworkManager network = NetworkManager.getInstance();

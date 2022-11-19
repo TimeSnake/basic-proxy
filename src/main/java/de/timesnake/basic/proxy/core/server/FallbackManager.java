@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -25,7 +25,7 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.object.Type;
 
-public class FallbackListener {
+public class FallbackManager {
 
     @Subscribe(order = PostOrder.FIRST)
     public void onServerKickEvent(KickedFromServerEvent e) {

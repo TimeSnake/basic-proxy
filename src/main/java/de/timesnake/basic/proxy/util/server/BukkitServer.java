@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -25,12 +25,12 @@ import de.timesnake.channel.util.message.MessageType;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public abstract class BukkitConsole {
+public abstract class BukkitServer {
 
     protected final String name;
     protected final Path folderPath;
 
-    public BukkitConsole(String name, Path folderPath) {
+    public BukkitServer(String name, Path folderPath) {
         this.name = name;
         this.folderPath = folderPath;
     }

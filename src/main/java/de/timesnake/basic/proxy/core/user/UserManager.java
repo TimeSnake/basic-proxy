@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -29,7 +29,6 @@ import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
-import de.timesnake.basic.proxy.core.punishment.Punishments;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.user.PreUser;
@@ -356,7 +355,7 @@ public class UserManager {
             DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             String dateString = df.format(date);
             if (date.before(dateSystem)) {
-                Punishments.unbanPlayer(user.getUniqueId());
+                Network.getPunishmentManager().unbanPlayer(user.getUniqueId());
                 return null;
             } else {
                 return Component.text("You are banned ", ExTextColor.WARNING)

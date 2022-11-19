@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -34,7 +34,7 @@ import de.timesnake.library.network.NetworkServer;
 import java.nio.file.Path;
 import java.time.Duration;
 
-public abstract class Server extends BukkitConsole {
+public abstract class Server extends BukkitServer {
 
     protected DbServer database;
     protected int port;

@@ -28,20 +28,17 @@ import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginManager;
 import com.velocitypowered.api.proxy.ProxyServer;
+import de.timesnake.basic.proxy.cmd.*;
 import de.timesnake.basic.proxy.core.channel.ChannelCmdHandler;
-import de.timesnake.basic.proxy.core.coins.CoinsCmd;
 import de.timesnake.basic.proxy.core.group.DisplayGroupCmd;
-import de.timesnake.basic.proxy.core.infomessage.NetworkMsgCmd;
 import de.timesnake.basic.proxy.core.network.MotdManager;
 import de.timesnake.basic.proxy.core.network.ServiceWorkCmd;
 import de.timesnake.basic.proxy.core.permission.PermissionCheck;
 import de.timesnake.basic.proxy.core.permission.PermissionCmd;
-import de.timesnake.basic.proxy.core.permission.PermissionTest;
+import de.timesnake.basic.proxy.core.permission.PermissionTestCmd;
+import de.timesnake.basic.proxy.core.punishment.KickAllCmd;
 import de.timesnake.basic.proxy.core.punishment.PunishCmd;
-import de.timesnake.basic.proxy.core.rule.RuleCmd;
 import de.timesnake.basic.proxy.core.server.*;
-import de.timesnake.basic.proxy.core.user.AirModeCmd;
-import de.timesnake.basic.proxy.core.user.AliasCmd;
 import de.timesnake.basic.proxy.core.user.ChatManager;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
@@ -113,13 +110,13 @@ public class BasicProxy {
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "kick", List.of("netkick"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "start", new StartCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "cmd", new BukkitCmdHandler(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "cmd", new ServerCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "netmessages", List.of("netmsg", "networkmsg", "networkmessages", "networkmessage", "netmsgs"), new NetworkMsgCmd(), de.timesnake.basic.proxy.util.chat.Plugin.SUPPORT);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "timecoins", new CoinsCmd(), de.timesnake.basic.proxy.util.chat.Plugin.TIME_COINS);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "permcheck", new PermissionTest(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "permcheck", new PermissionTestCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "air", List.of("airmode", "am"), new AirModeCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 
@@ -142,7 +139,7 @@ public class BasicProxy {
         em.register(this, new MotdManager());
         em.register(this, new PermissionCheck());
         em.register(this, new ChatManager());
-        em.register(this, new FallbackListener());
+        em.register(this, new FallbackManager());
 
         NetworkManager.getInstance().getChannel().addListener(new ChannelCmdHandler());
 

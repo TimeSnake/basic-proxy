@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -16,48 +16,44 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.timesnake.basic.proxy.core.permission;
+package de.timesnake.basic.proxy.cmd;
 
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.library.basic.util.chat.ExTextColor;
-import de.timesnake.library.extension.util.chat.Plugin;
+import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 
 import java.util.List;
 
-public class PermissionTest implements CommandListener<Sender, Argument> {
+public class RuleCmd implements CommandListener<Sender, Argument> {
 
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        if (!sender.isPlayer(true)) {
-            return;
-        }
+        Component text = Chat.getSenderPlugin(Plugin.NETWORK)
+                .append(Component.text("https://timesnake.de/rules/", ExTextColor.PERSONAL))
+                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://timesnake.de/rules/"))
+                .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text("Click to open")));
 
-        if (!args.isLengthHigherEquals(1, true)) {
-            return;
-        }
-
-        if (sender.hasPermission(args.getString(0))) {
-            sender.sendPluginMessage(Component.text("You have the permission ", ExTextColor.PERSONAL)
-                    .append(Component.text(args.getString(0), ExTextColor.VALUE)));
-        } else {
-            sender.sendPluginMessage(Component.text("You have not the permission ", ExTextColor.PERSONAL)
-                    .append(Component.text(args.getString(0), ExTextColor.VALUE)));
-        }
+        sender.sendMessage(text);
     }
 
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        return null;
+        return List.of();
     }
 
     @Override
-    public void loadCodes(Plugin plugin) {
+    public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
 
     }
+
+
 }

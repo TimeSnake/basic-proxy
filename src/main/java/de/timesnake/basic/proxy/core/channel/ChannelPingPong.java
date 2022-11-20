@@ -21,7 +21,7 @@ package de.timesnake.basic.proxy.core.channel;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.channel.core.NetworkChannel;
+import de.timesnake.channel.core.Channel;
 import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.channel.proxy.listener.ChannelTimeOutListener;
 import de.timesnake.library.basic.util.Status;
@@ -37,9 +37,9 @@ public class ChannelPingPong implements ChannelTimeOutListener {
         if (task != null) {
             task.cancel();
         }
-        ((ProxyChannel) NetworkChannel.getChannel()).getPingPong().ping(Network.getNotOfflineServerNames());
+        ((ProxyChannel) Channel.getInstance()).ping(Network.getNotOfflineServerNames());
         task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
-            ((ProxyChannel) NetworkChannel.getChannel()).getPingPong().checkPong();
+            ((ProxyChannel) Channel.getInstance()).checkPong();
             this.startPingPong();
         }).delay(15, TimeUnit.SECONDS).schedule();
     }

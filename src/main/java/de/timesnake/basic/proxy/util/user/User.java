@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -29,6 +29,7 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.CommandSender;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
+import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.channel.util.listener.ChannelHandler;
 import de.timesnake.channel.util.listener.ChannelListener;
 import de.timesnake.channel.util.listener.ListenerType;
@@ -284,7 +285,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     public void setServer(String server) {
         this.dbUser.setServer(server);
-        Network.getChannel().setUserServer(this.getUniqueId(), server);
+        ((ProxyChannel) Network.getChannel()).setUserServer(this.getUniqueId(), server);
     }
 
     @Nullable

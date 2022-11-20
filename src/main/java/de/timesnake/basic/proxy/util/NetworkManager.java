@@ -37,7 +37,7 @@ import de.timesnake.basic.proxy.util.chat.CommandHandler;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.channel.core.NetworkChannel;
+import de.timesnake.channel.core.Channel;
 import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbDisplayGroup;
@@ -205,7 +205,7 @@ public class NetworkManager {
     }
 
     public String getName() {
-        return this.getChannel().getProxyName();
+        return Channel.PROXY_NAME;
     }
 
     public User getUser(UUID uuid) {
@@ -367,7 +367,7 @@ public class NetworkManager {
     }
 
     public ProxyChannel getChannel() {
-        return (ProxyChannel) NetworkChannel.getChannel();
+        return (ProxyChannel) Channel.getInstance();
     }
 
     public Integer getMaxPlayersLobby() {

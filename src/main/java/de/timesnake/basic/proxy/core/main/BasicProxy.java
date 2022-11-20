@@ -28,8 +28,8 @@ import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginManager;
 import com.velocitypowered.api.proxy.ProxyServer;
-import de.timesnake.basic.proxy.cmd.*;
 import de.timesnake.basic.proxy.core.channel.ChannelCmdHandler;
+import de.timesnake.basic.proxy.core.cmd.*;
 import de.timesnake.basic.proxy.core.group.DisplayGroupCmd;
 import de.timesnake.basic.proxy.core.network.MotdManager;
 import de.timesnake.basic.proxy.core.network.ServiceWorkCmd;
@@ -42,7 +42,7 @@ import de.timesnake.basic.proxy.core.server.*;
 import de.timesnake.basic.proxy.core.user.ChatManager;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
-import de.timesnake.channel.core.NetworkChannel;
+import de.timesnake.channel.proxy.main.ChannelProxy;
 import de.timesnake.database.util.Database;
 import org.apache.commons.io.FileUtils;
 
@@ -134,6 +134,8 @@ public class BasicProxy {
 
         NetworkManager.getInstance().getCommandHandler().addCommand(this, "network", new NetworkCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
 
+        NetworkManager.getInstance().getCommandHandler().addCommand(this, "logger", List.of("log"), new LoggerCmd(), de.timesnake.library.extension.util.chat.Plugin.SYSTEM);
+
         EventManager em = server.getEventManager();
 
         em.register(this, new MotdManager());
@@ -155,7 +157,7 @@ public class BasicProxy {
             }
         }
         getLogger().info("Deleted tmp servers");
-        NetworkChannel.stop();
+        ChannelProxy.stop();
         Database.getInstance().closeWithBackups();
     }
 }

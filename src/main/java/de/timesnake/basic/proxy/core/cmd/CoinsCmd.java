@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.timesnake.basic.proxy.cmd;
+package de.timesnake.basic.proxy.core.cmd;
 
 
 import de.timesnake.basic.proxy.util.Network;

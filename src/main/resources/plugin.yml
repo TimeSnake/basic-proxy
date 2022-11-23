@@ -64,6 +64,7 @@ commands:
 
   dtmp:
   delete_tmp:
+  cleanup_servers:
 
   dgroup:
   displaygroup:

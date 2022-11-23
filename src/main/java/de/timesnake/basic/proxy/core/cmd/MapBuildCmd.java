@@ -95,6 +95,9 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
 
                 buildServer = ((BuildServer) result.getB().get());
 
+            }
+
+            if (buildServer.getStatus() == Status.Server.OFFLINE) {
                 Network.getBukkitCmdHandler().handleServerCmd(sender, buildServer);
             }
 
@@ -121,6 +124,9 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
                 sender.getUser().scheduledConnect(buildServer);
             }
         }
+
+        Network.printText(Plugin.SYSTEM, "Loaded world '" + worldName + "' on server '" + buildServer.getName() +
+                "' by user " + sender.getName());
     }
 
     @Override

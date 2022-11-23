@@ -25,7 +25,6 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Dependency;
-import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginManager;
 import com.velocitypowered.api.proxy.ProxyServer;
 import de.timesnake.basic.proxy.core.channel.ChannelCmdHandler;
@@ -42,6 +41,7 @@ import de.timesnake.basic.proxy.core.server.*;
 import de.timesnake.basic.proxy.core.user.ChatManager;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
+import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.channel.proxy.main.ChannelProxy;
 import de.timesnake.database.util.Database;
 import org.apache.commons.io.FileUtils;
@@ -51,7 +51,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
 
-@Plugin(id = "basic-proxy", name = "BasicProxy", version = "1.0-SNAPSHOT", url = "https://git.timesnake.de", authors = {"MarkusNils"}, dependencies = {@Dependency(id = "database-proxy"), @Dependency(id = "channel-proxy")})
+@com.velocitypowered.api.plugin.Plugin(id = "basic-proxy", name = "BasicProxy", version = "1.0-SNAPSHOT",
+        url = "https://git.timesnake.de", authors = {"MarkusNils"},
+        dependencies = {@Dependency(id = "database-proxy"), @Dependency(id = "channel-proxy")})
 public class BasicProxy {
 
 
@@ -97,44 +99,60 @@ public class BasicProxy {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         NetworkManager.getInstance().onEnable();
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "permission", List.of("perm", "perms"), new PermissionCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PERMISSION);
+        Network.getCommandHandler().addCommand(this, "permission", List.of("perm", "perms"), new PermissionCmd(), Plugin.PERMISSION);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "alias", new AliasCmd(), de.timesnake.basic.proxy.util.chat.Plugin.ALIAS);
+        Network.getCommandHandler().addCommand(this, "alias", new AliasCmd(), Plugin.ALIAS);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "work", new ServiceWorkCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "ban", List.of("netban"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "tempban", List.of("nettempban", "tmpban", "nettmpmban"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "unban", List.of("netunban", "pardon"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "mute", List.of("netmute"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "unmute", List.of("netunmute"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "kick", List.of("netkick"), new PunishCmd(), de.timesnake.basic.proxy.util.chat.Plugin.PUNISH);
+        Network.getCommandHandler().addCommand(this, "work", new ServiceWorkCmd(), Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "ban", List.of("netban"),
+                new PunishCmd(), Plugin.PUNISH);
+        Network.getCommandHandler().addCommand(this, "tempban", List.of("nettempban", "tmpban", "nettmpmban"),
+                new PunishCmd(), Plugin.PUNISH);
+        Network.getCommandHandler().addCommand(this, "unban", List.of("netunban", "pardon"),
+                new PunishCmd(), Plugin.PUNISH);
+        Network.getCommandHandler().addCommand(this, "mute", List.of("netmute"),
+                new PunishCmd(), Plugin.PUNISH);
+        Network.getCommandHandler().addCommand(this, "unmute", List.of("netunmute"),
+                new PunishCmd(), Plugin.PUNISH);
+        Network.getCommandHandler().addCommand(this, "kick", List.of("netkick"),
+                new PunishCmd(), Plugin.PUNISH);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "start", new StartCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "cmd", new ServerCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "start", new StartCmd(), Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "cmd", new ServerCmd(), Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "netmessages", List.of("netmsg", "networkmsg", "networkmessages", "networkmessage", "netmsgs"), new NetworkMsgCmd(), de.timesnake.basic.proxy.util.chat.Plugin.SUPPORT);
+        Network.getCommandHandler().addCommand(this, "netmessages",
+                List.of("netmsg", "networkmsg", "networkmessages", "networkmessage", "netmsgs"),
+                new NetworkMsgCmd(), Plugin.SUPPORT);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "timecoins", new CoinsCmd(), de.timesnake.basic.proxy.util.chat.Plugin.TIME_COINS);
+        Network.getCommandHandler().addCommand(this, "timecoins", new CoinsCmd(), Plugin.TIME_COINS);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "permcheck", new PermissionTestCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "permcheck", new PermissionTestCmd(), Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "air", List.of("airmode", "am"), new AirModeCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "air", List.of("airmode", "am"),
+                new AirModeCmd(), Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "rule", List.of("rules", "regeln", "regel"), new RuleCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "rule", List.of("rules", "regeln", "regel"),
+                new RuleCmd(), Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "pid", new PidCmd(), de.timesnake.basic.proxy.util.chat.Plugin.SYSTEM);
+        Network.getCommandHandler().addCommand(this, "pid", new PidCmd(), Plugin.SYSTEM);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "kickall", new KickAllCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "kickall", new KickAllCmd(), Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "dtmp", List.of("delete_tmp"), new DeleteTmpServerCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "dtmp", List.of("delete_tmp"),
+                new DeleteTmpServerCmd(), Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "cleanup_servers",
+                new CleanupServersCmd(), Plugin.SYSTEM);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "dgroup", List.of("displaygroup", "dg"), new DisplayGroupCmd(), de.timesnake.basic.proxy.util.chat.Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "dgroup", List.of("displaygroup", "dg"),
+                new DisplayGroupCmd(), Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "build", new MapBuildCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "build", new MapBuildCmd(), Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "network", new NetworkCmd(), de.timesnake.library.extension.util.chat.Plugin.NETWORK);
+        Network.getCommandHandler().addCommand(this, "network", new NetworkCmd(), Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(this, "logger", List.of("log"), new LoggerCmd(), de.timesnake.library.extension.util.chat.Plugin.SYSTEM);
+        Network.getCommandHandler().addCommand(this, "logger", List.of("log"),
+                new LoggerCmd(), Plugin.SYSTEM);
+
 
         EventManager em = server.getEventManager();
 

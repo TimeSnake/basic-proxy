@@ -77,7 +77,7 @@ public class ServerCmd implements CommandListener<Sender, Argument> {
                 return;
             }
 
-            if (args.get(2).equalsIgnoreCase("start")) {
+            if (args.get(1).equalsIgnoreCase("start")) {
                 this.startServer(sender, args);
                 return;
             }
@@ -87,13 +87,19 @@ public class ServerCmd implements CommandListener<Sender, Argument> {
             server.execute(bukkitCmd);
             sender.sendPluginMessage(text("Executed command on server ", PERSONAL)
                     .append(text(server.getName(), VALUE))
-                    .append(text(": " + bukkitCmd, PERSONAL)));
+                    .append(text(": ", PERSONAL))
+                    .append(text(bukkitCmd, VALUE)));
         }
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> arguments) {
-        return null;
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+        if (args.length() == 1) {
+            return Network.getCommandHandler().getServerNames();
+        } else if (args.length() == 2) {
+            return List.of("start", "stop", "password", "<cmd>");
+        }
+        return List.of();
     }
 
     @Override

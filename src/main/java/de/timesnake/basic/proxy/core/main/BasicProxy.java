@@ -153,6 +153,7 @@ public class BasicProxy {
         Network.getCommandHandler().addCommand(this, "logger", List.of("log"),
                 new LoggerCmd(), Plugin.SYSTEM);
 
+        Network.getCommandHandler().addCommand(this, "uuid", new UuidCmd(), Plugin.NETWORK);
 
         EventManager em = server.getEventManager();
 

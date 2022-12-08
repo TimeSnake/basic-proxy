@@ -76,4 +76,6 @@ commands:
 
   log:
   logger:
+
+  uuid:
      

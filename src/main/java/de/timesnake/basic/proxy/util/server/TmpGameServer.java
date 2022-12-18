@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -46,9 +46,9 @@ public class TmpGameServer extends PvPServer {
     public void setTwinServer(DbLoungeServer twinServer) {
         this.twinServer = twinServer;
         if (twinServer != null) {
-            ((DbTmpGameServer) this.database).setTwinServerPort(twinServer.getPort());
+            ((DbTmpGameServer) this.database).setTwinServerName(twinServer.getName());
         } else {
-            ((DbTmpGameServer) this.database).setTwinServerPort(null);
+            ((DbTmpGameServer) this.database).setTwinServerName(null);
         }
 
     }
@@ -70,7 +70,7 @@ public class TmpGameServer extends PvPServer {
     }
 
     public void setTeamAmount(Integer number) {
-        this.teamAmount = teamAmount;
+        this.teamAmount = number;
         ((DbTmpGameServer) super.database).setTeamAmount(number);
     }
 

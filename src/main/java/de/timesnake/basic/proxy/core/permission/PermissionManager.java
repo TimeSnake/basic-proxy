@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -126,7 +126,7 @@ public class PermissionManager {
 
         if (user.getPermGroup() != null) {
             if (!user.getPermGroup().getName().equalsIgnoreCase(groupName)
-                    && sender.hasGroupRankLower(Database.getGroups().getPermGroup(groupName))) {
+                && sender.hasGroupRankLower(Database.getGroups().getPermGroup(groupName))) {
                 if (Network.isUserOnline(uuid)) {
                     user.setPermGroup(groupName.toLowerCase(), () -> Network.getUser(uuid).updateGroup());
                 } else {
@@ -358,7 +358,7 @@ public class PermissionManager {
                 .append(text(" to ", PERSONAL))
                 .append(text(name, VALUE))
                 .append(text(" with mode ", PERSONAL))
-                .append(text(mode.getName(), VALUE))
+                .append(text(mode.getShortName(), VALUE))
                 .append(text(" on server(s): ", PERSONAL))
                 .append(Chat.listToComponent(Arrays.stream(servers).toList(), VALUE, PERSONAL)));
     }

@@ -33,8 +33,8 @@ import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
 import net.kyori.adventure.text.Component;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import static de.timesnake.library.basic.util.chat.ExTextColor.*;
@@ -43,7 +43,7 @@ import static net.kyori.adventure.text.Component.text;
 
 public class PunishmentManager {
 
-    private static Date getTempBanDate(String dateToAdd, Date date) {
+    private static LocalDateTime getTempBanDate(String dateToAdd, LocalDateTime date) {
         int years = 0;
         int months = 0;
         int days = 0;
@@ -72,15 +72,13 @@ public class PunishmentManager {
             }
         }
 
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.YEAR, years);
-        cal.add(Calendar.MONTH, months);
-        cal.add(Calendar.DATE, days);
-        cal.add(Calendar.HOUR, hours);
-        cal.add(Calendar.MINUTE, minutes);
-        cal.add(Calendar.SECOND, seconds);
-        return cal.getTime();
+        return date
+                .plus(years, ChronoUnit.YEARS)
+                .plus(months, ChronoUnit.MONTHS)
+                .plus(days, ChronoUnit.DAYS)
+                .plus(hours, ChronoUnit.HOURS)
+                .plus(minutes, ChronoUnit.MINUTES)
+                .plus(seconds, ChronoUnit.SECONDS);
     }
 
     private static int getTimeFromString(String type, String time) {
@@ -152,7 +150,7 @@ public class PunishmentManager {
     }
 
     private void banPlayerChecked(Sender sender, DbUser user, String reason) {
-        user.setPunishment(Type.Punishment.BAN, new Date(), sender.getName(), reason, "All");
+        user.setPunishment(Type.Punishment.BAN, LocalDateTime.now(), sender.getName(), reason, "All");
         String name = user.getName();
 
         for (Player p : BasicProxy.getServer().getAllPlayers()) {
@@ -191,11 +189,11 @@ public class PunishmentManager {
 
     private void tempBanPlayerChecked(Sender sender, DbUser user, String date, String reason) {
         Type.Punishment type = user.getPunishment().getType();
-        Date datePunish = getTempBanDate(date, new Date());
+        LocalDateTime datePunish = getTempBanDate(date, LocalDateTime.now());
         if (datePunish != null) {
             if (type != null) {
                 if (type.equals(Type.Punishment.TEMP_BAN)) {
-                    Date datePunishOld = user.getPunishment().getDate();
+                    LocalDateTime datePunishOld = user.getPunishment().getDate();
                     datePunish = getTempBanDate(date, datePunishOld);
                 }
 
@@ -264,7 +262,7 @@ public class PunishmentManager {
         if (sender.hasGroupRankLower(user)) {
             Type.Punishment type = user.getPunishment().getType();
             if (type == null) {
-                user.setPunishment(Type.Punishment.MUTE, new Date(), sender.getName(), reason, "ALL");
+                user.setPunishment(Type.Punishment.MUTE, LocalDateTime.now(), sender.getName(), reason, "ALL");
                 Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.PUNISH));
                 String name = user.getName();
                 sender.sendPluginMessage(text("You muted ", PERSONAL)

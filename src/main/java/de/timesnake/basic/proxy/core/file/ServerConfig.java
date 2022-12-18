@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -50,7 +50,7 @@ public class ServerConfig extends ExFile {
             Path folder = Network.getNetworkPath().resolve(super.getString(ExFile.toPath(path, "folder")));
 
 
-            Type.Server<?> type = Type.Server.getByDatabaseValue(typeString.toLowerCase());
+            Type.Server<?> type = Type.Server.valueOf(typeString.toLowerCase());
 
             if (type == null) {
                 Network.printWarning(Plugin.NETWORK, "Error while reading server-config " + "(" + serverName + ")",

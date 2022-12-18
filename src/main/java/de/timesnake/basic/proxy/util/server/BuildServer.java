@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -41,7 +41,7 @@ public class BuildServer extends TaskServer {
 
     @Override
     public String getServerTask() {
-        return super.getType().getDatabaseValue();
+        return super.getType().getShortName();
     }
 
     public boolean loadWorld(String worldName) {

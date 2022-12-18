@@ -68,7 +68,7 @@ public abstract class Server extends BukkitServer {
 
     @Override
     public String getServerTask() {
-        return this.type.getDatabaseValue();
+        return this.type.getShortName();
     }
 
     public int getMaxPlayers() {

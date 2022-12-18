@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -52,6 +52,6 @@ public class LoungeServer extends TaskServer {
 
     @Override
     public String getServerTask() {
-        return this.getType().getDatabaseValue();
+        return this.getType().getShortName();
     }
 }

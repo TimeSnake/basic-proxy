@@ -190,7 +190,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
         if (!result.getA().isSuccessful()) {
             sender.sendPluginMessage(Component.text("Error while loading server (" +
-                    ((ServerCreationResult.Fail) result.getA()).getReason(), WARNING));
+                                                    ((ServerCreationResult.Fail) result.getA()).getReason(), WARNING));
             return;
         }
 
@@ -253,7 +253,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
         if (!result.getA().isSuccessful()) {
             sender.sendPluginMessage(Component.text("Error while loading server (" +
-                    ((ServerCreationResult.Fail) result.getA()).getReason(), WARNING));
+                                                    ((ServerCreationResult.Fail) result.getA()).getReason(), WARNING));
             return;
         }
 
@@ -365,7 +365,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(networkServer, mapsEnabled, false);
             if (!result.getA().isSuccessful()) {
                 sender.sendPluginMessage(text("Error while creating a" + " game server! " +
-                        "Please contact an administrator (" + ((ServerCreationResult.Fail) result.getA()).getReason() + ")", WARNING));
+                                              "Please contact an administrator (" + ((ServerCreationResult.Fail) result.getA()).getReason() + ")", WARNING));
                 return;
             }
 
@@ -531,14 +531,14 @@ public class StartCmd implements CommandListener<Sender, Argument> {
         Network.runTaskAsync(() -> {
             int loungePort = Network.nextEmptyPort();
             NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
-                    Type.Server.LOUNGE.getDatabaseValue() + Network.TMP_SERVER_SUFFIX, loungePort, Type.Server.LOUNGE,
+                                                                  Type.Server.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort, Type.Server.LOUNGE,
                     Network.getVelocitySecret());
 
             Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.createTmpServer(loungeNetworkServer, true, false);
 
             if (!loungeResult.getA().isSuccessful()) {
                 sender.sendPluginMessage(text("Error while creating a" + " lounge server! " +
-                        "Please contact an administrator (" + ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")", WARNING));
+                                              "Please contact an administrator (" + ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")", WARNING));
                 return;
             }
 
@@ -558,7 +558,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.createTmpServer(gameNetworkServer, mapsEnabled, false);
             if (!tempServerResult.getA().isSuccessful()) {
                 sender.sendPluginMessage(text("Error while creating a" + " " + gameName + " server! Please contact an administrator (" +
-                        ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")", WARNING));
+                                              ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")", WARNING));
                 return;
             }
 
@@ -613,7 +613,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             }
 
             if (args.getString(0).equalsIgnoreCase("own_game")
-                    || args.getString(0).equalsIgnoreCase("public_game")) {
+                || args.getString(0).equalsIgnoreCase("public_game")) {
                 return Network.getCommandHandler().getGameNames();
             }
         }

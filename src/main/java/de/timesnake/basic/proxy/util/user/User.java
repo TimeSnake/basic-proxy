@@ -38,7 +38,6 @@ import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
-import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.ExTextColor;
@@ -52,6 +51,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +66,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     private final SortedSet<DisplayGroup> displayGroups;
     private boolean service;
     private boolean airMode;
-    private DataProtectionAgreement dataProtectionAgreement;
+    private LocalDateTime privacyPolicyDateTime;
     private String lastChatMessage = "";
     private boolean isListeningNetworkMessages = false;
     private boolean isListeningPrivateMessages = false;
@@ -81,14 +81,16 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     private float coins;
     private Component chatName;
 
-    private ScheduledTask dpdInfoTask;
+    private ScheduledTask privacyPolicyTask;
 
     public User(Player player, PreUser user) {
         this.player = player;
 
         if (user == null) {
-            Database.getUsers().addUser(player.getUniqueId(), player.getUsername(), Network.getGuestGroup().getName(),
-                    null);
+            if (!Database.getUsers().containsUser(player.getUniqueId())) {
+                Database.getUsers().addUser(player.getUniqueId(), player.getUsername(), Network.getGuestGroup().getName(),
+                        null);
+            }
             user = new PreUser(this.player.getUsername());
         }
 
@@ -101,7 +103,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.displayGroups = user.getDisplayGroups();
         this.service = user.isService();
         this.updateChatName();
-        this.dataProtectionAgreement = user.getDataProtectionAgreement();
+        this.privacyPolicyDateTime = user.getPrivacyPolicyDateTime();
 
         this.permGroup.addUser(this);
 
@@ -387,7 +389,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     @NotNull
     public List<DisplayGroup> getMainDisplayGroups() {
         return this.displayGroups.stream().filter(displayGroup -> displayGroup.isShowAlways()
-                || displayGroup.equals(this.getMasterDisplayGroup())).sorted().limit(DisplayGroup.MAX_PREFIX_LENGTH).toList();
+                                                                  || displayGroup.equals(this.getMasterDisplayGroup())).sorted().limit(DisplayGroup.MAX_PREFIX_LENGTH).toList();
     }
 
     @NotNull
@@ -541,62 +543,53 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     //dataProtection
 
     /**
-     * Agrees data-protection
-     *
-     * @param agreement The {@link DataProtectionAgreement}
+     * Agrees privacy policy
      */
-    public void agreeDataProtection(DataProtectionAgreement agreement) {
-        this.dataProtectionAgreement = agreement;
-        this.dbUser.agreeDataProtection(agreement);
+    public void agreeDataProtection() {
+        this.privacyPolicyDateTime = LocalDateTime.now();
+        this.dbUser.agreePrivacyPolicy(this.privacyPolicyDateTime);
     }
 
     /**
-     * Disagrees data-protection
+     * Disagrees privacy policy
+     * <p>
      * After that, the user will be kicked and deleted
+     * </p>
      */
     public void disagreeDataProtection() {
-        this.dataProtectionAgreement = null;
-        this.dbUser.disagreeDataProtection();
+        this.privacyPolicyDateTime = null;
+        this.dbUser.disagreePrivacyPolicy();
     }
 
-    /**
-     * Gets the data-protection-agreement (date, ip, version)
-     *
-     * @return the {@link DataProtectionAgreement}
-     */
+
     @Nullable
-    public DataProtectionAgreement getDataProtectionAgreement() {
-        return this.dataProtectionAgreement;
+    public LocalDateTime getPrivacyPolicyDateTime() {
+        return this.privacyPolicyDateTime;
     }
 
     /**
      * Agreed data-protection
      *
-     * @return if user has agreed the data-protection
+     * @return true, if user has agreed the privacy policy, else false
      */
-    public boolean agreedDataProtection() {
-        if (this.dataProtectionAgreement != null) {
-            if (this.dataProtectionAgreement.getVersion() != null) {
-                return this.dataProtectionAgreement.getVersion().equalsIgnoreCase(BasicProxy.DATA_PROTECTION_VERSION);
-            }
-        }
-        return false;
+    public boolean agreedPrivacyPolicy() {
+        return this.privacyPolicyDateTime != null;
     }
 
     /**
      * Sends the data-protection-declaration message
      */
-    public void forceDataProtectionAgreement() {
-        this.dpdInfoTask = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
-            this.sendPluginMessage(Plugin.NETWORK, Component.text("Please accept our data protection declaration", ExTextColor.WARNING));
+    public void forceToAcceptPrivacyPolicy() {
+        this.privacyPolicyTask = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
+            this.sendPluginMessage(Plugin.NETWORK, Component.text("Please accept our privacy policy", ExTextColor.WARNING));
             this.sendPluginMessage(Plugin.NETWORK, Component.text("Type ", ExTextColor.WARNING)
-                    .append(Component.text("/dpd agree", ExTextColor.VALUE))
+                    .append(Component.text("/pp agree", ExTextColor.VALUE))
                     .append(Component.text(" to accept", ExTextColor.WARNING)));
             this.sendPluginMessage(Plugin.NETWORK, Component.text("Type ", ExTextColor.WARNING)
-                    .append(Component.text("/dpd disagree", ExTextColor.VALUE))
+                    .append(Component.text("/pp disagree", ExTextColor.VALUE))
                     .append(Component.text(" to deny", ExTextColor.WARNING)));
             if (!this.getPlayer().isActive()) {
-                this.dpdInfoTask.cancel();
+                this.privacyPolicyTask.cancel();
             }
         }).repeat(Duration.ofSeconds(5)).schedule();
 

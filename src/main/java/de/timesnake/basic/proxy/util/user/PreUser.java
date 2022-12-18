@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -25,12 +25,12 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
-import de.timesnake.database.util.user.DataProtectionAgreement;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.permission.ExPermission;
 import net.kyori.adventure.text.Component;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class PreUser {
@@ -45,7 +45,7 @@ public class PreUser {
 
     private final boolean airMode;
 
-    private final DataProtectionAgreement dataProtectionAgreement;
+    private final LocalDateTime privacyPolicyDateTime;
 
     private final PermGroup permGroup;
     private final SortedSet<DisplayGroup> displayGroups;
@@ -64,7 +64,6 @@ public class PreUser {
         }
 
         this.dbUser = Database.getUsers().getUser(name);
-        this.dbUser.checkEntries();
 
         this.uuid = dbUser.getUniqueId();
 
@@ -103,7 +102,7 @@ public class PreUser {
 
         this.coins = dbLocalUser.getCoins();
 
-        this.dataProtectionAgreement = dbLocalUser.getDataProtectionAgreement();
+        this.privacyPolicyDateTime = dbLocalUser.getPrivacyPolicyDateTime();
 
         for (DbPermission perm : dbLocalUser.getPermissions()) {
             this.databasePermissions.add(new ExPermission(perm.getName(), perm.getMode(), perm.getServers()));
@@ -131,8 +130,8 @@ public class PreUser {
         return airMode;
     }
 
-    public DataProtectionAgreement getDataProtectionAgreement() {
-        return dataProtectionAgreement;
+    public LocalDateTime getPrivacyPolicyDateTime() {
+        return privacyPolicyDateTime;
     }
 
     public PermGroup getPermGroup() {

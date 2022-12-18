@@ -55,8 +55,8 @@ import net.kyori.adventure.title.Title;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.*;
 
@@ -234,13 +234,13 @@ public class UserManager {
     private void sendJoinMessages(Player player, User user) {
         user.sendPluginMessage(Plugin.NETWORK, Component.text("You accepted the network rules!", ExTextColor.WARNING));
 
-        if (user.agreedDataProtection()) {
+        if (user.agreedPrivacyPolicy()) {
             user.sendPluginMessage(Plugin.NETWORK, Component.text("You accepted our data protection declaration (dpd)", ExTextColor.WARNING));
             user.sendPluginMessage(Plugin.NETWORK, Component.text("Type ", ExTextColor.WARNING)
                     .append(Component.text("/dpd disagree", ExTextColor.VALUE))
                     .append(Component.text(" to deny our dpd", ExTextColor.WARNING)));
         } else {
-            user.forceDataProtectionAgreement();
+            user.forceToAcceptPrivacyPolicy();
         }
 
         if (player.hasPermission("support.opentickets")) {
@@ -350,11 +350,11 @@ public class UserManager {
                             .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text("Click to copy"))));
 
         } else if (type.equals(Type.Punishment.TEMP_BAN)) {
-            Date dateSystem = new Date();
-            Date date = user.getPunishment().getDate();
+            LocalDateTime dateSystem = LocalDateTime.now();
+            LocalDateTime date = user.getPunishment().getDate();
             DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             String dateString = df.format(date);
-            if (date.before(dateSystem)) {
+            if (date.isBefore(dateSystem)) {
                 Network.getPunishmentManager().unbanPlayer(user.getUniqueId());
                 return null;
             } else {

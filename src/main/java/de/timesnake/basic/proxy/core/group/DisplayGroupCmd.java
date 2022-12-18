@@ -63,6 +63,7 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
             sender.sendPluginMessage(Component.text("Display group ", ExTextColor.WARNING)
                     .append(Component.text(groupName, ExTextColor.VALUE))
                     .append(Component.text(" not exists", ExTextColor.WARNING)));
+            return;
         }
 
         DbUser user = args.get(0).toDbUser();

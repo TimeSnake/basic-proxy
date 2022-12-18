@@ -1,5 +1,5 @@
 /*
- * basic-proxy.main
+ * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -67,7 +67,7 @@ public class ServerManager implements ChannelListener {
         Collection<Integer> ports = new HashSet<>();
         for (Server server : this.getServers()) {
             if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
-                    && !server.getStatus().equals(Status.Server.LAUNCHING)) {
+                && !server.getStatus().equals(Status.Server.LAUNCHING)) {
                 ports.add(server.getPort());
             }
         }
@@ -78,7 +78,7 @@ public class ServerManager implements ChannelListener {
         Collection<String> names = new HashSet<>();
         for (Server server : this.getServers()) {
             if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
-                    && !server.getStatus().equals(Status.Server.LAUNCHING)) {
+                && !server.getStatus().equals(Status.Server.LAUNCHING)) {
                 names.add(server.getName());
             }
         }
@@ -252,7 +252,7 @@ public class ServerManager implements ChannelListener {
     }
 
     public LobbyServer addLobby(int port, String name, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addLobby(port, name, Status.Server.OFFLINE, folderPath);
+        Database.getServers().addLobby(name, port, Status.Server.OFFLINE, folderPath);
         LobbyServer server = new LobbyServer(Database.getServers().getServer(Type.Server.LOBBY, port), folderPath, networkServer);
         servers.put(name, port, server);
         return server;
@@ -260,7 +260,7 @@ public class ServerManager implements ChannelListener {
 
 
     public GameServer addGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addGame(port, name, task, Status.Server.OFFLINE, folderPath);
+        Database.getServers().addGame(name, port, task, Status.Server.OFFLINE, folderPath);
         GameServer server = new NonTmpGameServer(Database.getServers().getServer(Type.Server.GAME, port), folderPath, networkServer);
         servers.put(name, port, server);
         return server;
@@ -268,7 +268,7 @@ public class ServerManager implements ChannelListener {
 
 
     public LoungeServer addLounge(int port, String name, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addLounge(port, name, Status.Server.OFFLINE, folderPath);
+        Database.getServers().addLounge(name, port, Status.Server.OFFLINE, folderPath);
         LoungeServer server = new LoungeServer(Database.getServers().getServer(Type.Server.LOUNGE, port), folderPath, networkServer);
         servers.put(name, port, server);
         return server;
@@ -276,7 +276,7 @@ public class ServerManager implements ChannelListener {
 
 
     public TmpGameServer addTempGame(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addTempGame(port, name, task, Status.Server.OFFLINE, folderPath);
+        Database.getServers().addTempGame(name, port, task, Status.Server.OFFLINE, folderPath);
         TmpGameServer server = new TmpGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port), folderPath, networkServer);
         servers.put(name, port, server);
         return server;
@@ -284,7 +284,7 @@ public class ServerManager implements ChannelListener {
 
 
     public BuildServer addBuild(int port, String name, String task, Path folderPath, NetworkServer networkServer) {
-        Database.getServers().addBuild(port, name, task, Status.Server.OFFLINE, folderPath);
+        Database.getServers().addBuild(name, port, task, Status.Server.OFFLINE, folderPath);
         BuildServer server = new BuildServer(Database.getServers().getServer(Type.Server.BUILD, port), folderPath, networkServer);
         servers.put(name, port, server);
         return server;

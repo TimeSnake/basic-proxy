@@ -1,19 +1,5 @@
 /*
- * basic-proxy.main
  * Copyright (C) 2022 timesnake
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
 package de.timesnake.basic.proxy.util.chat;
@@ -29,14 +15,17 @@ import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.*;
-import net.kyori.adventure.text.Component;
-
+import de.timesnake.library.extension.util.cmd.ArgumentParseException;
+import de.timesnake.library.extension.util.cmd.CommandExitException;
+import de.timesnake.library.extension.util.cmd.CommandListener;
+import de.timesnake.library.extension.util.cmd.DuplicateOptionException;
+import de.timesnake.library.extension.util.cmd.ExCommand;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.kyori.adventure.text.Component;
 
 public class CommandHandler {
 

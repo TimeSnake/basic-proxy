@@ -1,19 +1,5 @@
 /*
- * workspace.basic-proxy.main
  * Copyright (C) 2022 timesnake
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
 package de.timesnake.basic.proxy.core.main;
@@ -28,7 +14,14 @@ import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.PluginManager;
 import com.velocitypowered.api.proxy.ProxyServer;
 import de.timesnake.basic.proxy.core.channel.ChannelCmdHandler;
-import de.timesnake.basic.proxy.core.cmd.*;
+import de.timesnake.basic.proxy.core.cmd.AirModeCmd;
+import de.timesnake.basic.proxy.core.cmd.AliasCmd;
+import de.timesnake.basic.proxy.core.cmd.CoinsCmd;
+import de.timesnake.basic.proxy.core.cmd.LoggerCmd;
+import de.timesnake.basic.proxy.core.cmd.MapBuildCmd;
+import de.timesnake.basic.proxy.core.cmd.NetworkMsgCmd;
+import de.timesnake.basic.proxy.core.cmd.RuleCmd;
+import de.timesnake.basic.proxy.core.cmd.UuidCmd;
 import de.timesnake.basic.proxy.core.group.DisplayGroupCmd;
 import de.timesnake.basic.proxy.core.network.MotdManager;
 import de.timesnake.basic.proxy.core.network.ServiceWorkCmd;
@@ -37,19 +30,24 @@ import de.timesnake.basic.proxy.core.permission.PermissionCmd;
 import de.timesnake.basic.proxy.core.permission.PermissionTestCmd;
 import de.timesnake.basic.proxy.core.punishment.KickAllCmd;
 import de.timesnake.basic.proxy.core.punishment.PunishCmd;
-import de.timesnake.basic.proxy.core.server.*;
+import de.timesnake.basic.proxy.core.server.CleanupServersCmd;
+import de.timesnake.basic.proxy.core.server.DeleteTmpServerCmd;
+import de.timesnake.basic.proxy.core.server.FallbackManager;
+import de.timesnake.basic.proxy.core.server.NetworkCmd;
+import de.timesnake.basic.proxy.core.server.PidCmd;
+import de.timesnake.basic.proxy.core.server.ServerCmd;
+import de.timesnake.basic.proxy.core.server.StartCmd;
 import de.timesnake.basic.proxy.core.user.ChatManager;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.channel.proxy.main.ChannelProxy;
 import de.timesnake.database.util.Database;
-import org.apache.commons.io.FileUtils;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 
 @com.velocitypowered.api.plugin.Plugin(id = "basic-proxy", name = "BasicProxy", version = "1.0-SNAPSHOT",
         url = "https://git.timesnake.de", authors = {"MarkusNils"},

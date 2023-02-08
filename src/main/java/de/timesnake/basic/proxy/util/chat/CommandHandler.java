@@ -32,16 +32,17 @@ public class CommandHandler {
     private final HashMap<String, ExCommand<Sender, Argument>> commands = new HashMap<>();
 
     public void addCommand(Object mainClass, String cmd, CommandListener<Sender, Argument> listener,
-                           Plugin basicPlugin) {
+            Plugin basicPlugin) {
         listener.loadCodes(basicPlugin);
         this.commands.put(cmd, new ExCommand<>(cmd, listener, basicPlugin));
         Command command = new Command();
-        CommandMeta commandMeta = BasicProxy.getCommandManager().metaBuilder(cmd).plugin(mainClass).build();
+        CommandMeta commandMeta = BasicProxy.getCommandManager().metaBuilder(cmd).plugin(mainClass)
+                .build();
         BasicProxy.getCommandManager().register(commandMeta, command);
     }
 
     public void addCommand(Object mainClass, String cmd, List<String> aliases,
-                           CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
+            CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
         listener.loadCodes(basicPlugin);
         ExCommand<Sender, Argument> exCommand = new ExCommand<>(cmd, listener, basicPlugin);
         this.commands.put(cmd, exCommand);
@@ -51,8 +52,8 @@ public class CommandHandler {
         }
 
         Command command = new Command();
-        CommandMeta commandMeta =
-                BasicProxy.getCommandManager().metaBuilder(cmd).aliases(aliases.toArray(new String[0])).plugin(mainClass).build();
+        CommandMeta commandMeta = BasicProxy.getCommandManager().metaBuilder(cmd)
+                .aliases(aliases.toArray(new String[0])).plugin(mainClass).build();
         BasicProxy.getCommandManager().register(commandMeta, command);
     }
 
@@ -81,18 +82,21 @@ public class CommandHandler {
     }
 
     public List<String> getPermGroupNames() {
-        return Network.getPermGroups().stream().map(PermGroup::getName).collect(Collectors.toList());
+        return Network.getPermGroups().stream().map(PermGroup::getName)
+                .collect(Collectors.toList());
     }
 
     public List<String> getDisplayGroupNames() {
-        return Network.getDisplayGroups().stream().map(DisplayGroup::getName).collect(Collectors.toList());
+        return Network.getDisplayGroups().stream().map(DisplayGroup::getName)
+                .collect(Collectors.toList());
     }
 
     public List<String> getGameNames() {
         return new ArrayList<>(Database.getGames().getGamesName());
     }
 
-    public static class Arguments extends de.timesnake.library.extension.util.cmd.Arguments<Argument> {
+    public static class Arguments extends
+            de.timesnake.library.extension.util.cmd.Arguments<Argument> {
 
         public Arguments(Sender sender, String[] args) {
             super(sender, args);
@@ -111,20 +115,23 @@ public class CommandHandler {
         }
 
         @Override
-        public Argument createArgument(de.timesnake.library.extension.util.cmd.Sender sender, String arg) {
+        public Argument createArgument(de.timesnake.library.extension.util.cmd.Sender sender,
+                String arg) {
             return new Argument((Sender) sender, arg);
         }
     }
 
-    public static class ExArguments extends de.timesnake.library.extension.util.cmd.ExArguments<Argument> {
+    public static class ExArguments extends
+            de.timesnake.library.extension.util.cmd.ExArguments<Argument> {
 
         public ExArguments(de.timesnake.library.extension.util.cmd.Sender sender, String[] args,
-                           boolean allowDuplicateOptions) {
+                boolean allowDuplicateOptions) {
             super(sender, args, allowDuplicateOptions);
         }
 
         @Override
-        public Argument createArgument(de.timesnake.library.extension.util.cmd.Sender sender, String arg) {
+        public Argument createArgument(de.timesnake.library.extension.util.cmd.Sender sender,
+                String arg) {
             return new Argument(((Sender) sender), arg);
         }
     }
@@ -139,15 +146,20 @@ public class CommandHandler {
         public List<String> suggest(final Invocation invocation) {
             if (commands.containsKey(invocation.alias())) {
                 ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
-                Sender sender = new Sender(new CommandSender(invocation.source()), basicCmd.getPlugin());
+                Sender sender = new Sender(new CommandSender(invocation.source()),
+                        basicCmd.getPlugin());
                 String cmdName = invocation.alias().toLowerCase();
                 String[] args = invocation.arguments();
 
-                List<String> suggestions = switch (basicCmd.getListener().getArgumentType(cmdName, args)) {
-                    case DEFAULT -> basicCmd.getListener().getTabCompletion(basicCmd, new Arguments(sender, args));
-                    case EXTENDED -> basicCmd.getListener().getTabCompletion(basicCmd, new ExArguments(sender, args,
-                            basicCmd.getListener().allowDuplicates(cmdName, args)));
-                };
+                List<String> suggestions = List.of();
+
+                if (basicCmd.getListener() instanceof CommandListener listener) {
+                    suggestions = listener.getTabCompletion(basicCmd, new Arguments(sender, args));
+                } else if (basicCmd.getListener() instanceof ExCommandListener listener) {
+                    suggestions = listener.getTabCompletion(basicCmd,
+                            new ExArguments(sender, args, listener.allowDuplicates(cmdName, args)));
+                }
+
                 if (suggestions != null) {
                     return suggestions;
                 }
@@ -159,16 +171,17 @@ public class CommandHandler {
         public void execute(Invocation invocation) {
             if (commands.containsKey(invocation.alias())) {
                 ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
-                Sender sender = new Sender(new CommandSender(invocation.source()), basicCmd.getPlugin());
+                Sender sender = new Sender(new CommandSender(invocation.source()),
+                        basicCmd.getPlugin());
                 String cmdName = invocation.alias().toLowerCase();
                 String[] args = invocation.arguments();
 
                 try {
-                    switch (basicCmd.getListener().getArgumentType(cmdName, args)) {
-                        case DEFAULT -> basicCmd.getListener().onCommand(sender, basicCmd, new Arguments(sender, args));
-                        case EXTENDED ->
-                                basicCmd.getListener().onCommand(sender, basicCmd, new ExArguments(sender, args,
-                                        basicCmd.getListener().allowDuplicates(cmdName, args)));
+                    if (basicCmd.getListener() instanceof CommandListener listener) {
+                        listener.onCommand(sender, basicCmd, new Arguments(sender, args));
+                    } else if (basicCmd.getListener() instanceof ExCommandListener listener) {
+                        listener.onCommand(sender, basicCmd, new ExArguments(sender, args,
+                                listener.allowDuplicates(cmdName, args)));
                     }
                 } catch (CommandExitException ignored) {
 

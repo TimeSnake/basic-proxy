@@ -22,7 +22,8 @@ public class CleanupServersCmd implements CommandListener<Sender, Argument> {
     private Code.Permission perm;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (!sender.hasPermission(this.perm)) {
             return;
         }
@@ -37,15 +38,17 @@ public class CleanupServersCmd implements CommandListener<Sender, Argument> {
                 sender.sendPluginMessage(Component.text("Deleted server ", ExTextColor.PERSONAL)
                         .append(Component.text(server.getName(), ExTextColor.VALUE)));
             } else {
-                sender.sendPluginMessage(Component.text("Can not delete server ", ExTextColor.WARNING)
-                        .append(Component.text(server.getName(), ExTextColor.VALUE)));
+                sender.sendPluginMessage(
+                        Component.text("Can not delete server ", ExTextColor.WARNING)
+                                .append(Component.text(server.getName(), ExTextColor.VALUE)));
             }
         }
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        return CommandListener.super.getTabCompletion(cmd, args);
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
+        return List.of();
     }
 
     @Override

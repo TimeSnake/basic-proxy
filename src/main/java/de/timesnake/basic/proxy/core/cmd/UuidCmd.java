@@ -26,7 +26,8 @@ public class UuidCmd implements CommandListener<Sender, Argument> {
     private Code.Permission permCode;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (!sender.hasPermission(this.permCode)) {
             return;
         }
@@ -52,9 +53,10 @@ public class UuidCmd implements CommandListener<Sender, Argument> {
                 return;
             }
 
-            sender.sendPluginMessage(Component.text(name, ExTextColor.PERSONAL, TextDecoration.UNDERLINED)
-                    .clickEvent(ClickEvent.copyToClipboard(name))
-                    .hoverEvent(HoverEvent.showText(Component.text("Click to copy"))));
+            sender.sendPluginMessage(
+                    Component.text(name, ExTextColor.PERSONAL, TextDecoration.UNDERLINED)
+                            .clickEvent(ClickEvent.copyToClipboard(name))
+                            .hoverEvent(HoverEvent.showText(Component.text("Click to copy"))));
 
         } else {
             String name = arg.getString();
@@ -67,15 +69,17 @@ public class UuidCmd implements CommandListener<Sender, Argument> {
 
             UUID uuid = dbUser.getUniqueId();
 
-            sender.sendPluginMessage(Component.text(uuid.toString(), ExTextColor.PERSONAL, TextDecoration.UNDERLINED)
-                    .clickEvent(ClickEvent.copyToClipboard(uuid.toString()))
-                    .hoverEvent(HoverEvent.showText(Component.text("Click to copy"))));
+            sender.sendPluginMessage(
+                    Component.text(uuid.toString(), ExTextColor.PERSONAL, TextDecoration.UNDERLINED)
+                            .clickEvent(ClickEvent.copyToClipboard(uuid.toString()))
+                            .hoverEvent(HoverEvent.showText(Component.text("Click to copy"))));
         }
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        return CommandListener.super.getTabCompletion(cmd, args);
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
+        return List.of();
     }
 
     @Override

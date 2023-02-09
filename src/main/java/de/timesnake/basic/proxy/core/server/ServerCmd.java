@@ -24,10 +24,11 @@ import java.util.List;
 
 public class ServerCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Permission cmdPerm;
+    private Code cmdPerm;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (!sender.hasPermission(this.cmdPerm)) {
             return;
         }
@@ -60,7 +61,8 @@ public class ServerCmd implements CommandListener<Sender, Argument> {
 
         } else if (args.get(0).isServerName(true)) {
             if (!args.isLengthHigherEquals(2, true)) {
-                sender.sendMessageCommandHelp("Execute command on server", "cmd <server> <cmd> [args]");
+                sender.sendMessageCommandHelp("Execute command on server",
+                        "cmd <server> <cmd> [args]");
                 return;
             }
 
@@ -80,7 +82,8 @@ public class ServerCmd implements CommandListener<Sender, Argument> {
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (args.length() == 1) {
             return Network.getCommandHandler().getServerNames();
         } else if (args.length() == 2) {
@@ -91,7 +94,7 @@ public class ServerCmd implements CommandListener<Sender, Argument> {
 
     @Override
     public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
-        this.cmdPerm = plugin.createPermssionCode("prx", "network.server.cmd");
+        this.cmdPerm = plugin.createPermssionCode("network.server.cmd");
     }
 
     public void startServer(Sender sender, Arguments<Argument> args) {

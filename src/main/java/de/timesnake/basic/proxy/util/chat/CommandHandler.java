@@ -18,6 +18,7 @@ import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.ArgumentParseException;
 import de.timesnake.library.extension.util.cmd.CommandExitException;
 import de.timesnake.library.extension.util.cmd.CommandListener;
+import de.timesnake.library.extension.util.cmd.CommandListenerBasis;
 import de.timesnake.library.extension.util.cmd.DuplicateOptionException;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import java.util.ArrayList;
@@ -31,8 +32,8 @@ public class CommandHandler {
 
     private final HashMap<String, ExCommand<Sender, Argument>> commands = new HashMap<>();
 
-    public void addCommand(Object mainClass, String cmd, CommandListener<Sender, Argument> listener,
-            Plugin basicPlugin) {
+    public void addCommand(Object mainClass, String cmd,
+            CommandListenerBasis<Sender, Argument> listener, Plugin basicPlugin) {
         listener.loadCodes(basicPlugin);
         this.commands.put(cmd, new ExCommand<>(cmd, listener, basicPlugin));
         Command command = new Command();

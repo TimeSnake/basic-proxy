@@ -23,7 +23,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class UuidCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Permission permCode;
+    private Code permCode;
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
@@ -84,6 +84,6 @@ public class UuidCmd implements CommandListener<Sender, Argument> {
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.permCode = plugin.createPermssionCode("id", "network.uuid");
+        this.permCode = plugin.createPermssionCode("network.uuid");
     }
 }

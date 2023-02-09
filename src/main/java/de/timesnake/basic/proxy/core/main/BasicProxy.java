@@ -16,6 +16,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import de.timesnake.basic.proxy.core.channel.ChannelCmdHandler;
 import de.timesnake.basic.proxy.core.cmd.AirModeCmd;
 import de.timesnake.basic.proxy.core.cmd.AliasCmd;
+import de.timesnake.basic.proxy.core.cmd.CodeCmd;
 import de.timesnake.basic.proxy.core.cmd.CoinsCmd;
 import de.timesnake.basic.proxy.core.cmd.LoggerCmd;
 import de.timesnake.basic.proxy.core.cmd.MapBuildCmd;
@@ -97,15 +98,18 @@ public class BasicProxy {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         NetworkManager.getInstance().onEnable();
 
-        Network.getCommandHandler().addCommand(this, "permission", List.of("perm", "perms"), new PermissionCmd(), Plugin.PERMISSION);
+        Network.getCommandHandler()
+                .addCommand(this, "permission", List.of("perm", "perms"), new PermissionCmd(),
+                        Plugin.PERMISSION);
 
         Network.getCommandHandler().addCommand(this, "alias", new AliasCmd(), Plugin.ALIAS);
 
         Network.getCommandHandler().addCommand(this, "work", new ServiceWorkCmd(), Plugin.NETWORK);
         Network.getCommandHandler().addCommand(this, "ban", List.of("netban"),
                 new PunishCmd(), Plugin.PUNISH);
-        Network.getCommandHandler().addCommand(this, "tempban", List.of("nettempban", "tmpban", "nettmpmban"),
-                new PunishCmd(), Plugin.PUNISH);
+        Network.getCommandHandler()
+                .addCommand(this, "tempban", List.of("nettempban", "tmpban", "nettmpmban"),
+                        new PunishCmd(), Plugin.PUNISH);
         Network.getCommandHandler().addCommand(this, "unban", List.of("netunban", "pardon"),
                 new PunishCmd(), Plugin.PUNISH);
         Network.getCommandHandler().addCommand(this, "mute", List.of("netmute"),
@@ -122,9 +126,11 @@ public class BasicProxy {
                 List.of("netmsg", "networkmsg", "networkmessages", "networkmessage", "netmsgs"),
                 new NetworkMsgCmd(), Plugin.SUPPORT);
 
-        Network.getCommandHandler().addCommand(this, "timecoins", new CoinsCmd(), Plugin.TIME_COINS);
+        Network.getCommandHandler()
+                .addCommand(this, "timecoins", new CoinsCmd(), Plugin.TIME_COINS);
 
-        Network.getCommandHandler().addCommand(this, "permcheck", new PermissionTestCmd(), Plugin.NETWORK);
+        Network.getCommandHandler()
+                .addCommand(this, "permcheck", new PermissionTestCmd(), Plugin.NETWORK);
 
         Network.getCommandHandler().addCommand(this, "air", List.of("airmode", "am"),
                 new AirModeCmd(), Plugin.NETWORK);
@@ -152,6 +158,8 @@ public class BasicProxy {
                 new LoggerCmd(), Plugin.SYSTEM);
 
         Network.getCommandHandler().addCommand(this, "uuid", new UuidCmd(), Plugin.NETWORK);
+
+        Network.getCommandHandler().addCommand(this, "code", new CodeCmd(), Plugin.SYSTEM);
 
         EventManager em = server.getEventManager();
 

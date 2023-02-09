@@ -19,10 +19,11 @@ import net.kyori.adventure.text.Component;
 
 public class DeleteTmpServerCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Permission perm;
+    private Code perm;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (!sender.hasPermission(this.perm)) {
             return;
         }
@@ -45,12 +46,14 @@ public class DeleteTmpServerCmd implements CommandListener<Sender, Argument> {
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        return args.length() == 1 ? Network.getCommandHandler().getServerNames() : new ArrayList<>(0);
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
+        return args.length() == 1 ? Network.getCommandHandler().getServerNames()
+                : new ArrayList<>(0);
     }
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("prx", "network.delete_tmp");
+        this.perm = plugin.createPermssionCode("network.delete_tmp");
     }
 }

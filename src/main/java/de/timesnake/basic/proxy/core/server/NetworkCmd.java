@@ -28,11 +28,12 @@ import net.kyori.adventure.text.Component;
 
 public class NetworkCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Help serverAlreadyExists;
-    private Code.Permission createOwnPerm;
+    private Code serverAlreadyExists;
+    private Code createOwnPerm;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (!args.isLengthHigherEquals(1, true)) {
             return;
         }
@@ -59,8 +60,9 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
-        Collection<String> serverNames = Network.getNetworkUtils().getPublicPlayerServerNames(Type.Server.GAME,
-                nonTmpGame.getName());
+        Collection<String> serverNames = Network.getNetworkUtils()
+                .getPublicPlayerServerNames(Type.Server.GAME,
+                        nonTmpGame.getName());
 
         String serverName = args.get(2).toLowerCase();
 
@@ -69,7 +71,8 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
-        ServerInitResult result = Network.createPublicPlayerServer(Type.Server.GAME, ((DbNonTmpGame) game).getName(),
+        ServerInitResult result = Network.createPublicPlayerServer(Type.Server.GAME,
+                ((DbNonTmpGame) game).getName(),
                 serverName);
 
         if (!result.isSuccessful()) {
@@ -100,7 +103,8 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
         }
 
         if (!nonTmpGame.isOwnable()) {
-            sender.sendPluginMessage(Component.text("Servers of this game can not have an owner", WARNING));
+            sender.sendPluginMessage(
+                    Component.text("Servers of this game can not have an owner", WARNING));
             return;
         }
 
@@ -112,8 +116,9 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
 
         DbUser user = playerArg.toDbUser();
 
-        Collection<String> serverNames = Network.getNetworkUtils().getOwnerServerNames(user.getUniqueId(), Type.Server.GAME,
-                ((DbNonTmpGame) game).getName());
+        Collection<String> serverNames = Network.getNetworkUtils()
+                .getOwnerServerNames(user.getUniqueId(), Type.Server.GAME,
+                        ((DbNonTmpGame) game).getName());
 
         String serverName = args.get(2).toLowerCase();
 
@@ -122,7 +127,8 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
-        ServerInitResult result = Network.createPlayerServer(user.getUniqueId(), Type.Server.GAME, ((DbNonTmpGame) game).getName(),
+        ServerInitResult result = Network.createPlayerServer(user.getUniqueId(), Type.Server.GAME,
+                ((DbNonTmpGame) game).getName(),
                 user.getUniqueId().hashCode() + serverName);
 
         if (!result.isSuccessful()) {
@@ -133,11 +139,13 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
 
         sender.sendPluginMessage(Component.text("Created server ", PERSONAL)
                 .append(Component.text(serverName, ExTextColor.VALUE))
-                .append(Component.text(" (" + user.getUniqueId().hashCode() + serverName + ")", ExTextColor.QUICK_INFO)));
+                .append(Component.text(" (" + user.getUniqueId().hashCode() + serverName + ")",
+                        ExTextColor.QUICK_INFO)));
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (args.length() == 1) {
             return List.of("create_own_game");
         } else if (args.length() == 2) {
@@ -159,7 +167,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.serverAlreadyExists = plugin.createHelpCode("prx", "Server name already exists");
-        this.createOwnPerm = plugin.createPermssionCode("prx", "network.create.own_game");
+        this.serverAlreadyExists = plugin.createHelpCode("Server name already exists");
+        this.createOwnPerm = plugin.createPermssionCode("network.create.own_game");
     }
 }

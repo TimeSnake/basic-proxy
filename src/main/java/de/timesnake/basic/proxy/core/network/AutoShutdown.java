@@ -43,9 +43,9 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     private int requiredVotes = 1;
     private ScheduledTask task;
 
-    private Code.Permission helloPerm;
-    private Code.Permission shutdownPerm;
-    private Code.Permission autoShutdownPerm;
+    private Code helloPerm;
+    private Code shutdownPerm;
+    private Code autoShutdownPerm;
 
     public AutoShutdown() {
         NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
@@ -81,14 +81,17 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
         if (enabled) {
             this.cancelable = false;
             Network.printText(Plugin.SYSTEM, "AutoShutdown started");
-            task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), this::infoShutdown)
+            task = BasicProxy.getServer().getScheduler()
+                    .buildTask(BasicProxy.getPlugin(), this::infoShutdown)
                     .delay(time, TimeUnit.MINUTES).schedule();
         }
     }
 
     public void infoShutdown() {
         this.cancelable = true;
-        Network.broadcastMessage(Plugin.NETWORK, Component.text("The server will shutdown in 5 minutes ", ExTextColor.WARNING, TextDecoration.BOLD));
+        Network.broadcastMessage(Plugin.NETWORK,
+                Component.text("The server will shutdown in 5 minutes ", ExTextColor.WARNING,
+                        TextDecoration.BOLD));
 
         Component text = Chat.getSenderPlugin(Plugin.NETWORK)
                 .append(Component.text("Write ", ExTextColor.WARNING))
@@ -102,15 +105,17 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
         }
 
         task.cancel();
-        task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), this::warnShutdown).delay(4,
-                TimeUnit.MINUTES).schedule();
+        task = BasicProxy.getServer().getScheduler()
+                .buildTask(BasicProxy.getPlugin(), this::warnShutdown).delay(4,
+                        TimeUnit.MINUTES).schedule();
     }
 
     public void warnShutdown() {
         this.cancelable = true;
 
-        Network.broadcastMessage(Plugin.NETWORK, Component.text("The server will shutdown in 1 minute ",
-                ExTextColor.WARNING, TextDecoration.BOLD));
+        Network.broadcastMessage(Plugin.NETWORK,
+                Component.text("The server will shutdown in 1 minute ",
+                        ExTextColor.WARNING, TextDecoration.BOLD));
 
         Component text = Chat.getSenderPlugin(Plugin.NETWORK)
                 .append(Component.text("Write ", ExTextColor.WARNING))
@@ -124,16 +129,20 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
         }
 
         task.cancel();
-        task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), this::beginShutdown).delay(1,
-                TimeUnit.MINUTES).schedule();
+        task = BasicProxy.getServer().getScheduler()
+                .buildTask(BasicProxy.getPlugin(), this::beginShutdown).delay(1,
+                        TimeUnit.MINUTES).schedule();
     }
 
     private void beginShutdown() {
         this.cancelable = true;
-        Network.broadcastMessage(Plugin.NETWORK, Component.text("The server will shutdown in 10 seconds ", ExTextColor.WARNING, TextDecoration.BOLD));
+        Network.broadcastMessage(Plugin.NETWORK,
+                Component.text("The server will shutdown in 10 seconds ", ExTextColor.WARNING,
+                        TextDecoration.BOLD));
         task.cancel();
         task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
-            Network.broadcastMessage(Plugin.NETWORK, Component.text("§lSHUTDOWN", ExTextColor.WARNING));
+            Network.broadcastMessage(Plugin.NETWORK,
+                    Component.text("§lSHUTDOWN", ExTextColor.WARNING));
             new ServerCmd().stopAllServers();
             shutdown();
         }).delay(10, TimeUnit.SECONDS).schedule();
@@ -151,7 +160,8 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
         if (this.task != null) {
             this.task.cancel();
             this.votedUsers.clear();
-            Network.broadcastMessage(Plugin.NETWORK, Component.text("Shutdown cancelled", ExTextColor.WARNING));
+            Network.broadcastMessage(Plugin.NETWORK,
+                    Component.text("Shutdown cancelled", ExTextColor.WARNING));
             if (enabled) {
                 this.start(Network.getUsers().size() > 0 ? PLAYER_TIME_1 : PLAYER_TIME_0);
             }
@@ -159,7 +169,8 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     }
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (cmd.getName().equalsIgnoreCase("hello")
                 || cmd.getName().equalsIgnoreCase("hallo")
                 || cmd.getName().equalsIgnoreCase("hi")) {
@@ -170,14 +181,17 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
                 }
 
                 if (!this.cancelable) {
-                    sender.sendPluginMessage(Component.text("There is no running shutdown", ExTextColor.WARNING));
+                    sender.sendPluginMessage(
+                            Component.text("There is no running shutdown", ExTextColor.WARNING));
                     return;
                 }
 
                 User user = sender.getUser();
 
                 if (this.votedUsers.contains(user.getUniqueId())) {
-                    sender.sendPluginMessage(Component.text("You already voted against the shutdown", ExTextColor.WARNING));
+                    sender.sendPluginMessage(
+                            Component.text("You already voted against the shutdown",
+                                    ExTextColor.WARNING));
                     return;
                 }
 
@@ -186,8 +200,11 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
                 if (this.votedUsers.size() >= this.requiredVotes) {
                     this.cancelShutdown();
                 } else {
-                    Network.broadcastMessage(Plugin.NETWORK, Component.text("Against Server shutdown: ", ExTextColor.WARNING)
-                            .append(Component.text(this.votedUsers.size() + " / " + this.requiredVotes, ExTextColor.VALUE)));
+                    Network.broadcastMessage(Plugin.NETWORK,
+                            Component.text("Against Server shutdown: ", ExTextColor.WARNING)
+                                    .append(Component.text(
+                                            this.votedUsers.size() + " / " + this.requiredVotes,
+                                            ExTextColor.VALUE)));
                 }
             }
         } else if (cmd.getName().equalsIgnoreCase("shutdown")) {
@@ -204,8 +221,9 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
 
                     this.enabled = false;
 
-                    sender.sendPluginMessage(Component.text("Updated shutdown votes to ", ExTextColor.PERSONAL)
-                            .append(Component.text(this.requiredVotes, ExTextColor.VALUE)));
+                    sender.sendPluginMessage(
+                            Component.text("Updated shutdown votes to ", ExTextColor.PERSONAL)
+                                    .append(Component.text(this.requiredVotes, ExTextColor.VALUE)));
                 }
 
                 if (this.enabled) {
@@ -215,13 +233,16 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
                     }
                     this.votedUsers.clear();
 
-                    Network.broadcastMessage(Plugin.NETWORK, Component.text("Shutdown cancelled", ExTextColor.WARNING));
-                    sender.sendPluginMessage(Component.text("Disabled auto-shutdown", ExTextColor.PERSONAL));
+                    Network.broadcastMessage(Plugin.NETWORK,
+                            Component.text("Shutdown cancelled", ExTextColor.WARNING));
+                    sender.sendPluginMessage(
+                            Component.text("Disabled auto-shutdown", ExTextColor.PERSONAL));
                 } else {
                     this.enabled = true;
                     this.votedUsers.clear();
                     this.start(Network.getUsers().size() > 0 ? PLAYER_TIME_1 : PLAYER_TIME_0);
-                    sender.sendPluginMessage(Component.text("Enabled auto-shutdown", ExTextColor.PERSONAL));
+                    sender.sendPluginMessage(
+                            Component.text("Enabled auto-shutdown", ExTextColor.PERSONAL));
                 }
             }
         }
@@ -229,14 +250,15 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         return List.of();
     }
 
     @Override
     public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
-        this.helloPerm = plugin.createPermssionCode("ntw", "network.hello");
-        this.shutdownPerm = plugin.createPermssionCode("ntw", "network.shutdown");
-        this.autoShutdownPerm = plugin.createPermssionCode("ntw", "network.autoshutdown");
+        this.helloPerm = plugin.createPermssionCode("network.hello");
+        this.shutdownPerm = plugin.createPermssionCode("network.shutdown");
+        this.autoShutdownPerm = plugin.createPermssionCode("network.autoshutdown");
     }
 }

@@ -21,10 +21,11 @@ import net.kyori.adventure.text.Component;
 
 public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Permission perm;
+    private Code perm;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (!sender.hasPermission(this.perm)) {
             return;
         }
@@ -60,7 +61,8 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
             case "add" -> {
                 if (user.getDisplayGroupNames().contains(groupName)) {
                     sender.sendPluginMessage(Component.text(userName).color(ExTextColor.VALUE)
-                            .append(Component.text(" is already member of display group ").color(ExTextColor.WARNING))
+                            .append(Component.text(" is already member of display group ")
+                                    .color(ExTextColor.WARNING))
                             .append(Component.text(groupName).color(ExTextColor.VALUE)));
                     return;
                 }
@@ -74,7 +76,8 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
             case "remove" -> {
                 if (!user.getDisplayGroupNames().contains(groupName)) {
                     sender.sendPluginMessage(Component.text(user.getName()).color(ExTextColor.VALUE)
-                            .append(Component.text(" is not a member of display group ").color(ExTextColor.WARNING))
+                            .append(Component.text(" is not a member of display group ")
+                                    .color(ExTextColor.WARNING))
                             .append(Component.text(groupName).color(ExTextColor.VALUE)));
                     return;
                 }
@@ -96,7 +99,8 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (args.length() == 1) {
             return Network.getCommandHandler().getPlayerNames();
         } else if (args.length() == 2) {
@@ -109,6 +113,6 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("prx", "chat.display_group");
+        this.perm = plugin.createPermssionCode("chat.display_group");
     }
 }

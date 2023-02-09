@@ -17,12 +17,12 @@ import java.util.List;
 
 public class PunishCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Permission mutePerm;
-    private Code.Permission kickPerm;
-    private Code.Permission unmutePerm;
-    private Code.Permission tempbanPerm;
-    private Code.Permission banPerm;
-    private Code.Permission unbanPerm;
+    private Code mutePerm;
+    private Code kickPerm;
+    private Code unmutePerm;
+    private Code tempbanPerm;
+    private Code banPerm;
+    private Code unbanPerm;
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
@@ -153,11 +153,11 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.mutePerm = plugin.createPermssionCode("pun", "punish.netmute");
-        this.unmutePerm = plugin.createPermssionCode("pun", "punish.netunmute");
-        this.kickPerm = plugin.createPermssionCode("pun", "punish.kick");
-        this.tempbanPerm = plugin.createPermssionCode("pun", "punish.tempban");
-        this.banPerm = plugin.createPermssionCode("pun", "punish.ban");
-        this.unbanPerm = plugin.createPermssionCode("pun", "punish.unban");
+        this.mutePerm = plugin.createPermssionCode("punish.netmute");
+        this.unmutePerm = plugin.createPermssionCode("punish.netunmute");
+        this.kickPerm = plugin.createPermssionCode("punish.kick");
+        this.tempbanPerm = plugin.createPermssionCode("punish.tempban");
+        this.banPerm = plugin.createPermssionCode("punish.ban");
+        this.unbanPerm = plugin.createPermssionCode("punish.unban");
     }
 }

@@ -19,7 +19,7 @@ import net.kyori.adventure.text.Component;
 
 public class CleanupServersCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Permission perm;
+    private Code perm;
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
@@ -53,6 +53,6 @@ public class CleanupServersCmd implements CommandListener<Sender, Argument> {
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("prx", "network.cleanup_servers");
+        this.perm = plugin.createPermssionCode("network.cleanup_servers");
     }
 }

@@ -27,32 +27,37 @@ import net.kyori.adventure.text.Component;
 
 public class PermissionManager {
 
-    private final Code.Permission playerAddPerm;
-    private final Code.Permission playerRemovePerm;
-    private final Code.Permission playerGroupSetPerm;
-    private final Code.Permission playerGroupRemovePerm;
-    private final Code.Permission groupAddPerm;
-    private final Code.Permission groupRemovePerm;
-    private final Code.Permission groupCreatePerm;
-    private final Code.Permission groupDeletePerm;
-    private final Code.Permission groupInheritanceSetPerm;
-    private final Code.Permission groupInheritanceRemovePerm;
+    private final Code playerAddPerm;
+    private final Code playerRemovePerm;
+    private final Code playerGroupSetPerm;
+    private final Code playerGroupRemovePerm;
+    private final Code groupAddPerm;
+    private final Code groupRemovePerm;
+    private final Code groupCreatePerm;
+    private final Code groupDeletePerm;
+    private final Code groupInheritanceSetPerm;
+    private final Code groupInheritanceRemovePerm;
 
     public PermissionManager() {
-        this.playerAddPerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.player.add");
-        this.playerRemovePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.player.remove");
-        this.playerGroupSetPerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.player.group.set");
-        this.playerGroupRemovePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.player.group.remove");
-        this.groupAddPerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.add");
-        this.groupRemovePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.remove");
-        this.groupCreatePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.create");
-        this.groupDeletePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.delete");
-        this.groupInheritanceSetPerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.group.inheritance.set");
-        this.groupInheritanceRemovePerm = Plugin.PERMISSION.createPermssionCode("pem", "permission.inheritance.remove");
+        this.playerAddPerm = Plugin.PERMISSION.createPermssionCode("permission.player.add");
+        this.playerRemovePerm = Plugin.PERMISSION.createPermssionCode("permission.player.remove");
+        this.playerGroupSetPerm = Plugin.PERMISSION.createPermssionCode(
+                "permission.player.group.set");
+        this.playerGroupRemovePerm = Plugin.PERMISSION.createPermssionCode(
+                "permission.player.group.remove");
+        this.groupAddPerm = Plugin.PERMISSION.createPermssionCode("permission.group.add");
+        this.groupRemovePerm = Plugin.PERMISSION.createPermssionCode("permission.group.remove");
+        this.groupCreatePerm = Plugin.PERMISSION.createPermssionCode("permission.group.create");
+        this.groupDeletePerm = Plugin.PERMISSION.createPermssionCode("permission.group.delete");
+        this.groupInheritanceSetPerm = Plugin.PERMISSION.createPermssionCode(
+                "permission.group.inheritance.set");
+        this.groupInheritanceRemovePerm = Plugin.PERMISSION.createPermssionCode(
+                "permission.inheritance.remove");
     }
 
-    public void addPlayerPermission(Sender sender, DbUser user, String permission, Status.Permission mode,
-                                    String... servers) {
+    public void addPlayerPermission(Sender sender, DbUser user, String permission,
+            Status.Permission mode,
+            String... servers) {
 
         if (!sender.hasPermission(this.playerAddPerm)) {
             return;
@@ -66,7 +71,8 @@ public class PermissionManager {
         UUID uuid = user.getUniqueId();
 
         if (Network.isUserOnline(uuid)) {
-            user.addPermission(permission, mode, () -> Network.getUser(uuid).updatePermissions(true), servers);
+            user.addPermission(permission, mode,
+                    () -> Network.getUser(uuid).updatePermissions(true), servers);
         } else {
             user.addPermission(permission, mode, servers);
         }
@@ -113,9 +119,10 @@ public class PermissionManager {
 
         if (user.getPermGroup() != null) {
             if (!user.getPermGroup().getName().equalsIgnoreCase(groupName)
-                && sender.hasGroupRankLower(Database.getGroups().getPermGroup(groupName))) {
+                    && sender.hasGroupRankLower(Database.getGroups().getPermGroup(groupName))) {
                 if (Network.isUserOnline(uuid)) {
-                    user.setPermGroup(groupName.toLowerCase(), () -> Network.getUser(uuid).updateGroup());
+                    user.setPermGroup(groupName.toLowerCase(),
+                            () -> Network.getUser(uuid).updateGroup());
                 } else {
                     user.setPermGroup(groupName.toLowerCase());
                 }
@@ -130,7 +137,8 @@ public class PermissionManager {
             }
         } else if (sender.hasGroupRankLower(Database.getGroups().getPermGroup(groupName))) {
             if (Network.isUserOnline(uuid)) {
-                user.setPermGroup(groupName.toLowerCase(), () -> Network.getUser(uuid).updateGroup());
+                user.setPermGroup(groupName.toLowerCase(),
+                        () -> Network.getUser(uuid).updateGroup());
             } else {
                 user.setPermGroup(groupName.toLowerCase());
             }
@@ -164,8 +172,9 @@ public class PermissionManager {
         UUID uuid = user.getUniqueId();
     }
 
-    public void addGroupPermission(Sender sender, String groupName, String permission, Status.Permission mode,
-                                   String... servers) {
+    public void addGroupPermission(Sender sender, String groupName, String permission,
+            Status.Permission mode,
+            String... servers) {
         if (!sender.hasPermission(this.groupAddPerm)) {
             return;
         }
@@ -186,7 +195,8 @@ public class PermissionManager {
             return;
         }
 
-        group.addPermission(permission, mode, () -> Network.getPermGroup(groupName).updatePermissions(), servers);
+        group.addPermission(permission, mode,
+                () -> Network.getPermGroup(groupName).updatePermissions(), servers);
         this.sendMessageAddedPermission(sender, groupName, permission, mode, servers);
 
     }
@@ -211,7 +221,8 @@ public class PermissionManager {
             return;
         }
 
-        group.removePermission(permission, () -> Network.getPermGroup(groupName).updatePermissions());
+        group.removePermission(permission,
+                () -> Network.getPermGroup(groupName).updatePermissions());
         this.sendMessageRemovedPermission(sender, groupName, permission);
 
     }
@@ -273,7 +284,8 @@ public class PermissionManager {
         sender.sendPluginMessage(text("Group ", PERSONAL)
                 .append(text(group.getName(), VALUE))
                 .append(text(" deleted", PERSONAL)));
-        Network.getChannel().sendMessage(new ChannelGroupMessage<>(groupName, MessageType.Group.PERMISSION));
+        Network.getChannel()
+                .sendMessage(new ChannelGroupMessage<>(groupName, MessageType.Group.PERMISSION));
 
     }
 
@@ -292,12 +304,15 @@ public class PermissionManager {
             return;
         }
 
-        DbPermGroup inheritGroup = Database.getGroups().getPermGroup(inheritGroupName.toLowerCase());
-        if (!(Database.getGroups().containsPermGroup(inheritGroupName) && sender.hasGroupRankLower(inheritGroup))) {
+        DbPermGroup inheritGroup = Database.getGroups()
+                .getPermGroup(inheritGroupName.toLowerCase());
+        if (!(Database.getGroups().containsPermGroup(inheritGroupName) && sender.hasGroupRankLower(
+                inheritGroup))) {
             return;
         }
 
-        group.setInheritance(inheritGroup.getName(), () -> Network.getPermGroup(groupName).updatePermissions());
+        group.setInheritance(inheritGroup.getName(),
+                () -> Network.getPermGroup(groupName).updatePermissions());
         sender.sendPluginMessage(text("Added Inheritance ", PERSONAL)
                 .append(text(inheritGroup.getName(), VALUE))
                 .append(text(" to ", PERSONAL))
@@ -338,8 +353,9 @@ public class PermissionManager {
                 .append(text(permission, VALUE)));
     }
 
-    private void sendMessageAddedPermission(Sender sender, String name, String permission, Status.Permission mode,
-                                            String... servers) {
+    private void sendMessageAddedPermission(Sender sender, String name, String permission,
+            Status.Permission mode,
+            String... servers) {
         sender.sendPluginMessage(text("Added permission ", PERSONAL)
                 .append(text(permission, VALUE))
                 .append(text(" to ", PERSONAL))

@@ -29,10 +29,11 @@ import net.kyori.adventure.text.Component;
 
 public class MapBuildCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Permission perm;
+    private Code perm;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (!sender.hasPermission(this.perm)) {
             return;
         }
@@ -53,7 +54,8 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
         BuildServer buildServer = null;
         boolean worldLoaded = false;
 
-        for (Server server : Network.getServers().stream().filter(s -> s.getType().equals(Type.Server.BUILD)).toList()) {
+        for (Server server : Network.getServers().stream()
+                .filter(s -> s.getType().equals(Type.Server.BUILD)).toList()) {
             Collection<String> loadedWorlds = ((BuildServer) server).getDatabase().getWorldNames();
             if (loadedWorlds.contains(worldName)) {
                 buildServer = ((BuildServer) server);
@@ -68,13 +70,16 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
             if (buildServer == null) {
                 int port = Network.nextEmptyPort();
                 Tuple<ServerCreationResult, Optional<Server>> result =
-                        Network.createTmpServer(new NetworkServer("build" + (port % 1000), port, Type.Server.BUILD,
-                                Network.getVelocitySecret()).setPlayerTrackingRange(128), false, true);
+                        Network.createTmpServer(
+                                new NetworkServer("build" + (port % 1000), port, Type.Server.BUILD,
+                                        Network.getVelocitySecret()).setPlayerTrackingRange(128),
+                                false, true);
 
                 if (!result.getA().isSuccessful()) {
                     sender.sendPluginMessage(Component.text("Error while creating a" +
-                            " build server! Please contact an administrator (" +
-                            ((ServerCreationResult.Fail) result.getA()).getReason() + ")", WARNING));
+                                    " build server! Please contact an administrator (" +
+                                    ((ServerCreationResult.Fail) result.getA()).getReason() + ")",
+                            WARNING));
                     return;
                 }
 
@@ -98,24 +103,28 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
         buildServer.setMaxPlayers(Network.getMaxPlayersBuild());
 
         if (sender.isPlayer(false)) {
-            if (buildServer.getStatus().equals(Status.Server.ONLINE) || buildServer.getStatus().equals(Status.Server.SERVICE)) {
+            if (buildServer.getStatus().equals(Status.Server.ONLINE) || buildServer.getStatus()
+                    .equals(Status.Server.SERVICE)) {
                 sender.sendPluginMessage(Component.text("Loaded world ", ExTextColor.PERSONAL)
                         .append(Component.text(worldName, ExTextColor.VALUE)));
                 sender.getUser().connect(buildServer.getBungeeInfo());
             } else {
                 sender.sendPluginMessage(Component.text("Loading world ", ExTextColor.PERSONAL)
                         .append(Component.text(worldName, ExTextColor.VALUE))
-                        .append(Component.text(". You will be moved in a few moments.", ExTextColor.PERSONAL)));
+                        .append(Component.text(". You will be moved in a few moments.",
+                                ExTextColor.PERSONAL)));
                 sender.getUser().scheduledConnect(buildServer);
             }
         }
 
-        Network.printText(Plugin.SYSTEM, "Loaded world '" + worldName + "' on server '" + buildServer.getName() +
-                "' by user " + sender.getName());
+        Network.printText(Plugin.SYSTEM,
+                "Loaded world '" + worldName + "' on server '" + buildServer.getName() +
+                        "' by user " + sender.getName());
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (args.length() == 1) {
             return Network.getNetworkUtils().getWorldNames(Type.Server.BUILD, null);
         }
@@ -124,6 +133,6 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("prx", "network.start.build");
+        this.perm = plugin.createPermssionCode("network.start.build");
     }
 }

@@ -19,16 +19,18 @@ import net.kyori.adventure.text.Component;
 
 public class AirModeCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Permission perm;
+    private Code perm;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (sender.hasPermission(this.perm)) {
             if (sender.isPlayer(false)) {
                 User user = sender.getUser();
                 if (user.isAirMode()) {
                     user.setAirMode(false);
-                    user.getPlayer().disconnect(Component.text("Back on the ground. Please rejoin"));
+                    user.getPlayer()
+                            .disconnect(Component.text("Back on the ground. Please rejoin"));
                 } else {
                     user.setAirMode(true);
                     user.getPlayer().disconnect(Component.text("Up in the air. Please rejoin"));
@@ -37,18 +39,21 @@ public class AirModeCmd implements CommandListener<Sender, Argument> {
                 if (args.isLengthEquals(1, true)) {
                     if (args.get(0).isPlayerDatabaseName(true)) {
                         if (args.get(0).isPlayerName(false)) {
-                            sender.sendPluginMessage(Component.text("Only for offline players", ExTextColor.WARNING));
+                            sender.sendPluginMessage(Component.text("Only for offline players",
+                                    ExTextColor.WARNING));
                             return;
                         }
 
                         DbUser user = args.get(0).toDbUser();
                         if (user.isAirMode()) {
                             user.setAirMode(false);
-                            sender.sendPluginMessage(Component.text("Disabled air mode for user ", ExTextColor.PERSONAL)
+                            sender.sendPluginMessage(Component.text("Disabled air mode for user ",
+                                            ExTextColor.PERSONAL)
                                     .append(Component.text(user.getName(), ExTextColor.VALUE)));
                         } else {
                             user.setAirMode(true);
-                            sender.sendPluginMessage(Component.text("Enabled air mode for user ", ExTextColor.PERSONAL)
+                            sender.sendPluginMessage(Component.text("Enabled air mode for user ",
+                                            ExTextColor.PERSONAL)
                                     .append(Component.text(user.getName(), ExTextColor.VALUE)));
                         }
                     }
@@ -58,12 +63,13 @@ public class AirModeCmd implements CommandListener<Sender, Argument> {
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         return null;
     }
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("air", "air");
+        this.perm = plugin.createPermssionCode("air");
     }
 }

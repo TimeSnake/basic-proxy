@@ -20,10 +20,11 @@ import net.kyori.adventure.text.Component;
 
 public class CoinsCmd implements CommandListener<Sender, Argument> {
 
-    private Code.Permission perm;
+    private Code perm;
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (sender.hasPermission(this.perm)) {
             if (args.isLengthEquals(3, true)) {
                 if (args.get(0).isPlayerName(true)) {
@@ -35,28 +36,32 @@ public class CoinsCmd implements CommandListener<Sender, Argument> {
                                 user.addCoins(coins);
                                 sender.sendPluginMessage(Component.text("Added ")
                                         .append(Component.text(coins, ExTextColor.VALUE))
-                                        .append(Component.text(" timecoin(s) to ", ExTextColor.PERSONAL))
+                                        .append(Component.text(" timecoin(s) to ",
+                                                ExTextColor.PERSONAL))
                                         .append(user.getChatNameComponent()));
                             }
                             case "remove" -> {
                                 user.removeCoins(coins);
                                 sender.sendPluginMessage(Component.text("Removed ")
                                         .append(Component.text(coins, ExTextColor.VALUE))
-                                        .append(Component.text(" timecoin(s) from ", ExTextColor.PERSONAL))
+                                        .append(Component.text(" timecoin(s) from ",
+                                                ExTextColor.PERSONAL))
                                         .append(user.getChatNameComponent()));
                             }
                             case "set" -> {
                                 user.setCoins(coins);
                                 sender.sendPluginMessage(Component.text("Set balance to ")
                                         .append(Component.text(coins, ExTextColor.VALUE))
-                                        .append(Component.text(" timecoin(s) for ", ExTextColor.PERSONAL))
+                                        .append(Component.text(" timecoin(s) for ",
+                                                ExTextColor.PERSONAL))
                                         .append(user.getChatNameComponent()));
                             }
                             case "reset" -> {
                                 user.setCoins(0);
                                 sender.sendPluginMessage(Component.text("Set balance to ")
                                         .append(Component.text(coins, ExTextColor.VALUE))
-                                        .append(Component.text(" timecoin(s) for ", ExTextColor.PERSONAL))
+                                        .append(Component.text(" timecoin(s) for ",
+                                                ExTextColor.PERSONAL))
                                         .append(user.getChatNameComponent()));
                             }
                         }
@@ -67,7 +72,8 @@ public class CoinsCmd implements CommandListener<Sender, Argument> {
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (args.getLength() == 1) {
             return Network.getCommandHandler().getPlayerNames();
         }
@@ -82,6 +88,6 @@ public class CoinsCmd implements CommandListener<Sender, Argument> {
 
     @Override
     public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("cns", "timecoins.settings");
+        this.perm = plugin.createPermssionCode("timecoins.settings");
     }
 }

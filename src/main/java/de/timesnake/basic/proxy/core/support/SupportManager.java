@@ -38,11 +38,12 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
 
     private final Set<UUID> ticketListeners = new HashSet<>();
 
-    private Code.Permission msgPerm;
+    private Code msgPerm;
 
     public SupportManager() {
         Network.getCommandHandler().addCommand(BasicProxy.getPlugin(),
-                "supportmsg", List.of("supportmessage", "supportmessages", "supportmsgs", "smsg"), this,
+                "supportmsg", List.of("supportmessage", "supportmessages", "supportmsgs", "smsg"),
+                this,
                 Plugin.SUPPORT);
         Network.getChannel().addListener(this);
         Network.registerListener(this);
@@ -55,10 +56,13 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
             Integer id = (Integer) msg.getValue();
             Tuple<String, ScheduledTask> value = this.lockedTicketsById.get(id);
             if (value != null && !value.getA().equals(name)) {
-                Network.getChannel().sendMessage(new ChannelSupportMessage<>(name, MessageType.Support.REJECT, id));
+                Network.getChannel().sendMessage(
+                        new ChannelSupportMessage<>(name, MessageType.Support.REJECT, id));
             } else {
-                ScheduledTask task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(),
-                        () -> this.lockedTicketsById.remove(id)).delay(3, TimeUnit.MINUTES).schedule();
+                ScheduledTask task = BasicProxy.getServer().getScheduler()
+                        .buildTask(BasicProxy.getPlugin(),
+                                () -> this.lockedTicketsById.remove(id)).delay(3, TimeUnit.MINUTES)
+                        .schedule();
 
                 this.lockedTicketsById.put(id, new Tuple<>(name, task));
             }
@@ -69,11 +73,13 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
             Tuple<String, ScheduledTask> tuple = this.lockedTicketsById.get(id);
 
             if (tuple == null || tuple.getA() == null || !tuple.getA().equals(name)) {
-                Network.getChannel().sendMessage(new ChannelSupportMessage<>(name, MessageType.Support.REJECT, id));
+                Network.getChannel().sendMessage(
+                        new ChannelSupportMessage<>(name, MessageType.Support.REJECT, id));
                 return;
             }
 
-            Network.getChannel().sendMessage(new ChannelSupportMessage<>(name, MessageType.Support.ACCEPT, id));
+            Network.getChannel()
+                    .sendMessage(new ChannelSupportMessage<>(name, MessageType.Support.ACCEPT, id));
 
             ScheduledTask task = this.lockedTicketsById.remove(id).getB();
 
@@ -87,8 +93,9 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
                 User user = Network.getUser(uuid);
 
                 if (user != null) {
-                    user.sendPluginMessage(Plugin.SUPPORT, Component.text("New ticket: ", ExTextColor.WARNING)
-                            .append(Component.text("ID " + id, ExTextColor.VALUE)));
+                    user.sendPluginMessage(Plugin.SUPPORT,
+                            Component.text("New ticket: ", ExTextColor.WARNING)
+                                    .append(Component.text("ID " + id, ExTextColor.VALUE)));
                 }
             }
         }
@@ -96,7 +103,8 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
     }
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (!sender.isPlayer(true)) {
             return;
         }
@@ -109,22 +117,25 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
 
         if (this.ticketListeners.contains(user.getUniqueId())) {
             this.ticketListeners.remove(user.getUniqueId());
-            sender.sendPluginMessage(Component.text("Disabled support messages", ExTextColor.PERSONAL));
+            sender.sendPluginMessage(
+                    Component.text("Disabled support messages", ExTextColor.PERSONAL));
         } else {
             this.ticketListeners.add(user.getUniqueId());
-            sender.sendPluginMessage(Component.text("Enabled support messages", ExTextColor.PERSONAL));
+            sender.sendPluginMessage(
+                    Component.text("Enabled support messages", ExTextColor.PERSONAL));
         }
 
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         return null;
     }
 
     @Override
     public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
-        this.msgPerm = plugin.createPermssionCode("sup", "support.message");
+        this.msgPerm = plugin.createPermssionCode("support.message");
     }
 
     @Subscribe

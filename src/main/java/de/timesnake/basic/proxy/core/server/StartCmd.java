@@ -4,9 +4,9 @@
 
 package de.timesnake.basic.proxy.core.server;
 
-import static de.timesnake.library.basic.util.chat.ExTextColor.PERSONAL;
-import static de.timesnake.library.basic.util.chat.ExTextColor.VALUE;
-import static de.timesnake.library.basic.util.chat.ExTextColor.WARNING;
+import static de.timesnake.library.chat.ExTextColor.PERSONAL;
+import static de.timesnake.library.chat.ExTextColor.VALUE;
+import static de.timesnake.library.chat.ExTextColor.WARNING;
 import static net.kyori.adventure.text.Component.text;
 
 import de.timesnake.basic.proxy.util.Network;

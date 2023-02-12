@@ -4,9 +4,9 @@
 
 package de.timesnake.basic.proxy.core.permission;
 
-import static de.timesnake.library.basic.util.chat.ExTextColor.PERSONAL;
-import static de.timesnake.library.basic.util.chat.ExTextColor.VALUE;
-import static de.timesnake.library.basic.util.chat.ExTextColor.WARNING;
+import static de.timesnake.library.chat.ExTextColor.PERSONAL;
+import static de.timesnake.library.chat.ExTextColor.VALUE;
+import static de.timesnake.library.chat.ExTextColor.WARNING;
 import static net.kyori.adventure.text.Component.text;
 
 import de.timesnake.basic.proxy.util.Network;
@@ -344,7 +344,7 @@ public class PermissionManager {
         sender.sendPluginMessage(text("Group ", WARNING)
                 .append(text(groupName, VALUE))
                 .append(text(" does not exist", WARNING)));
-        sender.sendMessageCommandHelp("Create a group", "perms group <name> create");
+        sender.sendTDMessageCommandHelp("Create a group", "perms group <name> create");
     }
 
     private void sendMessageHasAlreadyPermission(Sender sender, String name, String permission) {

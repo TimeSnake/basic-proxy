@@ -8,15 +8,16 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyPingEvent;
 import com.velocitypowered.api.proxy.server.ServerPing;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.library.basic.util.chat.ChatColor;
-import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.chat.ChatColor;
+import de.timesnake.library.chat.ExTextColor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
 public class MotdManager {
 
     private static final String VERSION = "1.19";
-    private static final Component MOTD = Component.text("     The time is running!", ExTextColor.DARK_PURPLE)
+    private static final Component MOTD = Component.text("     The time is running!",
+                    ExTextColor.DARK_PURPLE)
             .append(Component.text("   tick", ExTextColor.WHITE))
             .append(Component.text("  tack", ExTextColor.GRAY))
             .append(Component.text("  tick", ExTextColor.DARK_GRAY))
@@ -40,13 +41,15 @@ public class MotdManager {
                                 .append(Component.text("-", ExTextColor.GRAY))
                                 .append(Component.text("Network", ExTextColor.BLUE))
                                 .append(Component.text("!", ExTextColor.RED))
-                                .append(Component.text("                                             "))
+                                .append(Component.text(
+                                        "                                             "))
                                 .append(MOTD)).build());
             } else {
                 e.setPing(e.getPing().asBuilder()
                         .version(new ServerPing.Version(0, ChatColor.GOLD + "Starting..."))
                         .description(Component.text(ChatColor.GOLD +
-                                "§6Time§2Snake§7-§9Network§c!" + "                                        §6Server is" +
+                                "§6Time§2Snake§7-§9Network§c!"
+                                + "                                        §6Server is" +
                                 " " +
                                 "starting, please wait."))
                         .build());

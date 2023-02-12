@@ -4,9 +4,9 @@
 
 package de.timesnake.basic.proxy.core.punishment;
 
-import static de.timesnake.library.basic.util.chat.ExTextColor.PERSONAL;
-import static de.timesnake.library.basic.util.chat.ExTextColor.VALUE;
-import static de.timesnake.library.basic.util.chat.ExTextColor.WARNING;
+import static de.timesnake.library.chat.ExTextColor.PERSONAL;
+import static de.timesnake.library.chat.ExTextColor.VALUE;
+import static de.timesnake.library.chat.ExTextColor.WARNING;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
@@ -19,7 +19,7 @@ import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

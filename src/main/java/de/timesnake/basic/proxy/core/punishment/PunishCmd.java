@@ -7,7 +7,7 @@ package de.timesnake.basic.proxy.core.punishment;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
-import de.timesnake.library.basic.util.chat.ChatColor;
+import de.timesnake.library.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
@@ -29,103 +29,80 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
             Arguments<Argument> args) {
         switch (cmd.getName().toLowerCase()) {
             case "netmute", "mute" -> {
-                if (!sender.hasPermission(this.mutePerm)) {
+                sender.hasPermissionElseExit(this.mutePerm);
+
+                if (!args.isLengthHigherEquals(2, true)) {
+                    sender.sendTDMessageCommandHelp("Mute a player", "netmute <player> <reason>");
                     return;
                 }
 
-                if (!args.isLengthHigherEquals(2, true)) {
-                    sender.sendMessageCommandHelp("Mute a player", "netmute <player> <reason>");
-                    return;
-                }
-                if (!args.get(0).isPlayerDatabaseName(true)) {
-                    return;
-                }
+                args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
 
                 Network.getPunishmentManager()
                         .mutePlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
             }
             case "netkick", "kick" -> {
-                if (!sender.hasPermission(this.kickPerm)) {
-                    return;
-                }
+                sender.hasPermissionElseExit(this.kickPerm);
 
                 if (!args.isLengthHigherEquals(2, true)) {
-                    sender.sendMessageCommandHelp("Kick a player", "netkick <player> <reason>");
+                    sender.sendTDMessageCommandHelp("Kick a player", "netkick <player> <reason>");
                     return;
                 }
 
-                if (!args.get(0).isPlayerName(true)) {
-                    return;
-                }
+                args.get(0).assertElseExit(a -> ((Argument) a).isPlayerName(true));
 
                 Network.getPunishmentManager()
                         .kickPlayer(sender, args.get(0).toUser(), args.toMessage(1));
             }
             case "netunmute", "unmute" -> {
-                if (!sender.hasPermission(this.unmutePerm)) {
-                    return;
-                }
+                sender.hasPermissionElseExit(this.unmutePerm);
 
                 if (!args.isLengthHigherEquals(1, true)) {
-                    sender.sendMessageCommandHelp("Unmute a player", "unmute <player>");
+                    sender.sendTDMessageCommandHelp("Unmute a player", "unmute <player>");
                     return;
                 }
 
-                if (!args.get(0).isPlayerDatabaseName(true)) {
-                    return;
-                }
+                args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
 
                 Network.getPunishmentManager().unmutePlayer(sender, args.get(0).toDbUser());
             }
             case "nettempban", "nettmpban", "tempban", "tmpban" -> {
-                if (!sender.hasPermission(this.tempbanPerm)) {
-                    return;
-                }
+                sender.hasPermissionElseExit(this.tempbanPerm);
 
                 if (!args.isLengthHigherEquals(3, true)) {
-                    sender.sendMessageCommandHelp("Temp-ban a player", "nettempban <player> " +
+                    sender.sendTDMessageCommandHelp("Temp-ban a player", "nettempban <player> " +
                             "<duration> <reason> \n" + ChatColor.QUICK_INFO + "duration:" +
                             " 1year;1month;1day;1hour;1min;1sec");
                     return;
                 }
 
-                if (!args.get(0).isPlayerDatabaseName(true)) {
-                    return;
-                }
+                args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
 
                 Network.getPunishmentManager().tempBanPlayer(sender, args.get(0).toDbUser(),
                         args.get(1).getString(), args.toMessage(2));
             }
             case "netban", "ban" -> {
-                if (!sender.hasPermission(this.banPerm)) {
-                    return;
-                }
+                sender.hasPermissionElseExit(this.banPerm);
 
                 if (!args.isLengthHigherEquals(2, true)) {
-                    sender.sendMessageCommandHelp("Ban a player", "netban <player> <reason>");
+                    sender.sendTDMessageCommandHelp("Ban a player", "netban <player> <reason>");
                     return;
                 }
 
-                if (!args.get(0).isPlayerDatabaseName(true)) {
-                    return;
-                }
+                args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
 
                 Network.getPunishmentManager()
                         .banPlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
             }
             case "netunban", "unban", "pardon", "netpardon" -> {
-                if (!sender.hasPermission(this.unbanPerm)) {
-                    return;
-                }
+                sender.hasPermissionElseExit(this.unbanPerm);
 
                 if (!args.isLengthEquals(1, true)) {
-                    sender.sendMessageCommandHelp("Unban a player", "unban <player>");
+                    sender.sendTDMessageCommandHelp("Unban a player", "unban <player>");
                     return;
                 }
 
-                if (!args.get(0).isPlayerDatabaseName(true)) {
-                    return;
-                }
+                args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
 
                 Network.getPunishmentManager()
                         .unbanPlayer(sender, args.get(0).toDbUser().getUniqueId());

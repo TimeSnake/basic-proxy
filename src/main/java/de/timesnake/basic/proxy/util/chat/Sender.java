@@ -15,7 +15,7 @@ import net.kyori.adventure.text.Component;
 public class Sender extends de.timesnake.library.extension.util.cmd.Sender {
 
     public Sender(CommandSender cmdSender, Plugin plugin) {
-        super(cmdSender, plugin);
+        super(cmdSender, plugin, Network.getTimeDownParser());
     }
 
     public Player getPlayer() {

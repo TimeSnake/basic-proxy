@@ -20,6 +20,7 @@ dependencies {
     implementation project(':library-network')
     implementation project(':library-extension')
     implementation project(':library-basic')
+    implementation project(':library-chat')
 
     annotationProcessor project.velocity
     compileOnly project.velocity

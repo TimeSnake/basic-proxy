@@ -4,8 +4,8 @@
 
 package de.timesnake.basic.proxy.core.server;
 
-import static de.timesnake.library.basic.util.chat.ExTextColor.PERSONAL;
-import static de.timesnake.library.basic.util.chat.ExTextColor.WARNING;
+import static de.timesnake.library.chat.ExTextColor.PERSONAL;
+import static de.timesnake.library.chat.ExTextColor.WARNING;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
@@ -15,7 +15,7 @@ import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbNonTmpGame;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;

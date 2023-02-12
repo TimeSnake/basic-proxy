@@ -11,7 +11,7 @@ import de.timesnake.channel.util.message.ChannelUserMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
@@ -45,7 +45,8 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                 }
                 sender.sendPluginMessage(msg.append(Component.text(" from ", ExTextColor.PERSONAL)
                         .append(Component.text(user.getName(), ExTextColor.VALUE))));
-                Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
+                Network.getChannel().sendMessage(
+                        new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
             }
             case "suffix" -> {
                 if (name == null) {
@@ -58,7 +59,8 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                 }
                 sender.sendPluginMessage(msg.append(Component.text(" from ", ExTextColor.PERSONAL)
                         .append(Component.text(user.getName(), ExTextColor.VALUE))));
-                Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
+                Network.getChannel().sendMessage(
+                        new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
             }
             case "nick" -> {
                 if (name == null) {
@@ -71,18 +73,21 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                 }
                 sender.sendPluginMessage(msg.append(Component.text(" from ", ExTextColor.PERSONAL)
                         .append(Component.text(user.getName(), ExTextColor.VALUE))));
-                Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
+                Network.getChannel().sendMessage(
+                        new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
             }
             default -> {
-                sender.sendMessageCommandHelp("Set alias for player", "alias [player] " + "<prefix/suffix/nick> " +
-                        "[value]");
-                sender.sendMessageCommandHelp("Get alias from player", "alias [player] info");
+                sender.sendTDMessageCommandHelp("Set alias for player",
+                        "alias [player] " + "<prefix/suffix/nick> " +
+                                "[value]");
+                sender.sendTDMessageCommandHelp("Get alias from player", "alias [player] info");
             }
         }
     }
 
     @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         if (args.isLengthHigherEquals(1, true)) {
             if (Database.getUsers().containsUser(args.get(0).getString())) {
                 if (sender.hasPermission("alias.other")) {
@@ -93,9 +98,10 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                     }
                 }
             } else if (args.get(0).equalsIgnoreCase("help")) {
-                sender.sendMessageCommandHelp("Set alias for player", "alias [player] " + "<prefix/suffix/nick> " +
-                        "[value]");
-                sender.sendMessageCommandHelp("Get alias from player", "alias [player] info");
+                sender.sendTDMessageCommandHelp("Set alias for player",
+                        "alias [player] " + "<prefix/suffix/nick> " +
+                                "[value]");
+                sender.sendTDMessageCommandHelp("Get alias from player", "alias [player] info");
             } else if (sender.isPlayer(true)) {
                 if (args.isLengthEquals(2, false)) {
                     AliasCmd.setAlias(sender, sender.getDbUser(), args.get(0), args.get(1));
@@ -103,16 +109,17 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
                     AliasCmd.setAlias(sender, sender.getDbUser(), args.get(0), null);
                 }
             } else {
-                sender.sendMessageCommandHelp("For help", "alias help");
+                sender.sendTDMessageCommandHelp("For help", "alias help");
             }
         } else {
-            sender.sendMessageCommandHelp("For help", "alias help");
+            sender.sendTDMessageCommandHelp("For help", "alias help");
         }
 
     }
 
     @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
         int length = args.getLength();
         if (length == 1) {
             return Network.getCommandHandler().getPlayerNames();

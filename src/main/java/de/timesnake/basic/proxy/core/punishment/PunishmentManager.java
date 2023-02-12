@@ -22,6 +22,7 @@ import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
@@ -199,6 +200,9 @@ public class PunishmentManager {
             }
         }
 
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        String dateString = df.format(datePunish);
+
         user.setPunishment(Type.Punishment.TEMP_BAN, datePunish, sender.getName(), reason, "ALL");
         String name = user.getName();
 
@@ -211,7 +215,7 @@ public class PunishmentManager {
                         .append(text(reason, VALUE))
                         .append(newline())
                         .append(text("until ", WARNING))
-                        .append(text(datePunish.toString(), VALUE)));
+                        .append(text(dateString, VALUE)));
                 break;
             }
         }
@@ -221,12 +225,12 @@ public class PunishmentManager {
                 .append(text(" with reason: ", PERSONAL))
                 .append(text(reason, VALUE))
                 .append(text(" until ", PERSONAL))
-                .append(text(datePunish.toString(), VALUE)));
+                .append(text(dateString, VALUE)));
 
         broadcastMessage(text("Player ", WARNING)
                 .append(text(user.getName(), VALUE))
                 .append(text(" was temporary banned until ", WARNING))
-                .append(text(datePunish.toString(), VALUE))
+                .append(text(dateString, VALUE))
                 .append(text(" with reason: ", WARNING))
                 .append(text(reason, VALUE)));
 

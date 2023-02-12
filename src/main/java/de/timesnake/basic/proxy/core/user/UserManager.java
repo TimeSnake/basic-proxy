@@ -33,10 +33,9 @@ import de.timesnake.library.basic.util.server.Server;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.player.UserList;
 import de.timesnake.library.extension.util.player.UserMap;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,9 +44,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 
 public class UserManager {
@@ -87,6 +83,7 @@ public class UserManager {
             punishment = prePunishmentFuture.get();
         } catch (InterruptedException | ExecutionException ex) {
             ex.printStackTrace();
+            p.disconnect(Component.text("An error occurred, please contact an admin"));
             return;
         }
 
@@ -354,26 +351,15 @@ public class UserManager {
                     .append(Component.text(user.getPunishment().getReason(), ExTextColor.VALUE))
                     .append(Component.newline())
                     .append(Component.text("For more info use our discord: ", ExTextColor.PERSONAL))
-                    .append(Component.text(
-                                    de.timesnake.library.basic.util.server.Server.DISCORD_LINK,
-                                    ExTextColor.VALUE, TextDecoration.UNDERLINED)
-                            .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD,
-                                    de.timesnake.library.basic.util.server.Server.DISCORD_LINK))
-                            .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                    Component.text("Click to copy"))))
+                    .append(Component.text(Server.DISCORD_LINK, ExTextColor.VALUE))
                     .append(Component.newline())
                     .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
-                    .append(Component.text(Server.SUPPORT_EMAIL, ExTextColor.VALUE,
-                                    TextDecoration.UNDERLINED)
-                            .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD,
-                                    Server.SUPPORT_EMAIL))
-                            .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                    Component.text("Click to copy"))));
+                    .append(Component.text(Server.SUPPORT_EMAIL, ExTextColor.VALUE));
 
         } else if (type.equals(Type.Punishment.TEMP_BAN)) {
             LocalDateTime dateSystem = LocalDateTime.now();
             LocalDateTime date = user.getPunishment().getDate();
-            DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String dateString = df.format(date);
             if (date.isBefore(dateSystem)) {
                 Network.getPunishmentManager().unbanPlayer(user.getUniqueId());
@@ -384,27 +370,15 @@ public class UserManager {
                         .append(Component.text(dateString, ExTextColor.VALUE))
                         .append(Component.text(".", ExTextColor.WARNING))
                         .append(Component.newline())
+                        .append(Component.text("Reason: ", ExTextColor.WARNING))
                         .append(Component.text(user.getPunishment().getReason(), ExTextColor.VALUE))
                         .append(Component.newline())
                         .append(Component.text("For more info use our discord: ",
                                 ExTextColor.PERSONAL))
-                        .append(Component.text(
-                                        de.timesnake.library.basic.util.server.Server.DISCORD_LINK,
-                                        ExTextColor.VALUE, TextDecoration.UNDERLINED)
-                                .clickEvent(
-                                        ClickEvent.clickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD,
-                                                de.timesnake.library.basic.util.server.Server.DISCORD_LINK))
-                                .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                        Component.text("Click to copy"))))
+                        .append(Component.text(Server.DISCORD_LINK, ExTextColor.VALUE))
                         .append(Component.newline())
                         .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
-                        .append(Component.text(Server.SUPPORT_EMAIL, ExTextColor.VALUE,
-                                        TextDecoration.UNDERLINED)
-                                .clickEvent(
-                                        ClickEvent.clickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD,
-                                                Server.SUPPORT_EMAIL))
-                                .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                        Component.text("Click to copy"))));
+                        .append(Component.text(Server.SUPPORT_EMAIL, ExTextColor.VALUE));
             }
         }
 

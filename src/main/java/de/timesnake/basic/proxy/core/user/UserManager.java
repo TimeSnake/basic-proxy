@@ -31,8 +31,8 @@ import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.server.Server;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Chat;
-import de.timesnake.library.extension.util.player.UserList;
 import de.timesnake.library.extension.util.player.UserMap;
+import de.timesnake.library.extension.util.player.UserSet;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -188,7 +188,7 @@ public class UserManager {
             }
         });
 
-        UserList.LISTS.forEach(l -> l.remove(Network.getUser(p)));
+        UserSet.LISTS.forEach(l -> l.remove(Network.getUser(p)));
         UserMap.MAPS.forEach(l -> l.remove(Network.getUser(p)));
 
         Network.removeUser(p);

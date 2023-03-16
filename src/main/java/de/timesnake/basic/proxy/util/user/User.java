@@ -35,7 +35,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -71,6 +74,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     private Component chatName;
 
     private ScheduledTask privacyPolicyTask;
+
+    private Map<String, List<String>> joinCmdsByServer = new HashMap<>();
 
     public User(Player player, PreUser user) {
         this.player = player;
@@ -629,4 +634,18 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
                 new ChannelUserMessage<>(this.getUniqueId(), MessageType.User.SOUND, sound));
     }
 
+    public void addJoinCommand(String server, String command) {
+        this.joinCmdsByServer.computeIfAbsent(server, k -> new LinkedList<>()).add(command);
+    }
+
+    public void runJoinCommands(Server server) {
+        List<String> cmds = this.joinCmdsByServer.remove(server.getName());
+
+        if (cmds != null) {
+            for (String cmd : cmds) {
+                BasicProxy.getServer().getCommandManager().executeAsync(this.getPlayer(), cmd);
+                this.runBukkitCommand(cmd);
+            }
+        }
+    }
 }

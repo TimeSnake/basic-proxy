@@ -41,7 +41,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 
-public class Network {
+public class Network implements de.timesnake.library.basic.util.server.Server {
 
     public static final int PORT_BASE = 25100;
     public static final String TMP_SERVER_SUFFIX = "_tmp";

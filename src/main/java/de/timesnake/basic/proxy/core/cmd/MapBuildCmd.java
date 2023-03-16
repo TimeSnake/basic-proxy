@@ -103,6 +103,8 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
         buildServer.setMaxPlayers(Network.getMaxPlayersBuild());
 
         if (sender.isPlayer(false)) {
+            sender.getUser().addJoinCommand(buildServer.getName(), "mw tp " + worldName);
+
             if (buildServer.getStatus().equals(Status.Server.ONLINE) || buildServer.getStatus()
                     .equals(Status.Server.SERVICE)) {
                 sender.sendPluginMessage(Component.text("Loaded world ", ExTextColor.PERSONAL)

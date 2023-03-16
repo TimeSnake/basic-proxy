@@ -17,6 +17,7 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Plugin;
+import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.util.message.ChannelServerMessage;
@@ -28,7 +29,6 @@ import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.basic.util.server.Server;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.player.UserMap;
@@ -217,8 +217,11 @@ public class UserManager {
 
         ServerInfo serverInfo = server.getServerInfo();
         user.setServer(serverInfo.getName());
-        if (Database.getServers().getServer(serverInfo.getAddress().getPort()).getType()
-                .equals(Type.Server.LOBBY)) {
+
+        Server s = Network.getServer(
+                serverInfo.getAddress().getPort());
+
+        if (s.getType().equals(Type.Server.LOBBY)) {
             user.setLobby(serverInfo.getName());
         }
 
@@ -228,6 +231,7 @@ public class UserManager {
                     .append(Component.text(serverInfo.getName(), ExTextColor.VALUE)));
         }
 
+        Network.runTaskLater(() -> user.runJoinCommands(s), Duration.ofSeconds(3));
     }
 
     private void sendJoinMessages(Player player, User user) {
@@ -351,10 +355,10 @@ public class UserManager {
                     .append(Component.text(user.getPunishment().getReason(), ExTextColor.VALUE))
                     .append(Component.newline())
                     .append(Component.text("For more info use our discord: ", ExTextColor.PERSONAL))
-                    .append(Component.text(Server.DISCORD_LINK, ExTextColor.VALUE))
+                    .append(Component.text(Network.DISCORD_LINK, ExTextColor.VALUE))
                     .append(Component.newline())
                     .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
-                    .append(Component.text(Server.SUPPORT_EMAIL, ExTextColor.VALUE));
+                    .append(Component.text(Network.SUPPORT_EMAIL, ExTextColor.VALUE));
 
         } else if (type.equals(Type.Punishment.TEMP_BAN)) {
             LocalDateTime dateSystem = LocalDateTime.now();
@@ -375,10 +379,10 @@ public class UserManager {
                         .append(Component.newline())
                         .append(Component.text("For more info use our discord: ",
                                 ExTextColor.PERSONAL))
-                        .append(Component.text(Server.DISCORD_LINK, ExTextColor.VALUE))
+                        .append(Component.text(Network.DISCORD_LINK, ExTextColor.VALUE))
                         .append(Component.newline())
                         .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
-                        .append(Component.text(Server.SUPPORT_EMAIL, ExTextColor.VALUE));
+                        .append(Component.text(Network.SUPPORT_EMAIL, ExTextColor.VALUE));
             }
         }
 

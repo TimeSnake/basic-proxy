@@ -34,6 +34,7 @@ import de.timesnake.basic.proxy.core.punishment.PunishCmd;
 import de.timesnake.basic.proxy.core.server.CleanupServersCmd;
 import de.timesnake.basic.proxy.core.server.DeleteTmpServerCmd;
 import de.timesnake.basic.proxy.core.server.FallbackManager;
+import de.timesnake.basic.proxy.core.server.GameCmd;
 import de.timesnake.basic.proxy.core.server.NetworkCmd;
 import de.timesnake.basic.proxy.core.server.PidCmd;
 import de.timesnake.basic.proxy.core.server.ServerCmd;
@@ -160,6 +161,8 @@ public class BasicProxy {
         Network.getCommandHandler().addCommand(this, "uuid", new UuidCmd(), Plugin.NETWORK);
 
         Network.getCommandHandler().addCommand(this, "code", new CodeCmd(), Plugin.SYSTEM);
+
+        Network.getCommandHandler().addCommand(this, "game", new GameCmd(), Plugin.NETWORK);
 
         EventManager em = server.getEventManager();
 

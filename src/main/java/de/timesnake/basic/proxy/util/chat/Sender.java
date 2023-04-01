@@ -42,4 +42,9 @@ public class Sender extends de.timesnake.library.extension.util.cmd.Sender {
     public void sendPluginMessage(Component component) {
         this.cmdSender.sendMessage(Chat.getSenderPlugin(this.plugin).append(component));
     }
+
+    @Override
+    public int hashCode() {
+        return this.cmdSender.getName().hashCode();
+    }
 }

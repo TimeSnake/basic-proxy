@@ -4,7 +4,6 @@
 
 package de.timesnake.basic.proxy.util.chat;
 
-import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.command.SimpleCommand;
 import de.timesnake.basic.proxy.core.group.DisplayGroup;
 import de.timesnake.basic.proxy.core.group.PermGroup;
@@ -21,6 +20,9 @@ import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.CommandListenerBasis;
 import de.timesnake.library.extension.util.cmd.DuplicateOptionException;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import de.timesnake.library.extension.util.cmd.IncCommandContext;
+import de.timesnake.library.extension.util.cmd.IncCommandListener;
+import de.timesnake.library.extension.util.cmd.IncCommandOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -31,15 +33,17 @@ import net.kyori.adventure.text.Component;
 public class CommandHandler {
 
     private final HashMap<String, ExCommand<Sender, Argument>> commands = new HashMap<>();
+    private final HashMap<String, IncCommandContext> incCmdContexts = new HashMap<>();
 
     public void addCommand(Object mainClass, String cmd,
             CommandListenerBasis<Sender, Argument> listener, Plugin basicPlugin) {
         listener.loadCodes(basicPlugin);
-        this.commands.put(cmd, new ExCommand<>(cmd, listener, basicPlugin));
-        Command command = new Command();
-        CommandMeta commandMeta = BasicProxy.getCommandManager().metaBuilder(cmd).plugin(mainClass)
-                .build();
-        BasicProxy.getCommandManager().register(commandMeta, command);
+
+        ExCommand<Sender, Argument> exCommand = new ExCommand<>(cmd, listener, basicPlugin);
+        this.commands.put(cmd, exCommand);
+
+        BasicProxy.getCommandManager().register(BasicProxy.getCommandManager()
+                .metaBuilder(cmd).plugin(mainClass).build(), new Command());
     }
 
     public void addCommand(Object mainClass, String cmd, List<String> aliases,
@@ -52,10 +56,8 @@ public class CommandHandler {
             this.commands.put(alias, exCommand);
         }
 
-        Command command = new Command();
-        CommandMeta commandMeta = BasicProxy.getCommandManager().metaBuilder(cmd)
-                .aliases(aliases.toArray(new String[0])).plugin(mainClass).build();
-        BasicProxy.getCommandManager().register(commandMeta, command);
+        BasicProxy.getCommandManager().register(BasicProxy.getCommandManager().metaBuilder(cmd)
+                .aliases(aliases.toArray(new String[0])).plugin(mainClass).build(), new Command());
     }
 
     public List<String> getPlayerNames() {
@@ -170,25 +172,59 @@ public class CommandHandler {
 
         @Override
         public void execute(Invocation invocation) {
-            if (commands.containsKey(invocation.alias())) {
-                ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
-                Sender sender = new Sender(new CommandSender(invocation.source()),
-                        basicCmd.getPlugin());
-                String cmdName = invocation.alias().toLowerCase();
-                String[] args = invocation.arguments();
+            if (!commands.containsKey(invocation.alias())) {
+                return;
+            }
 
-                try {
-                    if (basicCmd.getListener() instanceof CommandListener listener) {
-                        listener.onCommand(sender, basicCmd, new Arguments(sender, args));
-                    } else if (basicCmd.getListener() instanceof ExCommandListener listener) {
-                        listener.onCommand(sender, basicCmd, new ExArguments(sender, args,
-                                listener.allowDuplicates(cmdName, args)));
+            ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
+            Sender sender = new Sender(new CommandSender(invocation.source()),
+                    basicCmd.getPlugin());
+            String cmdName = invocation.alias().toLowerCase();
+            String[] args = invocation.arguments();
+
+            try {
+                if (basicCmd.getListener() instanceof CommandListener listener) {
+                    listener.onCommand(sender, basicCmd, new Arguments(sender, args));
+                } else if (basicCmd.getListener() instanceof ExCommandListener listener) {
+                    listener.onCommand(sender, basicCmd, new ExArguments(sender, args,
+                            listener.allowDuplicates(cmdName, args)));
+                } else if (basicCmd.getListener() instanceof IncCommandListener listener) {
+                    if (args.length > 0) {
+                        IncCommandContext context = incCmdContexts.get(sender.getName());
+                        IncCommandOption option = (IncCommandOption) listener.getOptions().stream()
+                                .filter(o -> ((IncCommandOption) o).getName().equals(args[0]))
+                                .findFirst().get();
+
+                        if (context == null || option == null) {
+                            System.out.println(context == null);
+                            System.out.println(option == null);
+                            System.out.println(sender.getName());
+                            return;
+                        }
+
+                        Object value = option.parseValue(args[1]);
+                        context.addOption(option, value);
+
+                        boolean finished = listener.onUpdate(sender, context, option, value);
+
+                        if (finished) {
+                            incCmdContexts.remove(sender.getName());
+                        }
+                    } else {
+                        IncCommandContext context = listener.onCommand(sender, basicCmd);
+
+                        if (context != null) {
+                            System.out.println(sender.getName());
+                            System.out.println(context);
+                            incCmdContexts.put(sender.getName(), context);
+                        }
+
                     }
-                } catch (CommandExitException ignored) {
-
-                } catch (ArgumentParseException | DuplicateOptionException e) {
-                    sender.sendPluginMessage(Component.text(e.getMessage(), ExTextColor.WARNING));
                 }
+            } catch (CommandExitException ignored) {
+
+            } catch (ArgumentParseException | DuplicateOptionException e) {
+                sender.sendPluginMessage(Component.text(e.getMessage(), ExTextColor.WARNING));
             }
         }
     }

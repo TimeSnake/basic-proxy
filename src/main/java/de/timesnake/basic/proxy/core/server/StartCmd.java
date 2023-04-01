@@ -530,13 +530,12 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
         // search temp game and lounge server
 
-        sender.sendPluginMessage(text("Creating server...", PERSONAL));
-
         Integer finalMaxServerPlayers = maxServerPlayers;
         Integer finalTeamAmount = teamAmount;
         Integer finalPlayersPerTeam = playersPerTeam;
 
         Network.runTaskAsync(() -> {
+            sender.sendPluginMessage(text("Creating server...", PERSONAL));
             int loungePort = Network.nextEmptyPort();
             NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
                     Type.Server.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort,
@@ -596,22 +595,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
             tmpGameServer.setPvP(oldPvP);
             tmpGameServer.setTwinServer((DbLoungeServer) loungeServer.getDatabase());
 
-            sender.sendPluginMessage(text("Started game ", PERSONAL).append(text(gameName, VALUE)));
-            sender.sendPluginMessage(
-                    text("Game server: ", PERSONAL).append(text(tmpGameServer.getName(), VALUE)));
-            sender.sendPluginMessage(
-                    text("Lounge server: ", PERSONAL).append(text(loungeServer.getName(), VALUE)));
-            sender.sendPluginMessage(text("Max players: ", PERSONAL).append(
-                    text("" + finalMaxServerPlayers, VALUE)));
-            sender.sendPluginMessage(text("Maps: ", PERSONAL).append(text(mapsEnabled, VALUE)));
-            sender.sendPluginMessage(text("Kits: ", PERSONAL).append(text(kitsEnabled, VALUE)));
-            sender.sendPluginMessage(
-                    text("Team amount: ", PERSONAL).append(text(finalTeamAmount, VALUE)));
-            sender.sendPluginMessage(
-                    text("Team merging: ", PERSONAL).append(text(teamMerging, VALUE)));
-            sender.sendPluginMessage(text("Max players per team: ", PERSONAL).append(
-                    text("" + finalPlayersPerTeam, VALUE)));
-            sender.sendPluginMessage(text("Old PvP: ", PERSONAL).append(text(oldPvP, VALUE)));
+            sender.sendPluginTDMessage("§sStarted game §v" + gameName);
+            sender.sendPluginTDMessage("§sGame server: §v" + tmpGameServer.getName());
+            sender.sendPluginTDMessage("§sLounge server: §v" + loungeServer.getName());
+            sender.sendPluginTDMessage("§sMax players: §v" + "" + finalMaxServerPlayers);
+            sender.sendPluginTDMessage("§sMaps: §v" + mapsEnabled);
+            sender.sendPluginTDMessage("§sKits: §v" + kitsEnabled);
+            sender.sendPluginTDMessage("§sTeam amount: §v" + finalTeamAmount);
+            sender.sendPluginTDMessage("§sTeam merging: §v" + teamMerging);
+            sender.sendPluginTDMessage("§sTeam size: §v" + "" + finalPlayersPerTeam);
+            sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
 
             Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);
 

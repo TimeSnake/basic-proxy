@@ -83,7 +83,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         if (user == null) {
             if (!Database.getUsers().containsUser(player.getUniqueId())) {
                 Database.getUsers().addUser(player.getUniqueId(), player.getUsername(),
-                        Network.getGuestGroup().getName(),
+                        Network.getGroupManager().getGuestPermGroup().getName(),
                         null);
             }
             user = new PreUser(this.player.getUsername());
@@ -133,7 +133,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
         DbPermGroup group = this.getDatabase().getPermGroup();
         if (group.exists()) {
-            this.permGroup = Network.getPermGroup(group.getName());
+            this.permGroup = Network.getGroupManager().getPermGroup(group.getName());
         }
 
         if (this.permGroup != null) {
@@ -168,7 +168,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
                 component = component.append(this.getSuffix());
             }
         } else {
-            DisplayGroup group = Network.getMemberDisplayGroup();
+            DisplayGroup group = Network.getGroupManager().getMemberDisplayGroup();
             if (group.getPrefix() != null) {
                 component = component.append(
                         Component.text(group.getPrefix(), group.getPrefixColor()));
@@ -407,11 +407,11 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
     public void updateDisplayGroup() {
         this.displayGroups.clear();
         for (String groupName : this.dbUser.getDisplayGroupNames()) {
-            this.displayGroups.add(Network.getDisplayGroup(groupName));
+            this.displayGroups.add(Network.getGroupManager().getDisplayGroup(groupName));
         }
 
         if (this.displayGroups.isEmpty()) {
-            this.displayGroups.add(Network.getGuestDisplayGroup());
+            this.displayGroups.add(Network.getGroupManager().getGuestDisplayGroup());
         }
 
         Network.getChannel().sendMessage(

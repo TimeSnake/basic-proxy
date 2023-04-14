@@ -43,7 +43,7 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
         }
 
         String groupName = args.getString(2).toLowerCase();
-        DisplayGroup group = Network.getDisplayGroup(groupName);
+        DisplayGroup group = Network.getGroupManager().getDisplayGroup(groupName);
 
         if (group == null) {
             sender.sendPluginMessage(Component.text("Display group ", ExTextColor.WARNING)
@@ -102,11 +102,11 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
             Arguments<Argument> args) {
         if (args.length() == 1) {
-            return Network.getCommandHandler().getPlayerNames();
+            return Network.getCommandManager().getPlayerNames();
         } else if (args.length() == 2) {
             return List.of("add", "remove");
         } else if (args.length() == 3) {
-            return Network.getCommandHandler().getDisplayGroupNames();
+            return Network.getCommandManager().getDisplayGroupNames();
         }
         return new ArrayList<>(0);
     }

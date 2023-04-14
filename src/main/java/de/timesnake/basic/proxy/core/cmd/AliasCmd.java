@@ -122,7 +122,7 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
             Arguments<Argument> args) {
         int length = args.getLength();
         if (length == 1) {
-            return Network.getCommandHandler().getPlayerNames();
+            return Network.getCommandManager().getPlayerNames();
         }
 
         if (length == 2) {

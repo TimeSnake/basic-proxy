@@ -150,7 +150,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
             return List.of("create_own_game");
         } else if (args.length() == 2) {
             if (args.getString(0).equalsIgnoreCase("create_own_game")) {
-                return Network.getCommandHandler().getGameNames();
+                return Network.getCommandManager().getGameNames();
             }
         } else if (args.length() == 3) {
             if (args.getString(0).equalsIgnoreCase("create_own_game")) {
@@ -158,7 +158,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
             }
         } else if (args.length() == 4) {
             if (args.getString(0).equalsIgnoreCase("create_own_game")) {
-                return Network.getCommandHandler().getPlayerNames();
+                return Network.getCommandManager().getPlayerNames();
             }
         }
 

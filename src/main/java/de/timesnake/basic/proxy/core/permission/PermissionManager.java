@@ -196,7 +196,8 @@ public class PermissionManager {
         }
 
         group.addPermission(permission, mode,
-                () -> Network.getPermGroup(groupName).updatePermissions(), servers);
+                () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions(),
+                servers);
         this.sendMessageAddedPermission(sender, groupName, permission, mode, servers);
 
     }
@@ -222,7 +223,7 @@ public class PermissionManager {
         }
 
         group.removePermission(permission,
-                () -> Network.getPermGroup(groupName).updatePermissions());
+                () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
         this.sendMessageRemovedPermission(sender, groupName, permission);
 
     }
@@ -312,7 +313,7 @@ public class PermissionManager {
         }
 
         group.setInheritance(inheritGroup.getName(),
-                () -> Network.getPermGroup(groupName).updatePermissions());
+                () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
         sender.sendPluginMessage(text("Added Inheritance ", PERSONAL)
                 .append(text(inheritGroup.getName(), VALUE))
                 .append(text(" to ", PERSONAL))
@@ -335,7 +336,8 @@ public class PermissionManager {
             return;
         }
 
-        group.removeInheritance(() -> Network.getPermGroup(groupName).updatePermissions());
+        group.removeInheritance(
+                () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
         sender.sendPluginMessage(text("Removed inheritance from ", PERSONAL)
                 .append(text(group.getName(), VALUE)));
     }

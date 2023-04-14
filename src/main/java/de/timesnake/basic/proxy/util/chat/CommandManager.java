@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 
-public class CommandHandler {
+public class CommandManager {
 
     private final HashMap<String, ExCommand<Sender, Argument>> commands = new HashMap<>();
     private final HashMap<String, IncCommandContext> incCmdContexts = new HashMap<>();
@@ -85,12 +85,13 @@ public class CommandHandler {
     }
 
     public List<String> getPermGroupNames() {
-        return Network.getPermGroups().stream().map(PermGroup::getName)
+        return Network.getGroupManager().getPermGroups().values().stream().map(PermGroup::getName)
                 .collect(Collectors.toList());
     }
 
     public List<String> getDisplayGroupNames() {
-        return Network.getDisplayGroups().stream().map(DisplayGroup::getName)
+        return Network.getGroupManager().getDisplayGroups().values().stream()
+                .map(DisplayGroup::getName)
                 .collect(Collectors.toList());
     }
 
@@ -196,9 +197,6 @@ public class CommandHandler {
                                 .findFirst().get();
 
                         if (context == null || option == null) {
-                            System.out.println(context == null);
-                            System.out.println(option == null);
-                            System.out.println(sender.getName());
                             return;
                         }
 
@@ -214,8 +212,6 @@ public class CommandHandler {
                         IncCommandContext context = listener.onCommand(sender, basicCmd);
 
                         if (context != null) {
-                            System.out.println(sender.getName());
-                            System.out.println(context);
                             incCmdContexts.put(sender.getName(), context);
                         }
 

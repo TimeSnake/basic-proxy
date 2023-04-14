@@ -99,70 +99,70 @@ public class BasicProxy {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         NetworkManager.getInstance().onEnable();
 
-        Network.getCommandHandler()
+        Network.getCommandManager()
                 .addCommand(this, "permission", List.of("perm", "perms"), new PermissionCmd(),
                         Plugin.PERMISSION);
 
-        Network.getCommandHandler().addCommand(this, "alias", new AliasCmd(), Plugin.ALIAS);
+        Network.getCommandManager().addCommand(this, "alias", new AliasCmd(), Plugin.ALIAS);
 
-        Network.getCommandHandler().addCommand(this, "work", new ServiceWorkCmd(), Plugin.NETWORK);
-        Network.getCommandHandler().addCommand(this, "ban", List.of("netban"),
+        Network.getCommandManager().addCommand(this, "work", new ServiceWorkCmd(), Plugin.NETWORK);
+        Network.getCommandManager().addCommand(this, "ban", List.of("netban"),
                 new PunishCmd(), Plugin.PUNISH);
-        Network.getCommandHandler()
+        Network.getCommandManager()
                 .addCommand(this, "tempban", List.of("nettempban", "tmpban", "nettmpmban"),
                         new PunishCmd(), Plugin.PUNISH);
-        Network.getCommandHandler().addCommand(this, "unban", List.of("netunban", "pardon"),
+        Network.getCommandManager().addCommand(this, "unban", List.of("netunban", "pardon"),
                 new PunishCmd(), Plugin.PUNISH);
-        Network.getCommandHandler().addCommand(this, "mute", List.of("netmute"),
+        Network.getCommandManager().addCommand(this, "mute", List.of("netmute"),
                 new PunishCmd(), Plugin.PUNISH);
-        Network.getCommandHandler().addCommand(this, "unmute", List.of("netunmute"),
+        Network.getCommandManager().addCommand(this, "unmute", List.of("netunmute"),
                 new PunishCmd(), Plugin.PUNISH);
-        Network.getCommandHandler().addCommand(this, "kick", List.of("netkick"),
+        Network.getCommandManager().addCommand(this, "kick", List.of("netkick"),
                 new PunishCmd(), Plugin.PUNISH);
 
-        Network.getCommandHandler().addCommand(this, "start", new StartCmd(), Plugin.NETWORK);
-        Network.getCommandHandler().addCommand(this, "cmd", new ServerCmd(), Plugin.NETWORK);
+        Network.getCommandManager().addCommand(this, "start", new StartCmd(), Plugin.NETWORK);
+        Network.getCommandManager().addCommand(this, "cmd", new ServerCmd(), Plugin.NETWORK);
 
-        Network.getCommandHandler().addCommand(this, "netmessages",
+        Network.getCommandManager().addCommand(this, "netmessages",
                 List.of("netmsg", "networkmsg", "networkmessages", "networkmessage", "netmsgs"),
                 new NetworkMsgCmd(), Plugin.SUPPORT);
 
-        Network.getCommandHandler()
+        Network.getCommandManager()
                 .addCommand(this, "timecoins", new CoinsCmd(), Plugin.TIME_COINS);
 
-        Network.getCommandHandler()
+        Network.getCommandManager()
                 .addCommand(this, "permcheck", new PermissionTestCmd(), Plugin.NETWORK);
 
-        Network.getCommandHandler().addCommand(this, "air", List.of("airmode", "am"),
+        Network.getCommandManager().addCommand(this, "air", List.of("airmode", "am"),
                 new AirModeCmd(), Plugin.NETWORK);
 
-        Network.getCommandHandler().addCommand(this, "rule", List.of("rules", "regeln", "regel"),
+        Network.getCommandManager().addCommand(this, "rule", List.of("rules", "regeln", "regel"),
                 new RuleCmd(), Plugin.NETWORK);
 
-        Network.getCommandHandler().addCommand(this, "pid", new PidCmd(), Plugin.SYSTEM);
+        Network.getCommandManager().addCommand(this, "pid", new PidCmd(), Plugin.SYSTEM);
 
-        Network.getCommandHandler().addCommand(this, "kickall", new KickAllCmd(), Plugin.NETWORK);
+        Network.getCommandManager().addCommand(this, "kickall", new KickAllCmd(), Plugin.NETWORK);
 
-        Network.getCommandHandler().addCommand(this, "dtmp", List.of("delete_tmp"),
+        Network.getCommandManager().addCommand(this, "dtmp", List.of("delete_tmp"),
                 new DeleteTmpServerCmd(), Plugin.NETWORK);
-        Network.getCommandHandler().addCommand(this, "cleanup_servers",
+        Network.getCommandManager().addCommand(this, "cleanup_servers",
                 new CleanupServersCmd(), Plugin.SYSTEM);
 
-        Network.getCommandHandler().addCommand(this, "dgroup", List.of("displaygroup", "dg"),
+        Network.getCommandManager().addCommand(this, "dgroup", List.of("displaygroup", "dg"),
                 new DisplayGroupCmd(), Plugin.NETWORK);
 
-        Network.getCommandHandler().addCommand(this, "build", new MapBuildCmd(), Plugin.NETWORK);
+        Network.getCommandManager().addCommand(this, "build", new MapBuildCmd(), Plugin.NETWORK);
 
-        Network.getCommandHandler().addCommand(this, "network", new NetworkCmd(), Plugin.NETWORK);
+        Network.getCommandManager().addCommand(this, "network", new NetworkCmd(), Plugin.NETWORK);
 
-        Network.getCommandHandler().addCommand(this, "logger", List.of("log"),
+        Network.getCommandManager().addCommand(this, "logger", List.of("log"),
                 new LoggerCmd(), Plugin.SYSTEM);
 
-        Network.getCommandHandler().addCommand(this, "uuid", new UuidCmd(), Plugin.NETWORK);
+        Network.getCommandManager().addCommand(this, "uuid", new UuidCmd(), Plugin.NETWORK);
 
-        Network.getCommandHandler().addCommand(this, "code", new CodeCmd(), Plugin.SYSTEM);
+        Network.getCommandManager().addCommand(this, "code", new CodeCmd(), Plugin.SYSTEM);
 
-        Network.getCommandHandler().addCommand(this, "game", new GameCmd(), Plugin.NETWORK);
+        Network.getCommandManager().addCommand(this, "game", new GameCmd(), Plugin.NETWORK);
 
         EventManager em = server.getEventManager();
 

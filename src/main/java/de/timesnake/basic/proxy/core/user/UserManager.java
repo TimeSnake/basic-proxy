@@ -316,14 +316,15 @@ public class UserManager {
     public void checkDatabase(Player p, DbUser dbUser) {
         if (!Database.getUsers().containsUser(p.getUniqueId())) {
             Database.getUsers()
-                    .addUser(p.getUniqueId(), p.getUsername(), Network.getGuestGroup().getName(),
+                    .addUser(p.getUniqueId(), p.getUsername(),
+                            Network.getGroupManager().getGuestPermGroup().getName(),
                             null);
             this.sendAcceptedRules(p);
         } else {
             dbUser.setName(p.getUsername());
             dbUser.setStatus(Status.User.ONLINE);
             if (!dbUser.hasPermGroup()) {
-                dbUser.setPermGroup(Network.getGuestGroup().getName());
+                dbUser.setPermGroup(Network.getGroupManager().getGuestPermGroup().getName());
             }
         }
     }

@@ -48,13 +48,13 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
     private Code autoShutdownPerm;
 
     public AutoShutdown() {
-        NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
+        NetworkManager.getInstance().getCommandManager().addCommand(BasicProxy.getPlugin(),
                 "shutdown", this, Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
+        NetworkManager.getInstance().getCommandManager().addCommand(BasicProxy.getPlugin(),
                 "autoshutdown", this, Plugin.NETWORK);
 
-        NetworkManager.getInstance().getCommandHandler().addCommand(BasicProxy.getPlugin(),
+        NetworkManager.getInstance().getCommandManager().addCommand(BasicProxy.getPlugin(),
                 "hello", List.of("hallo", "hi", "helo"),
                 this, Plugin.NETWORK);
     }

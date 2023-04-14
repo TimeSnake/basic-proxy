@@ -85,7 +85,7 @@ public class ServerCmd implements CommandListener<Sender, Argument> {
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
             Arguments<Argument> args) {
         if (args.length() == 1) {
-            return Network.getCommandHandler().getServerNames();
+            return Network.getCommandManager().getServerNames();
         } else if (args.length() == 2) {
             return List.of("start", "stop", "password", "<cmd>");
         }

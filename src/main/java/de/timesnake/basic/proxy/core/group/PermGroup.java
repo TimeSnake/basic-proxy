@@ -35,15 +35,18 @@ public class PermGroup extends de.timesnake.library.extension.util.permission.Pe
 
         DbPermGroup group = this.database.getInheritance();
         if (group != null) {
-            this.permissions.addAll(Network.getPermGroup(group.getName()).getPermissions());
+            this.permissions.addAll(
+                    Network.getGroupManager().getPermGroup(group.getName()).getPermissions());
         }
 
-        Network.getChannel().sendMessage(new ChannelGroupMessage<>(this.name, MessageType.Group.PERMISSION));
-        Network.printText(Plugin.PERMISSION, "Updated permissions for group " + this.name + " from database");
+        Network.getChannel()
+                .sendMessage(new ChannelGroupMessage<>(this.name, MessageType.Group.PERMISSION));
+        Network.printText(Plugin.PERMISSION,
+                "Updated permissions for group " + this.name + " from database");
 
         if (updateInheritances) {
             for (DbPermGroup g : this.database.getGroupsInherit()) {
-                Network.getPermGroup(g.getName()).updatePermissions();
+                Network.getGroupManager().getPermGroup(g.getName()).updatePermissions();
             }
         }
 

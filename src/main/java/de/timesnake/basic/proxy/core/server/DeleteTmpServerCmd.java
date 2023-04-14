@@ -48,7 +48,7 @@ public class DeleteTmpServerCmd implements CommandListener<Sender, Argument> {
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
             Arguments<Argument> args) {
-        return args.length() == 1 ? Network.getCommandHandler().getServerNames()
+        return args.length() == 1 ? Network.getCommandManager().getServerNames()
                 : new ArrayList<>(0);
     }
 

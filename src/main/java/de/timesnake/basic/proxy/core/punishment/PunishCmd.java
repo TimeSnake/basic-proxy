@@ -116,7 +116,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
             Arguments<Argument> args) {
         int length = args.getLength();
         if (length == 1) {
-            return Network.getCommandHandler().getPlayerNames();
+            return Network.getCommandManager().getPlayerNames();
         }
 
         if (length == 2 && (args.getString(0).equalsIgnoreCase("tempban")

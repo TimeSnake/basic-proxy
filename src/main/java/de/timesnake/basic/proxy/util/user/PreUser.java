@@ -74,18 +74,18 @@ public class PreUser {
         if (dbGroup != null) {
             permGroupName = dbGroup.getName();
         } else {
-            permGroupName = Network.getGuestGroup().getName();
+            permGroupName = Network.getGroupManager().getGuestPermGroup().getName();
         }
 
-        this.permGroup = Network.getPermGroup(permGroupName);
+        this.permGroup = Network.getGroupManager().getPermGroup(permGroupName);
 
         this.displayGroups = new TreeSet<>(Comparator.comparingInt(DisplayGroup::getRank));
         for (String groupName : dbLocalUser.getDisplayGroupNames()) {
-            this.displayGroups.add(Network.getDisplayGroup(groupName));
+            this.displayGroups.add(Network.getGroupManager().getDisplayGroup(groupName));
         }
 
         if (this.displayGroups.isEmpty()) {
-            this.displayGroups.add(Network.getGuestDisplayGroup());
+            this.displayGroups.add(Network.getGroupManager().getGuestDisplayGroup());
         }
 
         this.service = dbLocalUser.isService();
@@ -95,7 +95,8 @@ public class PreUser {
         this.privacyPolicyDateTime = dbLocalUser.getPrivacyPolicyDateTime();
 
         for (DbPermission perm : dbLocalUser.getPermissions()) {
-            this.databasePermissions.add(new ExPermission(perm.getName(), perm.getMode(), perm.getServers()));
+            this.databasePermissions.add(
+                    new ExPermission(perm.getName(), perm.getMode(), perm.getServers()));
         }
         this.databasePermissions.addAll(this.permGroup.getPermissions());
     }

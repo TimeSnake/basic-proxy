@@ -41,7 +41,7 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
     private Code msgPerm;
 
     public SupportManager() {
-        Network.getCommandHandler().addCommand(BasicProxy.getPlugin(),
+        Network.getCommandManager().addCommand(BasicProxy.getPlugin(),
                 "supportmsg", List.of("supportmessage", "supportmessages", "supportmsgs", "smsg"),
                 this,
                 Plugin.SUPPORT);

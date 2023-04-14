@@ -6,18 +6,11 @@ package de.timesnake.basic.proxy.util;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.scheduler.ScheduledTask;
-import de.timesnake.basic.proxy.core.group.DisplayGroup;
-import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
 import de.timesnake.basic.proxy.core.punishment.PunishmentManager;
 import de.timesnake.basic.proxy.core.server.ServerCmd;
-import de.timesnake.basic.proxy.util.chat.CommandHandler;
-import de.timesnake.basic.proxy.util.server.BuildServer;
-import de.timesnake.basic.proxy.util.server.GameServer;
-import de.timesnake.basic.proxy.util.server.LobbyServer;
-import de.timesnake.basic.proxy.util.server.LoungeServer;
+import de.timesnake.basic.proxy.util.chat.CommandManager;
 import de.timesnake.basic.proxy.util.server.Server;
-import de.timesnake.basic.proxy.util.server.TmpGameServer;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.proxy.channel.ProxyChannel;
@@ -33,8 +26,8 @@ import de.timesnake.library.network.ServerCreationResult;
 import de.timesnake.library.network.ServerInitResult;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -94,38 +87,6 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
         return network.isUserOnline(uuid);
     }
 
-    public static PermGroup getPermGroup(String group) {
-        return network.getPermGroup(group);
-    }
-
-    public static Collection<PermGroup> getPermGroups() {
-        return network.getPermGroups();
-    }
-
-    public static DisplayGroup getDisplayGroup(String name) {
-        return network.getDisplayGroup(name);
-    }
-
-    public static Collection<DisplayGroup> getDisplayGroups() {
-        return network.getDisplayGroups();
-    }
-
-    public static PermGroup getGuestPermGroup() {
-        return network.getGuestPermGroup();
-    }
-
-    public static DisplayGroup getGuestDisplayGroup() {
-        return network.getGuestDisplayGroup();
-    }
-
-    public static PermGroup getMemberPermGroup() {
-        return network.getMemberPermGroup();
-    }
-
-    public static DisplayGroup getMemberDisplayGroup() {
-        return network.getMemberDisplayGroup();
-    }
-
     public static Map<String, Path> getTmpDirsByServerName() {
         return network.getTmpDirsByServerName();
     }
@@ -172,31 +133,6 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
         return network.createTmpServer(server, copyWorlds, syncPlayerData);
     }
 
-    public static LobbyServer addLobby(int port, String name, Path folderPath,
-            NetworkServer networkServer) {
-        return network.addLobby(port, name, folderPath, networkServer);
-    }
-
-    public static GameServer addGame(int port, String name, String task, Path folderPath,
-            NetworkServer networkServer) {
-        return network.addGame(port, name, task, folderPath, networkServer);
-    }
-
-    public static LoungeServer addLounge(int port, String name, Path folderPath,
-            NetworkServer networkServer) {
-        return network.addLounge(port, name, folderPath, networkServer);
-    }
-
-    public static TmpGameServer addTempGame(int port, String name, String task, Path folderPath,
-            NetworkServer networkServer) {
-        return network.addTempGame(port, name, task, folderPath, networkServer);
-    }
-
-    public static BuildServer addBuild(int port, String name, String task, Path folderPath,
-            NetworkServer networkServer) {
-        return network.addBuild(port, name, task, folderPath, networkServer);
-    }
-
     public static void sendUserToServer(User user, String server) {
         network.sendUserToServer(user, server);
     }
@@ -225,15 +161,15 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
         network.setWork(isWork);
     }
 
-    public static ArrayList<User> getNetworkMessageListeners() {
+    public static List<User> getNetworkMessageListeners() {
         return network.getNetworkMessageListeners();
     }
 
-    public static ArrayList<User> getPrivateMessageListeners() {
+    public static List<User> getPrivateMessageListeners() {
         return network.getPrivateMessageListeners();
     }
 
-    public static ArrayList<User> getSupportMessageListeners() {
+    public static List<User> getSupportMessageListeners() {
         return network.getSupportMessageListeners();
     }
 
@@ -261,12 +197,8 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
         network.removeSupportMessageListener(user);
     }
 
-    public static PermGroup getGuestGroup() {
-        return network.getGuestPermGroup();
-    }
-
-    public static PermGroup getMemberGroup() {
-        return network.getMemberPermGroup();
+    public static GroupManager getGroupManager() {
+        return network.getGroupManager();
     }
 
     public static void runCommand(String command) {
@@ -289,26 +221,30 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
         return network.getMaxPlayersBuild();
     }
 
-    public static CommandHandler getCommandHandler() {
-        return network.getCommandHandler();
+    public static CommandManager getCommandManager() {
+        return network.getCommandManager();
     }
 
     public static PermissionManager getPermissionHandler() {
         return network.getPermissionHandler();
     }
 
+    @Deprecated
     public static void printText(Plugin plugin, String text, String... subPlugins) {
         network.printText(plugin, text, subPlugins);
     }
 
+    @Deprecated
     public static void printText(Plugin plugin, Component text, String... subPlugins) {
         network.printText(plugin, text, subPlugins);
     }
 
+    @Deprecated
     public static void printWarning(Plugin plugin, String warning, String... subPlugins) {
         network.printWarning(plugin, warning, subPlugins);
     }
 
+    @Deprecated
     public static void printWarning(Plugin plugin, Component text, String... subPlugins) {
         network.printText(plugin, text, subPlugins);
     }

@@ -90,7 +90,7 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
     private void handleGroupPermissionCmd(Sender sender, Arguments<Argument> args) {
         if (args.isLengthHigherEquals(4, true)) {
             String groupName = args.getString(1).toLowerCase();
-            PermGroup group = Network.getPermGroup(groupName);
+            PermGroup group = Network.getGroupManager().getPermGroup(groupName);
             switch (args.getString(2).toLowerCase()) {
                 case "create" -> {
                     if (args.isLengthEquals(4, true) && args.get(3).isInt(true)) {
@@ -133,7 +133,7 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
         }
         if (args.getString(0).equalsIgnoreCase("user")) {
             if (length == 2) {
-                return Network.getCommandHandler().getPlayerNames();
+                return Network.getCommandManager().getPlayerNames();
             }
             if (length == 3) {
                 return List.of("add", "remove", "setgroup", "removegroup");
@@ -142,7 +142,7 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
                 if (args.getString(2).equalsIgnoreCase("setgroup") || args.getString(2)
                         .equalsIgnoreCase("removegroup"
                         )) {
-                    return Network.getCommandHandler().getPermGroupNames();
+                    return Network.getCommandManager().getPermGroupNames();
                 }
             }
             return null;
@@ -150,7 +150,7 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
 
         if (args.getString(0).equalsIgnoreCase("group")) {
             if (length == 2) {
-                return Network.getCommandHandler().getPermGroupNames();
+                return Network.getCommandManager().getPermGroupNames();
             }
             if (length == 3) {
                 return List.of("add", "remove", "create", "delete", "setinherit", "removeinherit");
@@ -160,7 +160,7 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
                 if (args.getString(3).equalsIgnoreCase("setinherit") || args.getString(3)
                         .equalsIgnoreCase(
                                 "removeinherit")) {
-                    return Network.getCommandHandler().getPermGroupNames();
+                    return Network.getCommandManager().getPermGroupNames();
                 }
             }
             return null;

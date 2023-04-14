@@ -9,8 +9,6 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.channel.ChannelPingPong;
 import de.timesnake.basic.proxy.core.file.CmdFile;
 import de.timesnake.basic.proxy.core.file.Config;
-import de.timesnake.basic.proxy.core.group.DisplayGroup;
-import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.core.network.AutoShutdown;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
@@ -18,21 +16,14 @@ import de.timesnake.basic.proxy.core.punishment.PunishmentManager;
 import de.timesnake.basic.proxy.core.server.ServerCmd;
 import de.timesnake.basic.proxy.core.support.SupportManager;
 import de.timesnake.basic.proxy.core.user.UserManager;
-import de.timesnake.basic.proxy.util.chat.CommandHandler;
-import de.timesnake.basic.proxy.util.server.BuildServer;
-import de.timesnake.basic.proxy.util.server.GameServer;
-import de.timesnake.basic.proxy.util.server.LobbyServer;
-import de.timesnake.basic.proxy.util.server.LoungeServer;
+import de.timesnake.basic.proxy.util.chat.CommandManager;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.server.ServerManager;
-import de.timesnake.basic.proxy.util.server.TmpGameServer;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.core.Channel;
 import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.database.util.Database;
-import de.timesnake.database.util.group.DbDisplayGroup;
-import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Tuple;
@@ -47,10 +38,9 @@ import de.timesnake.library.network.ServerCreationResult;
 import de.timesnake.library.network.ServerInitResult;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -67,17 +57,15 @@ public class NetworkManager {
 
     private static final NetworkManager instance = new NetworkManager();
 
-    private final HashMap<String, PermGroup> permGroups = new HashMap<>();
-    private final HashMap<String, DisplayGroup> displayGroups = new HashMap<>();
 
     private final ConcurrentHashMap<UUID, User> users = new ConcurrentHashMap<>();
 
-    private final ArrayList<User> networkMessageListeners = new ArrayList<>();
-    private final ArrayList<User> privateMessageListeners = new ArrayList<>();
-    private final ArrayList<User> supportMessageListeners = new ArrayList<>();
+    private final LinkedList<User> networkMessageListeners = new LinkedList<>();
+    private final LinkedList<User> privateMessageListeners = new LinkedList<>();
+    private final LinkedList<User> supportMessageListeners = new LinkedList<>();
 
     private TimeDownParser timeDownParser;
-    private final CommandHandler commandHandler = new CommandHandler();
+    private final CommandManager commandManager = new CommandManager();
     private final PermissionManager permissionManager = new PermissionManager();
     private final ServerCmd serverCmd = new ServerCmd();
     private final ChannelPingPong channelPingPong = new ChannelPingPong();
@@ -88,11 +76,11 @@ public class NetworkManager {
     private SupportManager supportManager;
     private String velocitySecret;
     private boolean tmuxEnabled;
-    private CmdFile cmdFile;
-    private Config config;
     private Path networkPath;
     private NetworkUtils networkUtils;
     private PunishmentManager punishmentManager;
+
+    private GroupManager groupManager;
 
     private ServerManager serverManager;
 
@@ -102,15 +90,17 @@ public class NetworkManager {
     public void onEnable() {
         this.timeDownParser = this.initTimeDownParser();
         this.userManager = new UserManager();
+        this.groupManager = new GroupManager();
+        this.groupManager.loadGroups();
 
-        this.config = new Config();
-        this.networkPath = Path.of(this.config.getNetworkPath());
+        Config config = new Config();
+        this.networkPath = Path.of(config.getNetworkPath());
         Database.getNetwork()
                 .addNetworkFile("templates", this.networkPath.resolve("templates").toFile());
         Database.getNetwork().addNetworkFile("network", this.networkPath.toFile());
 
-        this.velocitySecret = this.config.getVelocitySecret();
-        this.tmuxEnabled = this.config.isTmuxEnabled();
+        this.velocitySecret = config.getVelocitySecret();
+        this.tmuxEnabled = config.isTmuxEnabled();
 
         if (!Database.getGroups().containsPermGroup(Network.GUEST_PERM_GROUP_NAME)) {
             Database.getGroups()
@@ -136,23 +126,6 @@ public class NetworkManager {
 
         this.punishmentManager = new PunishmentManager();
 
-        for (DbPermGroup dbGroup : Database.getGroups().getPermGroups()) {
-            PermGroup group = new PermGroup(dbGroup);
-            this.permGroups.put(group.getName(), group);
-        }
-
-        ArrayList<PermGroup> groups = new ArrayList<>(this.getPermGroups());
-        groups.sort(PermGroup::compareTo);
-        groups.sort(Comparator.reverseOrder());
-        for (PermGroup group : groups) {
-            group.updatePermissions(false);
-        }
-
-        for (DbDisplayGroup dbGroup : Database.getGroups().getDisplayGroups()) {
-            DisplayGroup group = new DisplayGroup(dbGroup);
-            this.displayGroups.put(group.getName(), group);
-        }
-
         maxPlayersLobby = config.getMaxPlayersLobby();
         maxPlayersBuild = config.getMaxPlayersBuild();
 
@@ -166,8 +139,8 @@ public class NetworkManager {
         this.autoShutdown = new AutoShutdown();
         this.autoShutdown.start(AutoShutdown.START_TIME);
 
-        this.cmdFile = new CmdFile();
-        this.cmdFile.executeStartCommands();
+        CmdFile cmdFile = new CmdFile();
+        cmdFile.executeStartCommands();
 
         this.networkUtils = new NetworkUtils(this.networkPath);
 
@@ -224,22 +197,6 @@ public class NetworkManager {
         return users.containsKey(uuid);
     }
 
-    public PermGroup getPermGroup(String name) {
-        return permGroups.get(name);
-    }
-
-    public DisplayGroup getDisplayGroup(String name) {
-        return this.displayGroups.get(name);
-    }
-
-    public Collection<PermGroup> getPermGroups() {
-        return permGroups.values();
-    }
-
-    public Collection<DisplayGroup> getDisplayGroups() {
-        return displayGroups.values();
-    }
-
     public Collection<User> getUsers() {
         return users.values();
     }
@@ -272,15 +229,15 @@ public class NetworkManager {
         this.isWork = isWork;
     }
 
-    public ArrayList<User> getNetworkMessageListeners() {
+    public List<User> getNetworkMessageListeners() {
         return networkMessageListeners;
     }
 
-    public ArrayList<User> getPrivateMessageListeners() {
+    public List<User> getPrivateMessageListeners() {
         return privateMessageListeners;
     }
 
-    public ArrayList<User> getSupportMessageListeners() {
+    public List<User> getSupportMessageListeners() {
         return supportMessageListeners;
     }
 
@@ -308,22 +265,6 @@ public class NetworkManager {
         supportMessageListeners.remove(user);
     }
 
-    public PermGroup getGuestPermGroup() {
-        return this.permGroups.get(Network.GUEST_PERM_GROUP_NAME);
-    }
-
-    public DisplayGroup getGuestDisplayGroup() {
-        return this.displayGroups.get(Network.GUEST_DISPLAY_GROUP_NAME);
-    }
-
-    public PermGroup getMemberPermGroup() {
-        return this.permGroups.get(Network.MEMBER_PERM_GROUP_NAME);
-    }
-
-    public DisplayGroup getMemberDisplayGroup() {
-        return this.displayGroups.get(Network.MEMBER_DISPLAY_GROUP_NAME);
-    }
-
     public ScheduledTask runTaskLater(Task task, Duration delay) {
         return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run)
                 .delay(delay).schedule();
@@ -334,6 +275,7 @@ public class NetworkManager {
                 .schedule();
     }
 
+    @Deprecated
     public final void printText(Plugin plugin, String text, String... subPlugins) {
         StringBuilder sb = new StringBuilder("[" + plugin.getName() + "]");
         for (String subPlugin : subPlugins) {
@@ -345,11 +287,13 @@ public class NetworkManager {
         BasicProxy.getLogger().info(sb.toString());
     }
 
+    @Deprecated
     public final void printText(Plugin plugin, Component text, String... subPlugins) {
         this.printText(plugin, PlainTextComponentSerializer.plainText().serialize(text),
                 subPlugins);
     }
 
+    @Deprecated
     public final void printWarning(Plugin plugin, String warning, String... subPlugins) {
         StringBuilder sb = new StringBuilder("[" + plugin.getName() + "]");
         for (String subPlugin : subPlugins) {
@@ -359,11 +303,6 @@ public class NetworkManager {
         }
         sb.append(" WARNING ").append(warning);
         BasicProxy.getLogger().warning(sb.toString());
-    }
-
-    public final void printWarning(Plugin plugin, Component text, String... subPlugins) {
-        this.printWarning(plugin, PlainTextComponentSerializer.plainText().serialize(text),
-                subPlugins);
     }
 
     public void runCommand(String command) {
@@ -387,8 +326,8 @@ public class NetworkManager {
         return maxPlayersBuild;
     }
 
-    public CommandHandler getCommandHandler() {
-        return this.commandHandler;
+    public CommandManager getCommandManager() {
+        return this.commandManager;
     }
 
     public PermissionManager getPermissionHandler() {
@@ -417,6 +356,10 @@ public class NetworkManager {
 
     public ServerManager getServerManager() {
         return serverManager;
+    }
+
+    public GroupManager getGroupManager() {
+        return this.groupManager;
     }
 
     // server manager
@@ -509,31 +452,6 @@ public class NetworkManager {
 
     public int nextEmptyPort() {
         return getServerManager().nextEmptyPort();
-    }
-
-    public LobbyServer addLobby(int port, String name, Path folderPath,
-            NetworkServer networkServer) {
-        return getServerManager().addLobby(port, name, folderPath, networkServer);
-    }
-
-    public GameServer addGame(int port, String name, String task, Path folderPath,
-            NetworkServer networkServer) {
-        return getServerManager().addGame(port, name, task, folderPath, networkServer);
-    }
-
-    public LoungeServer addLounge(int port, String name, Path folderPath,
-            NetworkServer networkServer) {
-        return getServerManager().addLounge(port, name, folderPath, networkServer);
-    }
-
-    public TmpGameServer addTempGame(int port, String name, String task, Path folderPath,
-            NetworkServer networkServer) {
-        return getServerManager().addTempGame(port, name, task, folderPath, networkServer);
-    }
-
-    public BuildServer addBuild(int port, String name, String task, Path folderPath,
-            NetworkServer networkServer) {
-        return getServerManager().addBuild(port, name, task, folderPath, networkServer);
     }
 
     public Map<String, Path> getTmpDirsByServerName() {

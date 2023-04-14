@@ -4,16 +4,12 @@
 
 package de.timesnake.basic.proxy.core.server;
 
-import static de.timesnake.library.chat.ExTextColor.PERSONAL;
-import static de.timesnake.library.chat.ExTextColor.WARNING;
-import static net.kyori.adventure.text.Component.text;
-
-import de.timesnake.basic.proxy.core.server.GameCmd.Context;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.LoungeServer;
+import de.timesnake.basic.proxy.util.server.NonTmpGameServer;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.server.TmpGameServer;
 import de.timesnake.database.util.Database;
@@ -39,12 +35,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-public class GameCmd extends IncCommandListener<Sender, Argument, Context> {
+public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandContext> {
 
     private final Code permCode = Plugin.GAME.createPermssionCode("network.start.game");
 
     @Override
-    public Context onCommand(Sender sender, ExCommand<Sender, Argument> cmd) {
+    public IncCommandContext onCommand(Sender sender, ExCommand<Sender, Argument> cmd) {
 
         sender.hasPermissionElseExit(this.permCode);
 
@@ -54,71 +50,71 @@ public class GameCmd extends IncCommandListener<Sender, Argument, Context> {
         this.sendSelectionTo(sender, this.createSelection(GAME)
                 .addValues(games));
 
-        return new Context();
+        return new IncCommandContext();
     }
 
     @Override
-    public <V> boolean onUpdate(Sender sender, Context context, IncCommandOption<V> option,
-            V value) {
-        System.out.println(option.getName());
-
+    public <V> boolean onUpdate(Sender sender, IncCommandContext context,
+            IncCommandOption<V> option, V value) {
         if (GAME.equals(option)) {
-            this.checkMaxPlayers(sender, context);
+            return this.checkMaxPlayers(sender, context);
         } else if (MAX_PLAYERS.equals(option)) {
-            this.checkMaps(sender, context);
+            return this.checkMaps(sender, context);
         } else if (MAPS.equals(option)) {
-            this.checkKits(sender, context);
+            return this.checkKits(sender, context);
         } else if (KITS.equals(option)) {
-            this.checkTeamsSizes(sender, context);
+            return this.checkTeamsSizes(sender, context);
         } else if (TEAM_SIZE.equals(option)) {
-            this.checkOldPvP(sender, context);
+            return this.checkOldPvP(sender, context);
         } else if (OLD_PVP.equals(option)) {
-            this.startGame(sender, context);
-            return true;
+            return this.startGame(sender, context);
         }
 
         return false;
     }
 
-    private void checkMaxPlayers(Sender sender, Context context) {
-        if (context.getGame() instanceof DbTmpGame game) {
+    private boolean checkMaxPlayers(Sender sender, IncCommandContext context) {
+        if (context.getOption(GAME) instanceof DbTmpGame game) {
             this.sendSelectionTo(sender, this.createSelection(MAX_PLAYERS)
                     .addValues(IntStream.range(game.getMinPlayerNumber(), game.getMaxPlayers() + 1)
                             .mapToObj(String::valueOf).toList()));
-        } else if (context.getGame() instanceof DbNonTmpGame game) {
+        } else if (context.getOption(GAME) instanceof DbNonTmpGame game) {
             this.sendSelectionTo(sender, this.createSelection(MAX_PLAYERS)
                     .addValues(IntStream.range(2, game.getMaxPlayers() + 1)
                             .mapToObj(String::valueOf).toList()));
         }
+        return false;
     }
 
-    private void checkMaps(Sender sender, Context context) {
+    private boolean checkMaps(Sender sender, IncCommandContext context) {
         Availability maps = context.getOption(GAME).getInfo().getMapAvailability();
         if (maps == Availability.ALLOWED) {
             this.sendSelectionTo(sender, this.createSelection(MAPS).addValues("yes", "no"));
         } else if (maps == Availability.REQUIRED) {
             context.addOption(MAPS, true);
-            this.checkKits(sender, context);
+            return this.checkKits(sender, context);
         } else if (maps == Availability.FORBIDDEN) {
             context.addOption(MAPS, false);
-            this.checkKits(sender, context);
+            return this.checkKits(sender, context);
         }
+        return false;
     }
 
-    private void checkKits(Sender sender, Context context) {
+    private boolean checkKits(Sender sender, IncCommandContext context) {
         Availability kits = context.getOption(GAME).getInfo().getKitAvailability();
         if (kits == Availability.ALLOWED) {
             this.sendSelectionTo(sender, this.createSelection(KITS).addValues("yes", "no"));
         } else if (kits == Availability.REQUIRED) {
             context.addOption(KITS, true);
-            this.checkTeamsSizes(sender, context);
+            return this.checkTeamsSizes(sender, context);
         } else if (kits == Availability.FORBIDDEN) {
             context.addOption(KITS, false);
-            this.checkTeamsSizes(sender, context);
+            return this.checkTeamsSizes(sender, context);
         }
+        return false;
     }
 
-    private void checkTeamsSizes(Sender sender, Context context) {
+    private boolean checkTeamsSizes(Sender sender, IncCommandContext context) {
         if (context.getOption(GAME) instanceof DbTmpGame game) {
             LinkedList<String> sizes = new LinkedList<>();
 
@@ -128,8 +124,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, Context> {
 
             if (teams.size() <= 1) {
                 context.addOption(TEAM_MERGE, false);
-                this.checkOldPvP(sender, context);
-                return;
+                return this.checkOldPvP(sender, context);
             }
 
             int max = context.getOption(MAX_PLAYERS);
@@ -152,111 +147,169 @@ public class GameCmd extends IncCommandListener<Sender, Argument, Context> {
             this.sendSelectionTo(sender, this.createSelection(TEAM_SIZE)
                     .addValues(sizes));
         } else if (context.getOption(GAME) instanceof DbNonTmpGame) {
-            this.checkOldPvP(sender, context);
+            return this.checkOldPvP(sender, context);
         }
+        return false;
     }
 
-    private void checkOldPvP(Sender sender, Context context) {
+    private boolean checkOldPvP(Sender sender, IncCommandContext context) {
         Type.Availability oldPvP = context.getOption(GAME).getInfo().getOldPvPAvailability();
         if (oldPvP == Availability.ALLOWED) {
             this.sendSelectionTo(sender, this.createSelection(OLD_PVP)
                     .addValues("yes", "no"));
+            return false;
         } else if (oldPvP == Availability.REQUIRED) {
             context.addOption(OLD_PVP, true);
-            this.startGame(sender, context);
+            return this.startGame(sender, context);
         } else if (oldPvP == Availability.FORBIDDEN) {
             context.addOption(OLD_PVP, false);
-            this.startGame(sender, context);
+            return this.startGame(sender, context);
         }
+        return false;
     }
 
-    private void startGame(Sender sender, Context context) {
-        DbTmpGame game = (DbTmpGame) context.getOption(GAME);
-        String gameName = game.getInfo().getName();
-        Boolean mapsEnabled = context.getOption(MAPS);
-        Boolean kitsEnabled = context.getOption(KITS);
-        Integer maxServerPlayers = context.getOption(MAX_PLAYERS);
-        Integer teamSize = context.getOption(TEAM_SIZE);
-        Integer teamAmount = teamSize != null ?
-                (int) Math.ceil(maxServerPlayers / ((double) teamSize)) : null;
-        Boolean teamMerging = context.getOption(TEAM_MERGE);
-        Boolean oldPvP = context.getOption(OLD_PVP);
+    private boolean startGame(Sender sender, IncCommandContext context) {
 
-        Network.runTaskAsync(() -> {
-            sender.sendPluginMessage(text("Creating server...", PERSONAL));
-            int loungePort = Network.nextEmptyPort();
-            NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
-                    Type.Server.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort,
-                    Type.Server.LOUNGE,
-                    Network.getVelocitySecret());
+        if (context.getOption(GAME) instanceof DbTmpGame game) {
+            String gameName = game.getInfo().getName();
+            Boolean mapsEnabled = context.getOption(MAPS);
+            Boolean kitsEnabled = context.getOption(KITS);
+            Integer maxServerPlayers = context.getOption(MAX_PLAYERS);
+            Integer teamSize = context.getOption(TEAM_SIZE);
+            Integer teamAmount = teamSize != null ?
+                    (int) Math.ceil(maxServerPlayers / ((double) teamSize)) : null;
+            Boolean teamMerging = context.getOption(TEAM_MERGE);
+            Boolean oldPvP = context.getOption(OLD_PVP);
 
-            Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.createTmpServer(
-                    loungeNetworkServer, true, false);
+            Network.runTaskAsync(() -> {
+                sender.sendPluginTDMessage("§sCreating server...");
 
-            if (!loungeResult.getA().isSuccessful()) {
-                sender.sendPluginMessage(text("Error while creating a" + " lounge server! " +
-                                "Please contact an administrator ("
-                                + ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")",
-                        WARNING));
-                return;
-            }
+                int loungePort = Network.nextEmptyPort();
+                NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
+                        Type.Server.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort,
+                        Type.Server.LOUNGE,
+                        Network.getVelocitySecret());
 
-            int tempGamePort = Network.nextEmptyPort();
+                Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.createTmpServer(
+                        loungeNetworkServer, true, false);
 
-            NetworkServer gameNetworkServer = new NetworkServer(
-                    (tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
-                    tempGamePort, Type.Server.TEMP_GAME, Network.getVelocitySecret()).setTask(
-                    gameName);
+                if (!loungeResult.getA().isSuccessful()) {
+                    sender.sendPluginTDMessage("§wError while creating a" + " lounge server! " +
+                            "Please contact an administrator ("
+                            + ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")");
+                    return;
+                }
 
-            if (game.getInfo().getPlayerTrackingRange() != null) {
-                gameNetworkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());
-            }
+                int tempGamePort = Network.nextEmptyPort();
 
-            if (game.getInfo().getMaxHealth() != null) {
-                gameNetworkServer.setMaxHealth(game.getInfo().getMaxHealth());
-            }
+                NetworkServer gameNetworkServer = new NetworkServer(
+                        (tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
+                        tempGamePort, Type.Server.TEMP_GAME, Network.getVelocitySecret()).setTask(
+                        gameName);
 
-            Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.createTmpServer(
-                    gameNetworkServer, mapsEnabled, false);
-            if (!tempServerResult.getA().isSuccessful()) {
-                sender.sendPluginMessage(text("Error while creating a" + " " + gameName
-                                + " server! Please contact an administrator (" +
-                                ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")",
-                        WARNING));
-                return;
-            }
+                if (game.getInfo().getPlayerTrackingRange() != null) {
+                    gameNetworkServer.setPlayerTrackingRange(
+                            game.getInfo().getPlayerTrackingRange());
+                }
 
-            LoungeServer loungeServer = (LoungeServer) loungeResult.getB().get();
-            TmpGameServer tmpGameServer = ((TmpGameServer) tempServerResult.getB().get());
+                if (game.getInfo().getMaxHealth() != null) {
+                    gameNetworkServer.setMaxHealth(game.getInfo().getMaxHealth());
+                }
 
-            loungeServer.setTaskSynchronized(gameName);
-            loungeServer.setMaxPlayers(maxServerPlayers);
+                Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.createTmpServer(
+                        gameNetworkServer, mapsEnabled, false);
+                if (!tempServerResult.getA().isSuccessful()) {
+                    sender.sendPluginTDMessage("§wError while creating a" + " " + gameName
+                            + " server! Please contact an administrator (" +
+                            ((ServerCreationResult.Fail) tempServerResult.getA()).getReason()
+                            + ")");
+                    return;
+                }
 
-            tmpGameServer.setTaskSynchronized(gameName);
-            tmpGameServer.setMapsEnabled(mapsEnabled);
-            tmpGameServer.setKitsEnabled(kitsEnabled);
-            tmpGameServer.setMaxPlayers(maxServerPlayers);
-            tmpGameServer.setTeamAmount(teamAmount);
-            tmpGameServer.setMapsEnabled(mapsEnabled);
-            tmpGameServer.setTeamMerging(teamMerging);
-            tmpGameServer.setMaxPlayersPerTeam(teamSize);
-            tmpGameServer.setPvP(oldPvP);
-            tmpGameServer.setTwinServer((DbLoungeServer) loungeServer.getDatabase());
+                LoungeServer loungeServer = (LoungeServer) loungeResult.getB().get();
+                TmpGameServer tmpGameServer = ((TmpGameServer) tempServerResult.getB().get());
 
-            sender.sendPluginTDMessage("§sStarted game §v" + gameName);
-            sender.sendPluginTDMessage("§sGame server: §v" + tmpGameServer.getName());
-            sender.sendPluginTDMessage("§sLounge server: §v" + loungeServer.getName());
-            sender.sendPluginTDMessage("§sMax players: §v" + "" + maxServerPlayers);
-            sender.sendPluginTDMessage("§sMaps: §v" + mapsEnabled);
-            sender.sendPluginTDMessage("§sKits: §v" + kitsEnabled);
-            sender.sendPluginTDMessage("§sTeam amount: §v" + teamAmount);
-            sender.sendPluginTDMessage("§sTeam merging: §v" + teamMerging);
-            sender.sendPluginTDMessage("§sTeam size: §v" + "" + teamSize);
-            sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
+                loungeServer.setTaskSynchronized(gameName);
+                loungeServer.setMaxPlayers(maxServerPlayers);
 
-            Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);
+                tmpGameServer.setTaskSynchronized(gameName);
+                tmpGameServer.setMapsEnabled(mapsEnabled);
+                tmpGameServer.setKitsEnabled(kitsEnabled);
+                tmpGameServer.setMaxPlayers(maxServerPlayers);
+                tmpGameServer.setTeamAmount(teamAmount);
+                tmpGameServer.setMapsEnabled(mapsEnabled);
+                tmpGameServer.setTeamMerging(teamMerging);
+                tmpGameServer.setMaxPlayersPerTeam(teamSize);
+                tmpGameServer.setPvP(oldPvP);
+                tmpGameServer.setTwinServer((DbLoungeServer) loungeServer.getDatabase());
 
-        });
+                sender.sendPluginTDMessage("§sStarted game §v" + gameName);
+                sender.sendPluginTDMessage("§sGame server: §v" + tmpGameServer.getName());
+                sender.sendPluginTDMessage("§sLounge server: §v" + loungeServer.getName());
+                sender.sendPluginTDMessage("§sMax players: §v" + maxServerPlayers);
+                sender.sendPluginTDMessage("§sMaps: §v" + mapsEnabled);
+                sender.sendPluginTDMessage("§sKits: §v" + kitsEnabled);
+                sender.sendPluginTDMessage("§sTeam amount: §v" + teamAmount);
+                sender.sendPluginTDMessage("§sTeam merging: §v" + teamMerging);
+                sender.sendPluginTDMessage("§sTeam size: §v" + teamSize);
+                sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
+
+                Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);
+
+            });
+        } else if (context.getOption(GAME) instanceof DbNonTmpGame game) {
+            String gameName = game.getName();
+            boolean netherEnd = game.isNetherAndEndAllowed();
+            Integer viewDistance = game.getViewDistance();
+            Boolean mapsEnabled = context.getOption(MAPS);
+            Integer maxPlayers = context.getOption(MAX_PLAYERS);
+            Boolean oldPvP = context.getOption(OLD_PVP);
+
+            Network.runTaskAsync(() -> {
+                sender.sendPluginTDMessage("§sCreating server...");
+
+                int port = Network.nextEmptyPort();
+                NetworkServer networkServer = new NetworkServer(
+                        (port % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
+                        port, Type.Server.GAME, Network.getVelocitySecret()).setTask(gameName)
+                        .allowEnd(netherEnd).allowNether(netherEnd);
+
+                if (viewDistance != null) {
+                    networkServer.setViewDistance(viewDistance).setSimulationDistance(viewDistance);
+                }
+
+                if (game.getInfo().getPlayerTrackingRange() != null) {
+                    networkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());
+                }
+
+                if (game.getInfo().getMaxHealth() != null) {
+                    networkServer.setMaxHealth(game.getInfo().getMaxHealth());
+                }
+
+                Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(
+                        networkServer, mapsEnabled, false);
+                if (!result.getA().isSuccessful()) {
+                    sender.sendPluginTDMessage("§wError while creating a" + " game server! " +
+                            "Please contact an administrator ("
+                            + ((ServerCreationResult.Fail) result.getA()).getReason() + ")");
+                    return;
+                }
+
+                NonTmpGameServer server = (NonTmpGameServer) result.getB().get();
+
+                server.setTaskSynchronized(gameName);
+                server.setMaxPlayers(maxPlayers);
+
+                sender.sendPluginTDMessage("§sStarted game §v" + gameName);
+                sender.sendPluginTDMessage("§sGame server: §v" + server.getName());
+                sender.sendPluginTDMessage("§sMax players: §v" + maxPlayers);
+                sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
+
+                Network.getBukkitCmdHandler().handleServerCmd(sender, server);
+            });
+        }
+
+        return true;
     }
 
     @Override
@@ -267,13 +320,6 @@ public class GameCmd extends IncCommandListener<Sender, Argument, Context> {
     @Override
     public String getCommand() {
         return "game";
-    }
-
-    public static class Context extends IncCommandContext {
-
-        public DbGame getGame() {
-            return super.getOption(GAME);
-        }
     }
 
     private static final IncCommandOption<DbGame> GAME = new IncCommandOption<>("game", "Game") {

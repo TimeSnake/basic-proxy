@@ -622,16 +622,16 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
         if (length == 2) {
             if (args.getString(0).equalsIgnoreCase("server")) {
-                return Network.getCommandHandler().getServerNames();
+                return Network.getCommandManager().getServerNames();
             }
 
             if (args.getString(0).equalsIgnoreCase("game")) {
-                return Network.getCommandHandler().getGameNames();
+                return Network.getCommandManager().getGameNames();
             }
 
             if (args.getString(0).equalsIgnoreCase("own_game")
                     || args.getString(0).equalsIgnoreCase("public_game")) {
-                return Network.getCommandHandler().getGameNames();
+                return Network.getCommandManager().getGameNames();
             }
         }
 

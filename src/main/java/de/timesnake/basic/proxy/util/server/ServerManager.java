@@ -23,6 +23,7 @@ import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.ServerCreationResult;
+import de.timesnake.library.network.ServerCreationResult.Fail;
 import de.timesnake.library.network.ServerInitResult;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -35,12 +36,15 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.io.FileUtils;
 
 public class ServerManager implements ChannelListener {
 
     private final MultiKeyMap<String, Integer, Server> servers = new MultiKeyMap<>();
     private final Map<String, Path> tmpDirsByServerName = new HashMap<>();
+
+    private final ReentrantLock serverCreationLock = new ReentrantLock();
 
     private int onlineLobbys = 0;
 
@@ -80,7 +84,6 @@ public class ServerManager implements ChannelListener {
         return servers.get2(port);
     }
 
-
     public Server getServer(String name) {
         return servers.get1(name);
     }
@@ -93,7 +96,6 @@ public class ServerManager implements ChannelListener {
         for (Server server : servers.values()) {
             server.setStatus(Database.getServers().getServer(server.getName()).getStatus(), false);
         }
-
     }
 
     public void updateServerTask(int port) {
@@ -102,12 +104,24 @@ public class ServerManager implements ChannelListener {
 
     public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
             boolean copyWorlds, boolean syncPlayerData, boolean registerServer) {
-        ServerCreationResult result = Network.getNetworkUtils()
-                .createServer(server, copyWorlds, syncPlayerData);
+        this.serverCreationLock.lock();
+
+        if (Network.getServer(server.getName()) != null) {
+            return new Tuple<>(new Fail("server already exists"), Optional.empty());
+        }
+
+        ServerCreationResult result;
         Optional<Server> serverOpt = Optional.empty();
-        if (result.isSuccessful()) {
-            Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-            serverOpt = Optional.ofNullable(this.addServer(server, serverPath, registerServer));
+
+        try {
+            result = Network.getNetworkUtils()
+                    .createServer(server, copyWorlds, syncPlayerData);
+            if (result.isSuccessful()) {
+                Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
+                serverOpt = Optional.ofNullable(this.addServer(server, serverPath, registerServer));
+            }
+        } finally {
+            this.serverCreationLock.unlock();
         }
         return new Tuple<>(result, serverOpt);
     }
@@ -119,32 +133,82 @@ public class ServerManager implements ChannelListener {
 
     public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,
             String name) {
-        return Network.getNetworkUtils().initPublicPlayerServer(type, task, name);
+        this.serverCreationLock.lock();
+
+        if (Network.getServer(name) != null) {
+            return new ServerInitResult.Fail("server already exists");
+        }
+
+        ServerInitResult result;
+
+        try {
+            result = Network.getNetworkUtils().initPublicPlayerServer(type, task, name);
+        } finally {
+            this.serverCreationLock.unlock();
+        }
+        return result;
     }
 
     public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task,
             String name) {
-        return Network.getNetworkUtils().initPlayerServer(uuid, type, task, name);
+        this.serverCreationLock.lock();
+
+        if (Network.getServer(name) != null) {
+            return new ServerInitResult.Fail("server already exists");
+        }
+
+        ServerInitResult result;
+
+        try {
+            result = Network.getNetworkUtils().initPlayerServer(uuid, type, task, name);
+        } finally {
+            this.serverCreationLock.unlock();
+        }
+        return result;
     }
 
     public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid,
             NetworkServer server) {
-        ServerCreationResult result = Network.getNetworkUtils().createPlayerServer(uuid, server);
+        this.serverCreationLock.lock();
+
+        if (Network.getServer(server.getName()) != null) {
+            return new Tuple<>(new Fail("server already exists"), Optional.empty());
+        }
+
+        ServerCreationResult result;
         Optional<Server> serverOpt = Optional.empty();
-        if (result.isSuccessful()) {
-            Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-            serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
+
+        try {
+            result = Network.getNetworkUtils().createPlayerServer(uuid, server);
+            if (result.isSuccessful()) {
+                Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
+                serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
+            }
+        } finally {
+            this.serverCreationLock.unlock();
         }
         return new Tuple<>(result, serverOpt);
     }
 
     public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(
             NetworkServer server) {
-        ServerCreationResult result = Network.getNetworkUtils().createPublicPlayerServer(server);
+        this.serverCreationLock.lock();
+
+        if (Network.getServer(server.getName()) != null) {
+            return new Tuple<>(new Fail("server already exists"), Optional.empty());
+        }
+
+        ServerCreationResult result;
         Optional<Server> serverOpt = Optional.empty();
-        if (result.isSuccessful()) {
-            Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-            serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
+
+        try {
+            result = Network.getNetworkUtils().createPublicPlayerServer(server);
+            if (result.isSuccessful()) {
+                Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
+                serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
+            }
+        } finally {
+            this.serverCreationLock.unlock();
         }
         return new Tuple<>(result, serverOpt);
     }

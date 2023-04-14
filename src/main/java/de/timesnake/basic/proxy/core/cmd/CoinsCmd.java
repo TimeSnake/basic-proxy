@@ -75,7 +75,7 @@ public class CoinsCmd implements CommandListener<Sender, Argument> {
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
             Arguments<Argument> args) {
         if (args.getLength() == 1) {
-            return Network.getCommandHandler().getPlayerNames();
+            return Network.getCommandManager().getPlayerNames();
         }
         if (args.getLength() == 2) {
             return List.of("add", "remove", "set", "reset");

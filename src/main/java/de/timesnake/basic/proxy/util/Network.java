@@ -50,13 +50,13 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
 
     public static final int WORLDS_PER_BUILD_SERVER = 10;
 
-    public static void broadcastMessage(String msg) {
-        network.broadcastMessage(msg);
-    }
-
     @Deprecated
     public static void broadcastMessage(Plugin plugin, String msg) {
         network.broadcastMessage(plugin, msg);
+    }
+
+    public static void broadcastTDMessage(Plugin plugin, String msg) {
+        network.broadcastTDMessage(plugin, msg);
     }
 
     public static void broadcastMessage(Plugin plugin, Component msg) {

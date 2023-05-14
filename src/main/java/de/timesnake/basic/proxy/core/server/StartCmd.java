@@ -258,7 +258,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
         if (!result.getA().isSuccessful()) {
             sender.sendPluginMessage(Component.text("Error while loading server (" +
-                    ((ServerCreationResult.Fail) result.getA()).getReason(), WARNING));
+                    ((ServerCreationResult.Fail) result.getA()).getReason() + ")", WARNING));
             return;
         }
 

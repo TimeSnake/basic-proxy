@@ -21,6 +21,7 @@ import de.timesnake.database.util.object.Type.Availability;
 import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import de.timesnake.library.extension.util.cmd.IncCommandContext;
 import de.timesnake.library.extension.util.cmd.IncCommandListener;
@@ -40,7 +41,8 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
     private final Code permCode = Plugin.GAME.createPermssionCode("network.start.game");
 
     @Override
-    public IncCommandContext onCommand(Sender sender, ExCommand<Sender, Argument> cmd) {
+    public IncCommandContext onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
 
         sender.hasPermissionElseExit(this.permCode);
 
@@ -51,6 +53,12 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
                 .addValues(games));
 
         return new IncCommandContext();
+    }
+
+    @Override
+    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+            Arguments<Argument> args) {
+        return List.of();
     }
 
     @Override
@@ -122,9 +130,11 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
             teams.sort(Integer::compareTo);
             teams.sort(Comparator.reverseOrder());
 
-            if (teams.size() <= 1) {
+            if (teams.size() == 0) {
                 context.addOption(TEAM_MERGE, false);
                 return this.checkOldPvP(sender, context);
+            } else if (teams.size() == 1) {
+                context.addOption(TEAM_SIZE, teams.get(0));
             }
 
             int max = context.getOption(MAX_PLAYERS);
@@ -337,7 +347,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
         @Override
         public Integer parseValue(String key) {
             if (key.equalsIgnoreCase("solo")) {
-                return 0;
+                return null;
             }
             return Integer.valueOf(key);
         }

@@ -22,6 +22,7 @@ import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.network.NetworkServer;
+import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
 import de.timesnake.library.network.ServerCreationResult.Fail;
 import de.timesnake.library.network.ServerInitResult;
@@ -103,7 +104,7 @@ public class ServerManager implements ChannelListener {
     }
 
     public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-            boolean copyWorlds, boolean syncPlayerData, boolean registerServer) {
+            CopyType copyType, boolean syncPlayerData, boolean registerServer) {
         this.serverCreationLock.lock();
 
         if (Network.getServer(server.getName()) != null) {
@@ -114,8 +115,7 @@ public class ServerManager implements ChannelListener {
         Optional<Server> serverOpt = Optional.empty();
 
         try {
-            result = Network.getNetworkUtils()
-                    .createServer(server, copyWorlds, syncPlayerData);
+            result = Network.getNetworkUtils().createServer(server, copyType, syncPlayerData);
             if (result.isSuccessful()) {
                 Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
                 serverOpt = Optional.ofNullable(this.addServer(server, serverPath, registerServer));
@@ -127,8 +127,8 @@ public class ServerManager implements ChannelListener {
     }
 
     public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-            boolean copyWorlds, boolean syncPlayerData) {
-        return this.createTmpServer(server, copyWorlds, syncPlayerData, true);
+            CopyType copyType, boolean syncPlayerData) {
+        return this.createTmpServer(server, copyType, syncPlayerData, true);
     }
 
     public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,

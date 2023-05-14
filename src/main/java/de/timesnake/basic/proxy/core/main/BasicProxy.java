@@ -56,9 +56,6 @@ import org.apache.commons.io.FileUtils;
         dependencies = {@Dependency(id = "database-proxy"), @Dependency(id = "channel-proxy")})
 public class BasicProxy {
 
-
-    public static final String DATA_PROTECTION_VERSION = "2.0";
-
     public static BasicProxy getPlugin() {
         return plugin;
     }
@@ -118,6 +115,9 @@ public class BasicProxy {
         Network.getCommandManager().addCommand(this, "unmute", List.of("netunmute"),
                 new PunishCmd(), Plugin.PUNISH);
         Network.getCommandManager().addCommand(this, "kick", List.of("netkick"),
+                new PunishCmd(), Plugin.PUNISH);
+
+        Network.getCommandManager().addCommand(this, "jail", List.of("netjail"),
                 new PunishCmd(), Plugin.PUNISH);
 
         Network.getCommandManager().addCommand(this, "start", new StartCmd(), Plugin.NETWORK);

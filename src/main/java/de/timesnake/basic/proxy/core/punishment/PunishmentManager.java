@@ -4,7 +4,6 @@
 
 package de.timesnake.basic.proxy.core.punishment;
 
-import static de.timesnake.library.chat.ExTextColor.PERSONAL;
 import static de.timesnake.library.chat.ExTextColor.VALUE;
 import static de.timesnake.library.chat.ExTextColor.WARNING;
 import static net.kyori.adventure.text.Component.newline;
@@ -21,55 +20,28 @@ import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-import net.kyori.adventure.text.Component;
 
 public class PunishmentManager {
 
-    private static LocalDateTime getTempBanDate(String dateToAdd, LocalDateTime date) {
-        int years = 0;
-        int months = 0;
-        int days = 0;
-        int hours = 0;
-        int minutes = 0;
-        int seconds = 0;
-        String[] splitDate = dateToAdd.split(";");
+    private static Duration parseDuration(String s) {
+        String[] plusParts = s.split("\\+");
 
-        for (String s : splitDate) {
-            if (s.toLowerCase().endsWith("sec")) {
-                seconds = getTimeFromString("sec", s);
-            } else if (s.toLowerCase().endsWith("min")) {
-                minutes = getTimeFromString("min", s);
-            } else if (s.toLowerCase().endsWith("hour")) {
-                hours = getTimeFromString("hour", s);
-            } else if (s.toLowerCase().endsWith("day")) {
-                days = getTimeFromString("day", s);
-            } else if (s.toLowerCase().endsWith("month")) {
-                months = getTimeFromString("month", s);
-            } else {
-                if (!s.toLowerCase().endsWith("year")) {
-                    return null;
-                }
+        long result = 0;
 
-                years = getTimeFromString("year", s);
+        for (String plusPart : plusParts) {
+            String[] multParts = plusPart.split("\\*");
+            long multResult = 1;
+            for (String multPart : multParts) {
+                multResult *= Integer.parseInt(multPart);
             }
+            result += multResult;
         }
 
-        return date
-                .plus(years, ChronoUnit.YEARS)
-                .plus(months, ChronoUnit.MONTHS)
-                .plus(days, ChronoUnit.DAYS)
-                .plus(hours, ChronoUnit.HOURS)
-                .plus(minutes, ChronoUnit.MINUTES)
-                .plus(seconds, ChronoUnit.SECONDS);
-    }
-
-    private static int getTimeFromString(String type, String time) {
-        time = time.replace(type, "");
-        return Integer.parseInt(time);
+        return Duration.ofSeconds(result);
     }
 
     public void unbanPlayer(UUID uuid) {
@@ -88,9 +60,7 @@ public class PunishmentManager {
             user.getPunishment().delete();
             Network.printText(Plugin.PUNISH, "Unbanned player " + uuid.toString() + " by system");
 
-            broadcastMessage(text("Player ", WARNING)
-                    .append(text(user.getName(), VALUE))
-                    .append(text(" was unbanned", WARNING)));
+            broadcastTDMessage("§v" + user.getName() + "§w was unbanned");
         }
 
     }
@@ -109,18 +79,12 @@ public class PunishmentManager {
         }
 
         if (!type.equals(Type.Punishment.BAN) && !type.equals(Type.Punishment.TEMP_BAN)) {
-
             sender.sendPluginMessage(text("This player is not banned ", WARNING)
                     .append(Chat.getMessageCode("H", 101, Plugin.PUNISH)));
         } else {
             user.getPunishment().delete();
-
-            sender.sendPluginMessage(text("You unbanned player ", PERSONAL)
-                    .append(text(user.getName(), VALUE)));
-
-            broadcastMessage(text("Player ", WARNING)
-                    .append(text(user.getName(), VALUE))
-                    .append(text(" was unbanned", WARNING)));
+            sender.sendPluginTDMessage("§sUnbanned player §v" + user.getName());
+            broadcastTDMessage("§v" + user.getName() + "§w was unbanned");
         }
     }
 
@@ -141,8 +105,8 @@ public class PunishmentManager {
     }
 
     private void banPlayerChecked(Sender sender, DbUser user, String reason) {
-        user.setPunishment(Type.Punishment.BAN, LocalDateTime.now(), sender.getName(), reason,
-                "All");
+        user.setPunishment(Type.Punishment.BAN, LocalDateTime.now(), Duration.ZERO,
+                sender.getName(), reason);
         String name = user.getName();
 
         for (Player p : BasicProxy.getServer().getAllPlayers()) {
@@ -153,15 +117,9 @@ public class PunishmentManager {
             }
         }
 
-        sender.sendPluginMessage(text("You banned ", PERSONAL)
-                .append(text(name, VALUE))
-                .append(text(" with reason: ", PERSONAL))
-                .append(text(reason, VALUE)));
+        sender.sendPluginTDMessage("§sBanned §v" + name + "§s with reason: §s" + reason);
 
-        broadcastMessage(text("Player ", WARNING)
-                .append(text(user.getName(), VALUE))
-                .append(text(" was banned with reason: ", WARNING))
-                .append(text(reason, VALUE)));
+        broadcastTDMessage("§v" + user.getName() + "§w was banned with reason: §v" + reason);
     }
 
     public void tempBanPlayer(Sender sender, DbUser user, String date, String reason) {
@@ -181,17 +139,19 @@ public class PunishmentManager {
 
     }
 
-    private void tempBanPlayerChecked(Sender sender, DbUser user, String date, String reason) {
+    private void tempBanPlayerChecked(Sender sender, DbUser user, String durString, String reason) {
         Type.Punishment type = user.getPunishment().getType();
-        LocalDateTime datePunish = getTempBanDate(date, LocalDateTime.now());
-        if (datePunish == null) {
-            sender.sendMessageNoDateTime(date);
+
+        Duration duration = parseDuration(durString);
+
+        if (duration == null) {
+            sender.sendMessageNoDateTime(durString);
+            return;
         }
 
         if (type != null) {
             if (type.equals(Type.Punishment.TEMP_BAN)) {
-                LocalDateTime datePunishOld = user.getPunishment().getDate();
-                datePunish = getTempBanDate(date, datePunishOld);
+                duration = duration.plusSeconds(user.getPunishment().getDuration().toSeconds());
             }
 
             if (type.equals(Type.Punishment.BAN)) {
@@ -201,14 +161,14 @@ public class PunishmentManager {
         }
 
         DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        String dateString = df.format(datePunish);
+        String dateString = df.format(LocalDateTime.now().plusSeconds(duration.toSeconds()));
 
-        user.setPunishment(Type.Punishment.TEMP_BAN, datePunish, sender.getName(), reason, "ALL");
+        user.setPunishment(Type.Punishment.TEMP_BAN, LocalDateTime.now(), duration,
+                sender.getName(), reason);
         String name = user.getName();
 
         for (Player p : BasicProxy.getServer().getAllPlayers()) {
             if (p.getUsername().equalsIgnoreCase(name)) {
-                assert datePunish != null;
                 p.disconnect(text("You were banned", WARNING)
                         .append(newline())
                         .append(text("Reason: ", WARNING))
@@ -220,19 +180,11 @@ public class PunishmentManager {
             }
         }
 
-        sender.sendPluginMessage(text("You banned ", PERSONAL)
-                .append(text(name, VALUE))
-                .append(text(" with reason: ", PERSONAL))
-                .append(text(reason, VALUE))
-                .append(text(" until ", PERSONAL))
-                .append(text(dateString, VALUE)));
+        sender.sendPluginTDMessage("§sBanned §v" + name + "§s with reason: §v" + reason
+                + "§s until §v" + dateString);
 
-        broadcastMessage(text("Player ", WARNING)
-                .append(text(user.getName(), VALUE))
-                .append(text(" was temporary banned until ", WARNING))
-                .append(text(dateString, VALUE))
-                .append(text(" with reason: ", WARNING))
-                .append(text(reason, VALUE)));
+        broadcastTDMessage("§v" + user.getName() + "§w was banned until §v" + dateString
+                + "§w with reason: §v" + reason);
 
     }
 
@@ -243,15 +195,9 @@ public class PunishmentManager {
 
         user.getPlayer().disconnect(text(ChatColor.WARNING + "You were kicked with reason: " +
                 ChatColor.VALUE + reason));
-        sender.sendPluginMessage(text()
-                .append(text("You kicked ", PERSONAL))
-                .append(user.getChatNameComponent())
-                .append(text(" with reason: ", PERSONAL))
-                .append(text(reason, VALUE)).build());
-        broadcastMessage(text("Player ", WARNING)
-                .append(text(user.getName(), VALUE))
-                .append(text(" was kicked with reason: ", WARNING))
-                .append(text(reason, VALUE)));
+        sender.sendPluginTDMessage(
+                "§sKicked " + user.getChatName() + "§s with reason: §v" + reason);
+        broadcastTDMessage("§v" + user.getChatName() + "§w was kicked with reason: §v" + reason);
 
     }
 
@@ -267,18 +213,13 @@ public class PunishmentManager {
             return;
         }
 
-        user.setPunishment(Type.Punishment.MUTE, LocalDateTime.now(), sender.getName(), reason,
-                "ALL");
-        String name = user.getName();
-        sender.sendPluginMessage(text("You muted ", PERSONAL)
-                .append(text(name, VALUE))
-                .append(text(" with reason: ", PERSONAL))
-                .append(text(reason, VALUE)));
+        user.setPunishment(Type.Punishment.MUTE, LocalDateTime.now(), Duration.ZERO,
+                sender.getName(), reason);
 
-        broadcastMessage(text("Player ", WARNING)
-                .append(text(user.getName(), VALUE))
-                .append(text(" was muted with reason: ", WARNING))
-                .append(text(reason, VALUE)));
+        String name = user.getName();
+        sender.sendPluginTDMessage("§sMuted §v" + name + "§s with reason: §v" + reason);
+
+        broadcastTDMessage("§v" + user.getName() + "§w was muted with reason: §v" + reason);
 
     }
 
@@ -295,16 +236,49 @@ public class PunishmentManager {
         }
 
         user.getPunishment().delete();
-        sender.sendPluginMessage(text("You unmuted ", PERSONAL)
-                .append(text(user.getName(), VALUE)));
+        sender.sendPluginTDMessage("§sUnmuted §v" + user.getName());
 
-        broadcastMessage(text("Player ", WARNING)
-                .append(text(user.getName(), VALUE))
-                .append(text(" was unmuted", WARNING)));
+        broadcastTDMessage("§v" + user.getName() + "§w was unmuted");
 
     }
 
-    private void broadcastMessage(Component msg) {
-        Network.broadcastMessage(Plugin.PUNISH, msg);
+    public void jailPlayer(Sender sender, DbUser dbUser, String durString, String reason) {
+        if (!sender.hasGroupRankLower(dbUser)) {
+            return;
+        }
+
+        Type.Punishment type = dbUser.getPunishment().getType();
+        if (type == Type.Punishment.BAN || type == Type.Punishment.TEMP_BAN) {
+            sender.sendPluginMessage(text("Player is already punished ", WARNING)
+                    .append(Chat.getMessageCode("H", 105, Plugin.PUNISH)));
+            return;
+        }
+
+        Duration duration = parseDuration(durString);
+
+        dbUser.setPunishment(Type.Punishment.JAIL, LocalDateTime.now(), duration,
+                sender.getName(), reason);
+
+        String name = dbUser.getName();
+        long s = duration.toSeconds();
+        String time = String.format("%d:%02d:%02d", s / 3600, (s % 3600) / 60, (s % 60));
+
+        sender.sendPluginTDMessage("§sJailed " + name + "§s until §v" + time
+                + "§s with reason: " + reason);
+
+        broadcastTDMessage("§p" + dbUser.getName() + "§w was jailed for §v" + time
+                + "§w with reason: §v" + reason);
+
+        User user = Network.getUser(dbUser.getUniqueId());
+
+        if (user != null) {
+            user.getPlayer().disconnect(text(ChatColor.WARNING + "You were kicked with reason: " +
+                    ChatColor.VALUE + reason));
+        }
+
+    }
+
+    private void broadcastTDMessage(String msg) {
+        Network.broadcastTDMessage(Plugin.PUNISH, msg);
     }
 }

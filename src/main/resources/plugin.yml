@@ -18,6 +18,8 @@ commands:
   netunmute:
   netunban:
   netpardon:
+  netjail:
+  jail:
 
   ban:
   tempban:

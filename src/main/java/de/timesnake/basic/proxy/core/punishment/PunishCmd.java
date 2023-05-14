@@ -7,7 +7,6 @@ package de.timesnake.basic.proxy.core.punishment;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
-import de.timesnake.library.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
@@ -23,6 +22,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
     private Code tempbanPerm;
     private Code banPerm;
     private Code unbanPerm;
+    private Code jailPerm;
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
@@ -71,8 +71,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
 
                 if (!args.isLengthHigherEquals(3, true)) {
                     sender.sendTDMessageCommandHelp("Temp-ban a player", "nettempban <player> " +
-                            "<duration> <reason> \n" + ChatColor.QUICK_INFO + "duration:" +
-                            " 1year;1month;1day;1hour;1min;1sec");
+                            "<durationInSec> <reason>");
                     return;
                 }
 
@@ -107,6 +106,21 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
                 Network.getPunishmentManager()
                         .unbanPlayer(sender, args.get(0).toDbUser().getUniqueId());
             }
+            case "netjail", "jail" -> {
+                sender.hasPermissionElseExit(this.jailPerm);
+
+                if (!args.isLengthHigherEquals(3, true)) {
+                    sender.sendTDMessageCommandHelp("Jail a player",
+                            "jail <player> <durationInSec> <reason>");
+                    return;
+                }
+
+                args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
+
+                Network.getPunishmentManager()
+                        .jailPlayer(sender, args.get(0).toDbUser(), args.get(1).getString(),
+                                args.toMessage(2));
+            }
         }
 
     }
@@ -119,11 +133,15 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
             return Network.getCommandManager().getPlayerNames();
         }
 
-        if (length == 2 && (args.getString(0).equalsIgnoreCase("tempban")
-                || args.getString(0).equalsIgnoreCase("tmpban")
-                || args.getString(0).equalsIgnoreCase("nettempban")
-                || args.getString(0).equalsIgnoreCase("nettmpban"))) {
-            return List.of("1year;1month;1day;1hour;1min;1sec");
+        String arg0 = args.getString(0);
+        
+        if (length == 2 && (arg0.equalsIgnoreCase("tempban")
+                || arg0.equalsIgnoreCase("tmpban")
+                || arg0.equalsIgnoreCase("nettempban")
+                || arg0.equalsIgnoreCase("nettmpban")
+                || arg0.equalsIgnoreCase("jail")
+                || arg0.equalsIgnoreCase("netjail"))) {
+            return List.of("10", "10*60", "5*60");
         }
         return null;
     }
@@ -136,5 +154,6 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
         this.tempbanPerm = plugin.createPermssionCode("punish.tempban");
         this.banPerm = plugin.createPermssionCode("punish.ban");
         this.unbanPerm = plugin.createPermssionCode("punish.unban");
+        this.jailPerm = plugin.createPermssionCode("punish.jail");
     }
 }

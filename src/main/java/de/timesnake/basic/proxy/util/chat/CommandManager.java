@@ -209,7 +209,8 @@ public class CommandManager {
                             incCmdContexts.remove(sender.getName());
                         }
                     } else {
-                        IncCommandContext context = listener.onCommand(sender, basicCmd);
+                        IncCommandContext context = listener.onCommand(sender, basicCmd,
+                                new Arguments(sender, args));
 
                         if (context != null) {
                             incCmdContexts.put(sender.getName(), context);

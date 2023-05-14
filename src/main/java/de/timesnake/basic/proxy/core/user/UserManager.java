@@ -353,7 +353,7 @@ public class UserManager {
             return Component.text("You were permanently banned.", ExTextColor.WARNING)
                     .append(Component.newline())
                     .append(Component.text("Reason: ", ExTextColor.WARNING))
-                    .append(Component.text(user.getPunishment().getReason(), ExTextColor.VALUE))
+                    .append(Component.text(punishment.getReason(), ExTextColor.VALUE))
                     .append(Component.newline())
                     .append(Component.text("For more info use our discord: ", ExTextColor.PERSONAL))
                     .append(Component.text(Network.DISCORD_LINK, ExTextColor.VALUE))
@@ -363,7 +363,8 @@ public class UserManager {
 
         } else if (type.equals(Type.Punishment.TEMP_BAN)) {
             LocalDateTime dateSystem = LocalDateTime.now();
-            LocalDateTime date = user.getPunishment().getDate();
+            LocalDateTime date = punishment.getDate()
+                    .plusSeconds(punishment.getDuration().toSeconds());
             DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String dateString = df.format(date);
             if (date.isBefore(dateSystem)) {
@@ -376,7 +377,7 @@ public class UserManager {
                         .append(Component.text(".", ExTextColor.WARNING))
                         .append(Component.newline())
                         .append(Component.text("Reason: ", ExTextColor.WARNING))
-                        .append(Component.text(user.getPunishment().getReason(), ExTextColor.VALUE))
+                        .append(Component.text(punishment.getReason(), ExTextColor.VALUE))
                         .append(Component.newline())
                         .append(Component.text("For more info use our discord: ",
                                 ExTextColor.PERSONAL))

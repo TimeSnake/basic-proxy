@@ -15,7 +15,6 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.CommandSender;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
-import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.channel.util.listener.ChannelHandler;
 import de.timesnake.channel.util.listener.ChannelListener;
 import de.timesnake.channel.util.listener.ListenerType;
@@ -24,6 +23,7 @@ import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
+import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.chat.ExTextColor;
@@ -75,7 +75,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     private ScheduledTask privacyPolicyTask;
 
-    private Map<String, List<String>> joinCmdsByServer = new HashMap<>();
+    private final Map<String, List<String>> joinCmdsByServer = new HashMap<>();
 
     public User(Player player, PreUser user) {
         this.player = player;
@@ -101,6 +101,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
         this.privacyPolicyDateTime = user.getPrivacyPolicyDateTime();
 
         this.permGroup.addUser(this);
+
+        DbPunishment punishment = Database.getUsers().getUser(this.getUniqueId()).getPunishment();
 
         this.databasePermissions = user.getDatabasePermissions();
         this.loadPermissions();
@@ -234,9 +236,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     @NotNull
     @Override
-    @Deprecated
     public String getChatName() {
-        return chatName.toString();
+        return LegacyComponentSerializer.legacyAmpersand().serialize(this.getChatNameComponent());
     }
 
     public Sender getAsSender(de.timesnake.library.extension.util.chat.Plugin plugin) {
@@ -289,7 +290,8 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
 
     public void setServer(String server) {
         this.dbUser.setServer(server);
-        ((ProxyChannel) Network.getChannel()).setUserServer(this.getUniqueId(), server);
+        this.server = Network.getServer(server);
+        Network.getChannel().setUserServer(this.getUniqueId(), server);
     }
 
     @Nullable

@@ -33,6 +33,7 @@ import de.timesnake.library.chat.TimeDownParser;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.network.NetworkServer;
+import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.ServerCreationResult;
 import de.timesnake.library.network.ServerInitResult;
@@ -146,7 +147,7 @@ public class NetworkManager {
 
         Tuple<ServerCreationResult, Optional<Server>> res = this.createTmpServer(
                 new NetworkServer("lobby0", 25001, Type.Server.LOBBY, this.getVelocitySecret())
-                        .setMaxPlayers(50), true, false, false);
+                        .setMaxPlayers(50), CopyType.SYNC, false, false);
 
         if (res.getA().isSuccessful()) {
             this.printText(Plugin.NETWORK, "Created lobby0 server");
@@ -166,6 +167,11 @@ public class NetworkManager {
     public void broadcastMessage(Plugin plugin, String msg) {
         BasicProxy.getServer()
                 .sendMessage(Chat.getSenderPlugin(plugin).append(Component.text(msg)));
+    }
+
+    public void broadcastTDMessage(Plugin plugin, String msg) {
+        BasicProxy.getServer().sendMessage(Chat.getSenderPlugin(plugin)
+                .append(this.getTimeDownParser().parse2Component(msg)));
     }
 
     public void broadcastMessage(Plugin plugin, Component msg) {
@@ -402,14 +408,14 @@ public class NetworkManager {
     }
 
     public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-            boolean copyWorlds, boolean syncPlayerData, boolean registerServer) {
-        return getServerManager().createTmpServer(server, copyWorlds, syncPlayerData,
+            CopyType copyType, boolean syncPlayerData, boolean registerServer) {
+        return getServerManager().createTmpServer(server, copyType, syncPlayerData,
                 registerServer);
     }
 
     public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-            boolean copyWorlds, boolean syncPlayerData) {
-        return getServerManager().createTmpServer(server, copyWorlds, syncPlayerData);
+            CopyType copyType, boolean syncPlayerData) {
+        return getServerManager().createTmpServer(server, copyType, syncPlayerData);
     }
 
     public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,

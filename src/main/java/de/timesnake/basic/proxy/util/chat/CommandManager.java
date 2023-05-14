@@ -162,6 +162,8 @@ public class CommandManager {
                 } else if (basicCmd.getListener() instanceof ExCommandListener listener) {
                     suggestions = listener.getTabCompletion(basicCmd,
                             new ExArguments(sender, args, listener.allowDuplicates(cmdName, args)));
+                } else if (basicCmd.getListener() instanceof IncCommandListener listener) {
+                    suggestions = listener.getTabCompletion(basicCmd, new Arguments(sender, args));
                 }
 
                 if (suggestions != null) {

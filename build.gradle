@@ -1,5 +1,11 @@
+group = project.group
+version = '1.2-SNAPSHOT'
+archivesBaseName = 'basic-proxy'
+var projectId = 19
+
 repositories {
   mavenLocal()
+  mavenCentral()
   maven {
     name 'papermc'
     url 'https://repo.papermc.io/repository/maven-public/'
@@ -29,10 +35,6 @@ dependencies {
   compileOnly project.freemarker
 }
 
-group = project.group
-version = '1.2-SNAPSHOT'
-archivesBaseName = 'basic-proxy'
-
 task buildFatJar(type: Jar) {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   classifier = "all"
@@ -56,3 +58,24 @@ jar.finalizedBy(buildFatJar)
 copyJarToPlugins.dependsOn(buildFatJar)
 copyJarToPlugins.dependsOn(deleteOldPluginJar)
 jar.finalizedBy(copyJarToPlugins)
+
+publishing {
+  publications {
+    mavenJavaAll(MavenPublication) {
+      version version + '-all'
+      artifact {
+        file "build/libs/" + archivesBaseName + "-" + version + ".jar"
+      }
+    }
+  }
+
+  repositories {
+    maven {
+      url getDeployUrl(projectId)
+      credentials {
+        username = deploy_token_name
+        password = deploy_token_key
+      }
+    }
+  }
+}

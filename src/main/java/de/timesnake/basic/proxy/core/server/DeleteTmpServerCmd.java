@@ -19,41 +19,41 @@ import net.kyori.adventure.text.Component;
 
 public class DeleteTmpServerCmd implements CommandListener<Sender, Argument> {
 
-    private Code perm;
+  private Code perm;
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        if (!sender.hasPermission(this.perm)) {
-            return;
-        }
-
-        if (!args.isLengthEquals(1, true)) {
-            return;
-        }
-
-        String serverName = args.getString(0);
-
-        boolean result = Network.deleteServer(serverName, false);
-
-        if (result) {
-            sender.sendPluginMessage(Component.text("Deleted server ", ExTextColor.PERSONAL)
-                    .append(Component.text(serverName, ExTextColor.VALUE)));
-        } else {
-            sender.sendPluginMessage(Component.text("Can not delete server ", ExTextColor.WARNING)
-                    .append(Component.text(serverName, ExTextColor.VALUE)));
-        }
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    if (!sender.hasPermission(this.perm)) {
+      return;
     }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        return args.length() == 1 ? Network.getCommandManager().getServerNames()
-                : new ArrayList<>(0);
+    if (!args.isLengthEquals(1, true)) {
+      return;
     }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("network.delete_tmp");
+    String serverName = args.getString(0);
+
+    boolean result = Network.deleteServer(serverName, false);
+
+    if (result) {
+      sender.sendPluginMessage(Component.text("Deleted server ", ExTextColor.PERSONAL)
+          .append(Component.text(serverName, ExTextColor.VALUE)));
+    } else {
+      sender.sendPluginMessage(Component.text("Can not delete server ", ExTextColor.WARNING)
+          .append(Component.text(serverName, ExTextColor.VALUE)));
     }
+  }
+
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    return args.length() == 1 ? Network.getCommandManager().getServerNames()
+        : new ArrayList<>(0);
+  }
+
+  @Override
+  public void loadCodes(Plugin plugin) {
+    this.perm = plugin.createPermssionCode("network.delete_tmp");
+  }
 }

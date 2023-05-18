@@ -12,86 +12,86 @@ import java.nio.file.Path;
 
 public class TmpGameServer extends PvPServer {
 
-    protected boolean kitsEnabled;
-    protected boolean mapsEnabled;
-    protected Integer teamAmount;
-    protected boolean teamMerging;
-    protected Integer maxPlayersPerTeam;
-    private DbLoungeServer twinServer;
+  protected boolean kitsEnabled;
+  protected boolean mapsEnabled;
+  protected Integer teamAmount;
+  protected boolean teamMerging;
+  protected Integer maxPlayersPerTeam;
+  private DbLoungeServer twinServer;
 
-    public TmpGameServer(DbTmpGameServer database, Path folderPath, NetworkServer networkServer) {
-        super(database, folderPath, networkServer);
-        this.twinServer = database.getTwinServer();
+  public TmpGameServer(DbTmpGameServer database, Path folderPath, NetworkServer networkServer) {
+    super(database, folderPath, networkServer);
+    this.twinServer = database.getTwinServer();
+  }
+
+  public DbLoungeServer getTwinServer() {
+    return twinServer;
+  }
+
+  public void setTwinServer(DbLoungeServer twinServer) {
+    this.twinServer = twinServer;
+    if (twinServer != null) {
+      ((DbTmpGameServer) this.database).setTwinServerName(twinServer.getName());
+    } else {
+      ((DbTmpGameServer) this.database).setTwinServerName(null);
     }
 
-    public DbLoungeServer getTwinServer() {
-        return twinServer;
-    }
+  }
 
-    public void setTwinServer(DbLoungeServer twinServer) {
-        this.twinServer = twinServer;
-        if (twinServer != null) {
-            ((DbTmpGameServer) this.database).setTwinServerName(twinServer.getName());
-        } else {
-            ((DbTmpGameServer) this.database).setTwinServerName(null);
+  @Override
+  public void setStatus(Status.Server status, boolean updateDatabase) {
+    super.setStatus(status, updateDatabase);
+    if (status.equals(Status.Server.OFFLINE)) {
+      if (this.getTwinServer() != null && this.getTwinServer().exists()) {
+        if (this.getTwinServer().getStatus().equals(Status.Server.OFFLINE)) {
+          this.setTwinServer(null);
         }
-
+      }
     }
+  }
 
-    @Override
-    public void setStatus(Status.Server status, boolean updateDatabase) {
-        super.setStatus(status, updateDatabase);
-        if (status.equals(Status.Server.OFFLINE)) {
-            if (this.getTwinServer() != null && this.getTwinServer().exists()) {
-                if (this.getTwinServer().getStatus().equals(Status.Server.OFFLINE)) {
-                    this.setTwinServer(null);
-                }
-            }
-        }
-    }
+  public Integer getTeamAmount() {
+    return teamAmount;
+  }
 
-    public Integer getTeamAmount() {
-        return teamAmount;
-    }
+  public void setTeamAmount(Integer number) {
+    this.teamAmount = number;
+    ((DbTmpGameServer) super.database).setTeamAmount(number);
+  }
 
-    public void setTeamAmount(Integer number) {
-        this.teamAmount = number;
-        ((DbTmpGameServer) super.database).setTeamAmount(number);
-    }
+  public boolean isTeamMerging() {
+    return teamMerging;
+  }
 
-    public boolean isTeamMerging() {
-        return teamMerging;
-    }
+  public void setTeamMerging(boolean teamMerging) {
+    this.teamMerging = teamMerging;
+    ((DbTmpGameServer) super.database).setTeamMerging(teamMerging);
+  }
 
-    public void setTeamMerging(boolean teamMerging) {
-        this.teamMerging = teamMerging;
-        ((DbTmpGameServer) super.database).setTeamMerging(teamMerging);
-    }
+  public void setMapsEnabled(boolean mapsEnabled) {
+    this.mapsEnabled = mapsEnabled;
+    ((DbTmpGameServer) super.database).setMapsEnabled(mapsEnabled);
+  }
 
-    public void setMapsEnabled(boolean mapsEnabled) {
-        this.mapsEnabled = mapsEnabled;
-        ((DbTmpGameServer) super.database).setMapsEnabled(mapsEnabled);
-    }
+  public boolean areMapsEnabled() {
+    return mapsEnabled;
+  }
 
-    public boolean areMapsEnabled() {
-        return mapsEnabled;
-    }
+  public void setKitsEnabled(boolean kitsEnabled) {
+    this.kitsEnabled = kitsEnabled;
+    ((DbTmpGameServer) super.database).setKitsEnabled(this.kitsEnabled);
+  }
 
-    public void setKitsEnabled(boolean kitsEnabled) {
-        this.kitsEnabled = kitsEnabled;
-        ((DbTmpGameServer) super.database).setKitsEnabled(this.kitsEnabled);
-    }
+  public boolean areKitsEnabled() {
+    return kitsEnabled;
+  }
 
-    public boolean areKitsEnabled() {
-        return kitsEnabled;
-    }
+  public Integer getMaxPlayersPerTeam() {
+    return maxPlayersPerTeam;
+  }
 
-    public Integer getMaxPlayersPerTeam() {
-        return maxPlayersPerTeam;
-    }
-
-    public void setMaxPlayersPerTeam(Integer maxPlayersPerTeam) {
-        this.maxPlayersPerTeam = maxPlayersPerTeam;
-        ((DbTmpGameServer) super.database).setMaxPlayersPerTeam(maxPlayersPerTeam);
-    }
+  public void setMaxPlayersPerTeam(Integer maxPlayersPerTeam) {
+    this.maxPlayersPerTeam = maxPlayersPerTeam;
+    ((DbTmpGameServer) super.database).setMaxPlayersPerTeam(maxPlayersPerTeam);
+  }
 }

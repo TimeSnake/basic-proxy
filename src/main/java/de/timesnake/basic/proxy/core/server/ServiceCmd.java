@@ -15,18 +15,18 @@ import java.util.List;
 
 public class ServiceCmd implements CommandListener<Sender, Argument> {
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        Network.getBukkitCmdHandler().handleServiceCommand(sender, args);
-    }
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    Network.getBukkitCmdHandler().handleServiceCommand(sender, args);
+  }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-        return null;
-    }
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+    return null;
+  }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
+  @Override
+  public void loadCodes(Plugin plugin) {
 
-    }
+  }
 }

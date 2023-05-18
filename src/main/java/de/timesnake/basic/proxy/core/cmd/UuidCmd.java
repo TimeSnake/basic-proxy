@@ -23,67 +23,67 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class UuidCmd implements CommandListener<Sender, Argument> {
 
-    private Code permCode;
+  private Code permCode;
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        if (!sender.hasPermission(this.permCode)) {
-            return;
-        }
-
-        if (!args.isLengthEquals(1, true)) {
-            return;
-        }
-
-        Argument arg = args.get(0);
-
-        if (arg.isUUID(false)) {
-            UUID uuid = arg.toUUIDOrExit(true);
-            DbUser dbUser = Database.getUsers().getUser(uuid);
-            if (dbUser == null) {
-                sender.sendPluginMessage(Component.text("Unknown user", ExTextColor.WARNING));
-                return;
-            }
-
-            String name = dbUser.getName();
-
-            if (name == null) {
-                sender.sendPluginMessage(Component.text("Unknown user", ExTextColor.WARNING));
-                return;
-            }
-
-            sender.sendPluginMessage(
-                    Component.text(name, ExTextColor.PERSONAL, TextDecoration.UNDERLINED)
-                            .clickEvent(ClickEvent.copyToClipboard(name))
-                            .hoverEvent(HoverEvent.showText(Component.text("Click to copy"))));
-
-        } else {
-            String name = arg.getString();
-
-            DbUser dbUser = Database.getUsers().getUser(name);
-            if (dbUser == null) {
-                sender.sendPluginMessage(Component.text("Unknown user", ExTextColor.WARNING));
-                return;
-            }
-
-            UUID uuid = dbUser.getUniqueId();
-
-            sender.sendPluginMessage(
-                    Component.text(uuid.toString(), ExTextColor.PERSONAL, TextDecoration.UNDERLINED)
-                            .clickEvent(ClickEvent.copyToClipboard(uuid.toString()))
-                            .hoverEvent(HoverEvent.showText(Component.text("Click to copy"))));
-        }
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    if (!sender.hasPermission(this.permCode)) {
+      return;
     }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        return List.of();
+    if (!args.isLengthEquals(1, true)) {
+      return;
     }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
-        this.permCode = plugin.createPermssionCode("network.uuid");
+    Argument arg = args.get(0);
+
+    if (arg.isUUID(false)) {
+      UUID uuid = arg.toUUIDOrExit(true);
+      DbUser dbUser = Database.getUsers().getUser(uuid);
+      if (dbUser == null) {
+        sender.sendPluginMessage(Component.text("Unknown user", ExTextColor.WARNING));
+        return;
+      }
+
+      String name = dbUser.getName();
+
+      if (name == null) {
+        sender.sendPluginMessage(Component.text("Unknown user", ExTextColor.WARNING));
+        return;
+      }
+
+      sender.sendPluginMessage(
+          Component.text(name, ExTextColor.PERSONAL, TextDecoration.UNDERLINED)
+              .clickEvent(ClickEvent.copyToClipboard(name))
+              .hoverEvent(HoverEvent.showText(Component.text("Click to copy"))));
+
+    } else {
+      String name = arg.getString();
+
+      DbUser dbUser = Database.getUsers().getUser(name);
+      if (dbUser == null) {
+        sender.sendPluginMessage(Component.text("Unknown user", ExTextColor.WARNING));
+        return;
+      }
+
+      UUID uuid = dbUser.getUniqueId();
+
+      sender.sendPluginMessage(
+          Component.text(uuid.toString(), ExTextColor.PERSONAL, TextDecoration.UNDERLINED)
+              .clickEvent(ClickEvent.copyToClipboard(uuid.toString()))
+              .hoverEvent(HoverEvent.showText(Component.text("Click to copy"))));
     }
+  }
+
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    return List.of();
+  }
+
+  @Override
+  public void loadCodes(Plugin plugin) {
+    this.permCode = plugin.createPermssionCode("network.uuid");
+  }
 }

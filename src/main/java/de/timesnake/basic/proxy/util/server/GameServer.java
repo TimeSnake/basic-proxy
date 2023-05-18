@@ -10,8 +10,8 @@ import java.nio.file.Path;
 
 public abstract class GameServer extends TaskServer {
 
-    public GameServer(DbNonTmpGameServer database, Path folderPath, NetworkServer networkServer) {
-        super(database, folderPath, networkServer);
-    }
+  public GameServer(DbNonTmpGameServer database, Path folderPath, NetworkServer networkServer) {
+    super(database, folderPath, networkServer);
+  }
 
 }

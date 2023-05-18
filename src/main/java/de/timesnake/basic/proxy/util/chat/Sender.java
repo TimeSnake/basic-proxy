@@ -14,37 +14,37 @@ import net.kyori.adventure.text.Component;
 
 public class Sender extends de.timesnake.library.extension.util.cmd.Sender {
 
-    public Sender(CommandSender cmdSender, Plugin plugin) {
-        super(cmdSender, plugin, Network.getTimeDownParser());
-    }
+  public Sender(CommandSender cmdSender, Plugin plugin) {
+    super(cmdSender, plugin, Network.getTimeDownParser());
+  }
 
-    public Player getPlayer() {
-        return BasicProxy.getServer().getPlayer(this.cmdSender.getName()).get();
-    }
+  public Player getPlayer() {
+    return BasicProxy.getServer().getPlayer(this.cmdSender.getName()).get();
+  }
 
-    public String getChatName() {
-        return null;
-    }
+  public String getChatName() {
+    return null;
+  }
 
-    public User getUser() {
-        return this.cmdSender.getUser();
-    }
+  public User getUser() {
+    return this.cmdSender.getUser();
+  }
 
-    @Override
-    public void sendConsoleMessage(String message) {
-        Network.printText(Plugin.PROXY, message);
-    }
+  @Override
+  public void sendConsoleMessage(String message) {
+    Network.printText(Plugin.PROXY, message);
+  }
 
-    public void sendMessage(Component component) {
-        this.cmdSender.sendMessage(component);
-    }
+  public void sendMessage(Component component) {
+    this.cmdSender.sendMessage(component);
+  }
 
-    public void sendPluginMessage(Component component) {
-        this.cmdSender.sendMessage(Chat.getSenderPlugin(this.plugin).append(component));
-    }
+  public void sendPluginMessage(Component component) {
+    this.cmdSender.sendMessage(Chat.getSenderPlugin(this.plugin).append(component));
+  }
 
-    @Override
-    public int hashCode() {
-        return this.cmdSender.getName().hashCode();
-    }
+  @Override
+  public int hashCode() {
+    return this.cmdSender.getName().hashCode();
+  }
 }

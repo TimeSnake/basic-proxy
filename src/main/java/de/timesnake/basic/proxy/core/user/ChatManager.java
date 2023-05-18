@@ -12,12 +12,12 @@ import de.timesnake.basic.proxy.util.user.User;
 
 public class ChatManager {
 
-    @Subscribe
-    public void onChat(PlayerChatEvent e) {
-        String msg = e.getMessage();
-        Player p = e.getPlayer();
-        User user = Network.getUser(p);
+  @Subscribe
+  public void onChat(PlayerChatEvent e) {
+    String msg = e.getMessage();
+    Player p = e.getPlayer();
+    User user = Network.getUser(p);
 
-        user.setLastChatMessage(msg);
-    }
+    user.setLastChatMessage(msg);
+  }
 }

@@ -13,22 +13,23 @@ import de.timesnake.database.util.object.Type;
 
 public class FallbackManager {
 
-    @Subscribe(order = PostOrder.FIRST)
-    public void onServerKickEvent(KickedFromServerEvent e) {
-        if (!(e.getResult() instanceof KickedFromServerEvent.DisconnectPlayer)) {
-            return;
-        }
-
-        if (Network.getServer(e.getServer().getServerInfo().getName()).getType().equals(Type.Server.LOBBY)) {
-            return;
-        }
-
-        User user = Network.getUser(e.getPlayer());
-
-        if (user == null || user.getLobby() == null) {
-            return;
-        }
-
-        e.setResult(KickedFromServerEvent.RedirectPlayer.create(user.getLobby().getBungeeInfo()));
+  @Subscribe(order = PostOrder.FIRST)
+  public void onServerKickEvent(KickedFromServerEvent e) {
+    if (!(e.getResult() instanceof KickedFromServerEvent.DisconnectPlayer)) {
+      return;
     }
+
+    if (Network.getServer(e.getServer().getServerInfo().getName()).getType()
+        .equals(Type.Server.LOBBY)) {
+      return;
+    }
+
+    User user = Network.getUser(e.getPlayer());
+
+    if (user == null || user.getLobby() == null) {
+      return;
+    }
+
+    e.setResult(KickedFromServerEvent.RedirectPlayer.create(user.getLobby().getBungeeInfo()));
+  }
 }

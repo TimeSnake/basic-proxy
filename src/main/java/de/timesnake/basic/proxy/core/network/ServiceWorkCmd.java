@@ -18,26 +18,26 @@ import net.kyori.adventure.text.Component;
 
 public class ServiceWorkCmd implements CommandListener<Sender, Argument> {
 
-    private Code perm;
+  private Code perm;
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        if (sender.hasPermission(this.perm)) {
-            Network.setWork(!Network.isWork());
-            sender.sendPluginMessage(Component.text("Service-Work: ", ExTextColor.PERSONAL)
-                    .append(Component.text(Network.isWork(), ExTextColor.VALUE)));
-        }
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    if (sender.hasPermission(this.perm)) {
+      Network.setWork(!Network.isWork());
+      sender.sendPluginMessage(Component.text("Service-Work: ", ExTextColor.PERSONAL)
+          .append(Component.text(Network.isWork(), ExTextColor.VALUE)));
     }
+  }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> arguments) {
-        return null;
-    }
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> arguments) {
+    return null;
+  }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("network.work.set");
-    }
+  @Override
+  public void loadCodes(Plugin plugin) {
+    this.perm = plugin.createPermssionCode("network.work.set");
+  }
 }

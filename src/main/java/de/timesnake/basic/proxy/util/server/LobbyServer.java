@@ -10,7 +10,7 @@ import java.nio.file.Path;
 
 public class LobbyServer extends Server {
 
-    public LobbyServer(DbLobbyServer database, Path folderPath, NetworkServer networkServer) {
-        super(database, folderPath, networkServer);
-    }
+  public LobbyServer(DbLobbyServer database, Path folderPath, NetworkServer networkServer) {
+    super(database, folderPath, networkServer);
+  }
 }

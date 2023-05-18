@@ -19,40 +19,40 @@ import net.kyori.adventure.text.Component;
 
 public class CleanupServersCmd implements CommandListener<Sender, Argument> {
 
-    private Code perm;
+  private Code perm;
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        if (!sender.hasPermission(this.perm)) {
-            return;
-        }
-
-        if (!args.isLengthEquals(0, true)) {
-            return;
-        }
-
-        for (Server server : Network.getServers()) {
-            boolean result = Network.deleteServer(server.getName(), false);
-            if (result) {
-                sender.sendPluginMessage(Component.text("Deleted server ", ExTextColor.PERSONAL)
-                        .append(Component.text(server.getName(), ExTextColor.VALUE)));
-            } else {
-                sender.sendPluginMessage(
-                        Component.text("Can not delete server ", ExTextColor.WARNING)
-                                .append(Component.text(server.getName(), ExTextColor.VALUE)));
-            }
-        }
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    if (!sender.hasPermission(this.perm)) {
+      return;
     }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        return List.of();
+    if (!args.isLengthEquals(0, true)) {
+      return;
     }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("network.cleanup_servers");
+    for (Server server : Network.getServers()) {
+      boolean result = Network.deleteServer(server.getName(), false);
+      if (result) {
+        sender.sendPluginMessage(Component.text("Deleted server ", ExTextColor.PERSONAL)
+            .append(Component.text(server.getName(), ExTextColor.VALUE)));
+      } else {
+        sender.sendPluginMessage(
+            Component.text("Can not delete server ", ExTextColor.WARNING)
+                .append(Component.text(server.getName(), ExTextColor.VALUE)));
+      }
     }
+  }
+
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    return List.of();
+  }
+
+  @Override
+  public void loadCodes(Plugin plugin) {
+    this.perm = plugin.createPermssionCode("network.cleanup_servers");
+  }
 }

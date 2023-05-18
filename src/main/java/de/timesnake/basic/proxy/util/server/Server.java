@@ -21,135 +21,135 @@ import java.time.Duration;
 
 public abstract class Server extends BukkitServer {
 
-    protected DbServer database;
-    protected int port;
-    protected Type.Server<?> type;
-    protected Status.Server status;
-    protected Integer maxPlayers;
-    protected NetworkServer networkServer;
+  protected DbServer database;
+  protected int port;
+  protected Type.Server<?> type;
+  protected Status.Server status;
+  protected Integer maxPlayers;
+  protected NetworkServer networkServer;
 
-    protected UserSet<User> waitingUsers = new UserSet<>();
+  protected UserSet<User> waitingUsers = new UserSet<>();
 
-    protected ScheduledTask startTimeoutTask;
+  protected ScheduledTask startTimeoutTask;
 
-    protected Server(DbServer database, Path folderPath, NetworkServer networkServer) {
-        super(database.getName(), folderPath);
-        this.database = database;
-        this.port = database.getPort();
-        this.type = Database.getServers().getServerType(this.port);
-        this.status = database.getStatus();
-        this.maxPlayers = database.getMaxPlayers();
-        this.networkServer = networkServer;
+  protected Server(DbServer database, Path folderPath, NetworkServer networkServer) {
+    super(database.getName(), folderPath);
+    this.database = database;
+    this.port = database.getPort();
+    this.type = Database.getServers().getServerType(this.port);
+    this.status = database.getStatus();
+    this.maxPlayers = database.getMaxPlayers();
+    this.networkServer = networkServer;
+  }
+
+  public DbServer getDatabase() {
+    return this.database;
+  }
+
+  @Override
+  public Integer getPort() {
+    return port;
+  }
+
+  @Override
+  public String getServerTask() {
+    return this.type.getShortName();
+  }
+
+  public int getMaxPlayers() {
+    return maxPlayers;
+  }
+
+  public void setMaxPlayers(int maxPlayers) {
+    this.database.setMaxPlayers(maxPlayers);
+    this.maxPlayers = maxPlayers;
+  }
+
+  public Status.Server getStatus() {
+    return status;
+  }
+
+  public void setStatus(Status.Server serverStatus, boolean updateDatabase) {
+    if (updateDatabase) {
+      if (this.status != serverStatus) {
+        this.database.setStatus(serverStatus);
+        this.database.setOnlinePlayers(0);
+      }
+    }
+    this.status = serverStatus;
+
+    if (this.status.isRunning() && this.startTimeoutTask != null) {
+      this.startTimeoutTask.cancel();
+      this.startTimeoutTask = null;
     }
 
-    public DbServer getDatabase() {
-        return this.database;
-    }
-
-    @Override
-    public Integer getPort() {
-        return port;
-    }
-
-    @Override
-    public String getServerTask() {
-        return this.type.getShortName();
-    }
-
-    public int getMaxPlayers() {
-        return maxPlayers;
-    }
-
-    public void setMaxPlayers(int maxPlayers) {
-        this.database.setMaxPlayers(maxPlayers);
-        this.maxPlayers = maxPlayers;
-    }
-
-    public Status.Server getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status.Server serverStatus, boolean updateDatabase) {
-        if (updateDatabase) {
-            if (this.status != serverStatus) {
-                this.database.setStatus(serverStatus);
-                this.database.setOnlinePlayers(0);
-            }
-        }
-        this.status = serverStatus;
-
-        if (this.status.isRunning() && this.startTimeoutTask != null) {
-            this.startTimeoutTask.cancel();
-            this.startTimeoutTask = null;
-        }
-
-        if (this.status == Status.Server.LAUNCHING) {
-            this.startTimeoutTask = Network.runTaskLater(() -> {
-                if (status == Status.Server.LAUNCHING || status == Status.Server.OFFLINE) {
-                    Network.printWarning(Plugin.NETWORK,
-                            "Failed to start server " + this.getName());
-                    this.setStatus(Status.Server.OFFLINE, true);
-                    return;
-                }
-
-                this.startTimeoutTask = Network.runTaskLater(() -> {
-                    if (!status.isRunning()) {
-                        Network.printWarning(Plugin.NETWORK,
-                                "Failed to start server " + this.getName());
-                        this.setStatus(Status.Server.OFFLINE, true);
-                    }
-                }, Duration.ofMinutes(3));
-            }, Duration.ofSeconds(30));
+    if (this.status == Status.Server.LAUNCHING) {
+      this.startTimeoutTask = Network.runTaskLater(() -> {
+        if (status == Status.Server.LAUNCHING || status == Status.Server.OFFLINE) {
+          Network.printWarning(Plugin.NETWORK,
+              "Failed to start server " + this.getName());
+          this.setStatus(Status.Server.OFFLINE, true);
+          return;
         }
 
-        this.connectWaitingUsers();
+        this.startTimeoutTask = Network.runTaskLater(() -> {
+          if (!status.isRunning()) {
+            Network.printWarning(Plugin.NETWORK,
+                "Failed to start server " + this.getName());
+            this.setStatus(Status.Server.OFFLINE, true);
+          }
+        }, Duration.ofMinutes(3));
+      }, Duration.ofSeconds(30));
     }
 
-    public Integer getOnlinePlayers() {
-        return this.database.getOnlinePlayers();
-    }
+    this.connectWaitingUsers();
+  }
 
-    @Override
-    public boolean start() {
-        this.setStatus(Status.Server.LAUNCHING, true);
-        return super.start();
-    }
+  public Integer getOnlinePlayers() {
+    return this.database.getOnlinePlayers();
+  }
 
-    public void updateStatus() {
-        this.status = database.getStatus();
+  @Override
+  public boolean start() {
+    this.setStatus(Status.Server.LAUNCHING, true);
+    return super.start();
+  }
 
-        if (this.status.isRunning() && this.startTimeoutTask != null) {
-            this.startTimeoutTask.cancel();
-            this.startTimeoutTask = null;
-        }
-        this.connectWaitingUsers();
-    }
+  public void updateStatus() {
+    this.status = database.getStatus();
 
-    public Type.Server<?> getType() {
-        return this.type;
+    if (this.status.isRunning() && this.startTimeoutTask != null) {
+      this.startTimeoutTask.cancel();
+      this.startTimeoutTask = null;
     }
+    this.connectWaitingUsers();
+  }
 
-    public RegisteredServer getBungeeInfo() {
-        return BasicProxy.getServer().getServer(this.name).get();
-    }
+  public Type.Server<?> getType() {
+    return this.type;
+  }
 
-    public NetworkServer getNetworkServer() {
-        return networkServer;
-    }
+  public RegisteredServer getBungeeInfo() {
+    return BasicProxy.getServer().getServer(this.name).get();
+  }
 
-    private void connectWaitingUsers() {
-        if (this.status.isRunning()) {
-            this.waitingUsers.forEach(u -> u.connect(this.getBungeeInfo()));
-            this.waitingUsers.clear();
-        }
-    }
+  public NetworkServer getNetworkServer() {
+    return networkServer;
+  }
 
-    public void addWaitingUser(User user) {
-        this.waitingUsers.add(user);
-        this.connectWaitingUsers();
+  private void connectWaitingUsers() {
+    if (this.status.isRunning()) {
+      this.waitingUsers.forEach(u -> u.connect(this.getBungeeInfo()));
+      this.waitingUsers.clear();
     }
+  }
 
-    public void removeWaitingUser(User user) {
-        this.waitingUsers.remove(user);
-    }
+  public void addWaitingUser(User user) {
+    this.waitingUsers.add(user);
+    this.connectWaitingUsers();
+  }
+
+  public void removeWaitingUser(User user) {
+    this.waitingUsers.remove(user);
+  }
 }

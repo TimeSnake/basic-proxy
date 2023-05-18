@@ -11,8 +11,8 @@ import de.timesnake.database.util.group.DbDisplayGroup;
 
 public class DisplayGroup extends de.timesnake.library.extension.util.chat.DisplayGroup<User> {
 
-    public DisplayGroup(DbDisplayGroup database) {
-        super(database);
-        Network.printText(Plugin.PROXY, "Loaded display-group " + this.name, "Group");
-    }
+  public DisplayGroup(DbDisplayGroup database) {
+    super(database);
+    Network.printText(Plugin.PROXY, "Loaded display-group " + this.name, "Group");
+  }
 }

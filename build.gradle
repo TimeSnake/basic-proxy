@@ -1,32 +1,32 @@
 repositories {
-    mavenLocal()
-    maven {
-        name 'papermc'
-        url 'https://repo.papermc.io/repository/maven-public/'
-    }
-    maven {
-        url = uri 'https://repo.maven.apache.org/maven2/'
-    }
-    mavenCentral()
+  mavenLocal()
+  maven {
+    name 'papermc'
+    url 'https://repo.papermc.io/repository/maven-public/'
+  }
+  maven {
+    url = uri 'https://repo.maven.apache.org/maven2/'
+  }
+  mavenCentral()
 }
 
 dependencies {
-    compileOnly project(':database-proxy')
-    compileOnly project(':database-api')
+  compileOnly project(':database-proxy')
+  compileOnly project(':database-api')
 
-    compileOnly project(':channel-proxy')
-    compileOnly project(':channel-api')
+  compileOnly project(':channel-proxy')
+  compileOnly project(':channel-api')
 
-    implementation project(':library-network')
-    implementation project(':library-extension')
-    implementation project(':library-basic')
-    implementation project(':library-chat')
+  implementation project(':library-network')
+  implementation project(':library-extension')
+  implementation project(':library-basic')
+  implementation project(':library-chat')
 
-    annotationProcessor project.velocity
-    compileOnly project.velocity
+  annotationProcessor project.velocity
+  compileOnly project.velocity
 
-    compileOnly 'commons-io:commons-io:2.11.0'
-    compileOnly project.freemarker
+  compileOnly 'commons-io:commons-io:2.11.0'
+  compileOnly project.freemarker
 }
 
 group = project.group
@@ -34,22 +34,22 @@ version = '1.2-SNAPSHOT'
 archivesBaseName = 'basic-proxy'
 
 task buildFatJar(type: Jar) {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    classifier = "all"
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  classifier = "all"
+  from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+  with jar
 }
 
 task deleteOldPluginJar(type: Delete) {
-    delete fileTree(dir: "${project.plugins_dir}", include: "**/${archivesBaseName}-*.jar")
-    onlyIf {
-        !jar.state.upToDate
-    }
+  delete fileTree(dir: "${project.plugins_dir}", include: "**/${archivesBaseName}-*.jar")
+  onlyIf {
+    !jar.state.upToDate
+  }
 }
 
 task copyJarToPlugins(type: Copy) {
-    from "build/libs/" + archivesBaseName + "-" + version + "-all" + ".jar"
-    into project.plugins_dir
+  from "build/libs/" + archivesBaseName + "-" + version + "-all" + ".jar"
+  into project.plugins_dir
 }
 
 jar.finalizedBy(buildFatJar)

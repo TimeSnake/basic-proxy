@@ -129,8 +129,14 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     }
 
     public static Tuple<ServerCreationResult, Optional<Server>> createTmpServer(
-            NetworkServer server, boolean copyWorlds, boolean syncPlayerData) {
-        return network.createTmpServer(server, copyWorlds, syncPlayerData);
+            NetworkServer server) {
+        return network.createTmpServer(server);
+    }
+
+    public static Tuple<ServerCreationResult, Optional<Server>> createTmpServer(
+            NetworkServer server,
+            boolean registerServer) {
+        return network.createTmpServer(server, registerServer);
     }
 
     public static void sendUserToServer(User user, String server) {

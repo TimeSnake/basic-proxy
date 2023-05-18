@@ -27,6 +27,7 @@ import de.timesnake.library.extension.util.cmd.IncCommandContext;
 import de.timesnake.library.extension.util.cmd.IncCommandListener;
 import de.timesnake.library.extension.util.cmd.IncCommandOption;
 import de.timesnake.library.network.NetworkServer;
+import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -135,6 +136,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
                 return this.checkOldPvP(sender, context);
             } else if (teams.size() == 1) {
                 context.addOption(TEAM_SIZE, teams.get(0));
+                return this.checkOldPvP(sender, context);
             }
 
             int max = context.getOption(MAX_PLAYERS);
@@ -197,11 +199,10 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
                 int loungePort = Network.nextEmptyPort();
                 NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
                         Type.Server.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort,
-                        Type.Server.LOUNGE,
-                        Network.getVelocitySecret());
+                        Type.Server.LOUNGE);
 
-                Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.createTmpServer(
-                        loungeNetworkServer, true, false);
+                Tuple<ServerCreationResult, Optional<Server>> loungeResult =
+                        Network.createTmpServer(loungeNetworkServer);
 
                 if (!loungeResult.getA().isSuccessful()) {
                     sender.sendPluginTDMessage("§wError while creating a" + " lounge server! " +
@@ -214,8 +215,11 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
 
                 NetworkServer gameNetworkServer = new NetworkServer(
                         (tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
-                        tempGamePort, Type.Server.TEMP_GAME, Network.getVelocitySecret()).setTask(
+                        tempGamePort, Type.Server.TEMP_GAME).setTask(
                         gameName);
+
+                gameNetworkServer.options(o -> o
+                        .setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE));
 
                 if (game.getInfo().getPlayerTrackingRange() != null) {
                     gameNetworkServer.setPlayerTrackingRange(
@@ -226,8 +230,8 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
                     gameNetworkServer.setMaxHealth(game.getInfo().getMaxHealth());
                 }
 
-                Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.createTmpServer(
-                        gameNetworkServer, mapsEnabled, false);
+                Tuple<ServerCreationResult, Optional<Server>> tempServerResult =
+                        Network.createTmpServer(gameNetworkServer);
                 if (!tempServerResult.getA().isSuccessful()) {
                     sender.sendPluginTDMessage("§wError while creating a" + " " + gameName
                             + " server! Please contact an administrator (" +
@@ -279,10 +283,13 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
                 sender.sendPluginTDMessage("§sCreating server...");
 
                 int port = Network.nextEmptyPort();
-                NetworkServer networkServer = new NetworkServer(
-                        (port % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
-                        port, Type.Server.GAME, Network.getVelocitySecret()).setTask(gameName)
-                        .allowEnd(netherEnd).allowNether(netherEnd);
+                NetworkServer networkServer = new NetworkServer((port % 1000) + gameName +
+                        Network.TMP_SERVER_SUFFIX, port, Type.Server.GAME)
+                        .setTask(gameName)
+                        .allowEnd(netherEnd)
+                        .allowNether(netherEnd)
+                        .options(o -> o.setWorldCopyType(
+                                mapsEnabled ? CopyType.COPY : CopyType.NONE));
 
                 if (viewDistance != null) {
                     networkServer.setViewDistance(viewDistance).setSimulationDistance(viewDistance);
@@ -297,7 +304,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
                 }
 
                 Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(
-                        networkServer, mapsEnabled, false);
+                        networkServer);
                 if (!result.getA().isSuccessful()) {
                     sender.sendPluginTDMessage("§wError while creating a" + " game server! " +
                             "Please contact an administrator ("

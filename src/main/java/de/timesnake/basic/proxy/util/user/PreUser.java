@@ -25,135 +25,135 @@ import net.kyori.adventure.text.Component;
 
 public class PreUser {
 
-    private final UUID uuid;
+  private final UUID uuid;
 
-    private final String name;
+  private final String name;
 
-    private final DbUser dbUser;
+  private final DbUser dbUser;
 
-    private final boolean service;
+  private final boolean service;
 
-    private final boolean airMode;
+  private final boolean airMode;
 
-    private final LocalDateTime privacyPolicyDateTime;
+  private final LocalDateTime privacyPolicyDateTime;
 
-    private final PermGroup permGroup;
-    private final SortedSet<DisplayGroup> displayGroups;
+  private final PermGroup permGroup;
+  private final SortedSet<DisplayGroup> displayGroups;
 
-    private final Component prefix;
-    private final Component suffix;
-    private final Component nick;
+  private final Component prefix;
+  private final Component suffix;
+  private final Component nick;
 
-    private final float coins;
+  private final float coins;
 
-    private final Collection<ExPermission> databasePermissions = new HashSet<>();
+  private final Collection<ExPermission> databasePermissions = new HashSet<>();
 
-    public PreUser(String name) throws UserNotInDatabaseException {
-        if (!Database.getUsers().containsUser(name)) {
-            throw new UserNotInDatabaseException();
-        }
-
-        this.dbUser = Database.getUsers().getUser(name);
-
-        this.uuid = dbUser.getUniqueId();
-
-        DbUser dbLocalUser = this.dbUser.toLocal();
-
-        this.name = dbLocalUser.getName();
-
-        this.airMode = dbLocalUser.isAirMode();
-
-        this.prefix = Chat.parseStringToComponent(dbLocalUser.getPrefix());
-
-        this.suffix = Chat.parseStringToComponent(dbLocalUser.getSuffix());
-
-        this.nick = Chat.parseStringToComponent(dbLocalUser.getNick());
-
-        DbPermGroup dbGroup = dbLocalUser.getPermGroup();
-        String permGroupName;
-        if (dbGroup != null) {
-            permGroupName = dbGroup.getName();
-        } else {
-            permGroupName = Network.getGroupManager().getGuestPermGroup().getName();
-        }
-
-        this.permGroup = Network.getGroupManager().getPermGroup(permGroupName);
-
-        this.displayGroups = new TreeSet<>(Comparator.comparingInt(DisplayGroup::getRank));
-        for (String groupName : dbLocalUser.getDisplayGroupNames()) {
-            this.displayGroups.add(Network.getGroupManager().getDisplayGroup(groupName));
-        }
-
-        if (this.displayGroups.isEmpty()) {
-            this.displayGroups.add(Network.getGroupManager().getGuestDisplayGroup());
-        }
-
-        this.service = dbLocalUser.isService();
-
-        this.coins = dbLocalUser.getCoins();
-
-        this.privacyPolicyDateTime = dbLocalUser.getPrivacyPolicyDateTime();
-
-        for (DbPermission perm : dbLocalUser.getPermissions()) {
-            this.databasePermissions.add(
-                    new ExPermission(perm.getName(), perm.getMode(), perm.getServers()));
-        }
-        this.databasePermissions.addAll(this.permGroup.getPermissions());
+  public PreUser(String name) throws UserNotInDatabaseException {
+    if (!Database.getUsers().containsUser(name)) {
+      throw new UserNotInDatabaseException();
     }
 
-    public UUID getUuid() {
-        return uuid;
+    this.dbUser = Database.getUsers().getUser(name);
+
+    this.uuid = dbUser.getUniqueId();
+
+    DbUser dbLocalUser = this.dbUser.toLocal();
+
+    this.name = dbLocalUser.getName();
+
+    this.airMode = dbLocalUser.isAirMode();
+
+    this.prefix = Chat.parseStringToComponent(dbLocalUser.getPrefix());
+
+    this.suffix = Chat.parseStringToComponent(dbLocalUser.getSuffix());
+
+    this.nick = Chat.parseStringToComponent(dbLocalUser.getNick());
+
+    DbPermGroup dbGroup = dbLocalUser.getPermGroup();
+    String permGroupName;
+    if (dbGroup != null) {
+      permGroupName = dbGroup.getName();
+    } else {
+      permGroupName = Network.getGroupManager().getGuestPermGroup().getName();
     }
 
-    public String getName() {
-        return name;
+    this.permGroup = Network.getGroupManager().getPermGroup(permGroupName);
+
+    this.displayGroups = new TreeSet<>(Comparator.comparingInt(DisplayGroup::getRank));
+    for (String groupName : dbLocalUser.getDisplayGroupNames()) {
+      this.displayGroups.add(Network.getGroupManager().getDisplayGroup(groupName));
     }
 
-    public DbUser getDbUser() {
-        return dbUser;
+    if (this.displayGroups.isEmpty()) {
+      this.displayGroups.add(Network.getGroupManager().getGuestDisplayGroup());
     }
 
-    public boolean isService() {
-        return service;
-    }
+    this.service = dbLocalUser.isService();
 
-    public boolean isAirMode() {
-        return airMode;
-    }
+    this.coins = dbLocalUser.getCoins();
 
-    public LocalDateTime getPrivacyPolicyDateTime() {
-        return privacyPolicyDateTime;
-    }
+    this.privacyPolicyDateTime = dbLocalUser.getPrivacyPolicyDateTime();
 
-    public PermGroup getPermGroup() {
-        return permGroup;
+    for (DbPermission perm : dbLocalUser.getPermissions()) {
+      this.databasePermissions.add(
+          new ExPermission(perm.getName(), perm.getMode(), perm.getServers()));
     }
+    this.databasePermissions.addAll(this.permGroup.getPermissions());
+  }
 
-    public SortedSet<DisplayGroup> getDisplayGroups() {
-        return displayGroups;
-    }
+  public UUID getUuid() {
+    return uuid;
+  }
 
-    public DisplayGroup getMainDisplayGroup() {
-        return displayGroups.first();
-    }
+  public String getName() {
+    return name;
+  }
 
-    public Component getPrefix() {
-        return prefix;
-    }
+  public DbUser getDbUser() {
+    return dbUser;
+  }
 
-    public Component getSuffix() {
-        return suffix;
-    }
+  public boolean isService() {
+    return service;
+  }
 
-    public Component getNick() {
-        return nick;
-    }
+  public boolean isAirMode() {
+    return airMode;
+  }
 
-    public float getCoins() {
-        return coins;
-    }
+  public LocalDateTime getPrivacyPolicyDateTime() {
+    return privacyPolicyDateTime;
+  }
 
-    public Collection<ExPermission> getDatabasePermissions() {
-        return databasePermissions;
-    }
+  public PermGroup getPermGroup() {
+    return permGroup;
+  }
+
+  public SortedSet<DisplayGroup> getDisplayGroups() {
+    return displayGroups;
+  }
+
+  public DisplayGroup getMainDisplayGroup() {
+    return displayGroups.first();
+  }
+
+  public Component getPrefix() {
+    return prefix;
+  }
+
+  public Component getSuffix() {
+    return suffix;
+  }
+
+  public Component getNick() {
+    return nick;
+  }
+
+  public float getCoins() {
+    return coins;
+  }
+
+  public Collection<ExPermission> getDatabasePermissions() {
+    return databasePermissions;
+  }
 }

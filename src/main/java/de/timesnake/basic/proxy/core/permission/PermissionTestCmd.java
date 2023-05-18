@@ -17,36 +17,36 @@ import net.kyori.adventure.text.Component;
 public class PermissionTestCmd implements CommandListener<Sender, Argument> {
 
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        if (!sender.isPlayer(true)) {
-            return;
-        }
-
-        if (!args.isLengthHigherEquals(1, true)) {
-            return;
-        }
-
-        if (sender.hasPermission(args.getString(0))) {
-            sender.sendPluginMessage(
-                    Component.text("You have the permission ", ExTextColor.PERSONAL)
-                            .append(Component.text(args.getString(0), ExTextColor.VALUE)));
-        } else {
-            sender.sendPluginMessage(
-                    Component.text("You have not the permission ", ExTextColor.PERSONAL)
-                            .append(Component.text(args.getString(0), ExTextColor.VALUE)));
-        }
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    if (!sender.isPlayer(true)) {
+      return;
     }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        return null;
+    if (!args.isLengthHigherEquals(1, true)) {
+      return;
     }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
-
+    if (sender.hasPermission(args.getString(0))) {
+      sender.sendPluginMessage(
+          Component.text("You have the permission ", ExTextColor.PERSONAL)
+              .append(Component.text(args.getString(0), ExTextColor.VALUE)));
+    } else {
+      sender.sendPluginMessage(
+          Component.text("You have not the permission ", ExTextColor.PERSONAL)
+              .append(Component.text(args.getString(0), ExTextColor.VALUE)));
     }
+  }
+
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    return null;
+  }
+
+  @Override
+  public void loadCodes(Plugin plugin) {
+
+  }
 }

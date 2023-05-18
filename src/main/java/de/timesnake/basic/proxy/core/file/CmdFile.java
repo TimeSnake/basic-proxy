@@ -13,37 +13,37 @@ import java.util.concurrent.TimeUnit;
 
 public class CmdFile extends ExFile {
 
-    private List<String> startCommands;
+  private List<String> startCommands;
 
-    public CmdFile() {
-        super("basic-proxy", "commands.toml");
-        this.loadStartCommands();
-    }
+  public CmdFile() {
+    super("basic-proxy", "commands.toml");
+    this.loadStartCommands();
+  }
 
-    private void loadStartCommands() {
-        this.startCommands = this.getCommandList();
-    }
+  private void loadStartCommands() {
+    this.startCommands = this.getCommandList();
+  }
 
-    public List<String> getStartCommands() {
-        return this.startCommands;
-    }
+  public List<String> getStartCommands() {
+    return this.startCommands;
+  }
 
-    public void executeStartCommands() {
-        if (this.startCommands != null) {
-            int delay = 3;
-            for (String cmd : this.startCommands) {
-                BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
-                    Network.printText(Plugin.NETWORK, "Executing command: " + cmd, "Commands");
-                    Network.runCommand(cmd);
-                }).delay(delay, TimeUnit.SECONDS).schedule();
-                delay += 3;
-            }
-        }
+  public void executeStartCommands() {
+    if (this.startCommands != null) {
+      int delay = 3;
+      for (String cmd : this.startCommands) {
+        BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
+          Network.printText(Plugin.NETWORK, "Executing command: " + cmd, "Commands");
+          Network.runCommand(cmd);
+        }).delay(delay, TimeUnit.SECONDS).schedule();
+        delay += 3;
+      }
     }
+  }
 
-    private List<String> getCommandList() {
-        this.load();
-        return super.getList("start");
-    }
+  private List<String> getCommandList() {
+    this.load();
+    return super.getList("start");
+  }
 
 }

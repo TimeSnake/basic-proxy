@@ -16,22 +16,22 @@ import java.util.concurrent.TimeUnit;
 
 public class ChannelPingPong implements ChannelTimeOutListener {
 
-    private ScheduledTask task;
+  private ScheduledTask task;
 
-    public void startPingPong() {
-        if (task != null) {
-            task.cancel();
-        }
-        ((ProxyChannel) Channel.getInstance()).ping(Network.getNotOfflineServerNames());
-        task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
-            ((ProxyChannel) Channel.getInstance()).checkPong();
-            this.startPingPong();
-        }).delay(15, TimeUnit.SECONDS).schedule();
+  public void startPingPong() {
+    if (task != null) {
+      task.cancel();
     }
+    ((ProxyChannel) Channel.getInstance()).ping(Network.getNotOfflineServerNames());
+    task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
+      ((ProxyChannel) Channel.getInstance()).checkPong();
+      this.startPingPong();
+    }).delay(15, TimeUnit.SECONDS).schedule();
+  }
 
-    @Override
-    public void onServerTimeOut(String name) {
-        Network.getServer(name).setStatus(Status.Server.OFFLINE, true);
-        Network.printText(Plugin.NETWORK, name + " timed out on channel ping");
-    }
+  @Override
+  public void onServerTimeOut(String name) {
+    Network.getServer(name).setStatus(Status.Server.OFFLINE, true);
+    Network.printText(Plugin.NETWORK, name + " timed out on channel ping");
+  }
 }

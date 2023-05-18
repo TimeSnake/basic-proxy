@@ -15,31 +15,31 @@ import java.nio.file.Path;
 
 public class BuildServer extends TaskServer {
 
-    public BuildServer(DbBuildServer database, Path folderPath, NetworkServer networkServer) {
-        super(database, folderPath, networkServer);
+  public BuildServer(DbBuildServer database, Path folderPath, NetworkServer networkServer) {
+    super(database, folderPath, networkServer);
+  }
+
+  @Override
+  public DbBuildServer getDatabase() {
+    return (DbBuildServer) super.getDatabase();
+  }
+
+  @Override
+  public String getServerTask() {
+    return super.getType().getShortName();
+  }
+
+  public boolean loadWorld(String worldName) {
+    WorldSyncResult result = Network.getNetworkUtils().syncWorld(this.networkServer, worldName);
+
+    if (!result.isSuccessful()) {
+      Loggers.NETWORK.warning(((WorldSyncResult.Fail) result).getReason());
+      return false;
     }
 
-    @Override
-    public DbBuildServer getDatabase() {
-        return (DbBuildServer) super.getDatabase();
-    }
-
-    @Override
-    public String getServerTask() {
-        return super.getType().getShortName();
-    }
-
-    public boolean loadWorld(String worldName) {
-        WorldSyncResult result = Network.getNetworkUtils().syncWorld(this.networkServer, worldName);
-
-        if (!result.isSuccessful()) {
-            Loggers.NETWORK.warning(((WorldSyncResult.Fail) result).getReason());
-            return false;
-        }
-
-        Network.getChannel().sendMessage(
-                new ChannelServerMessage<>(this.getName(), MessageType.Server.LOAD_WORLD,
-                        worldName));
-        return true;
-    }
+    Network.getChannel().sendMessage(
+        new ChannelServerMessage<>(this.getName(), MessageType.Server.LOAD_WORLD,
+            worldName));
+    return true;
+  }
 }

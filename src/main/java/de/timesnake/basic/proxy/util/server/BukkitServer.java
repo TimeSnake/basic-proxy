@@ -12,54 +12,55 @@ import java.nio.file.Path;
 
 public abstract class BukkitServer {
 
-    protected final String name;
-    protected final Path folderPath;
+  protected final String name;
+  protected final Path folderPath;
 
-    public BukkitServer(String name, Path folderPath) {
-        this.name = name;
-        this.folderPath = folderPath;
+  public BukkitServer(String name, Path folderPath) {
+    this.name = name;
+    this.folderPath = folderPath;
+  }
+
+  public boolean start() {
+    if (Network.isTmuxEnabled()) {
+      try {
+        new ProcessBuilder().command("/bin/bash", "-c", "tmux new-window -n " + this.name + " -t " +
+            Network.TMUX_SESSION_NAME + ": " + this.folderPath.toAbsolutePath() + "/start.sh " +
+            this.getServerTask()).start();
+        return true;
+      } catch (IOException var2) {
+        var2.printStackTrace();
+        return false;
+      }
+    } else {
+      try {
+        Runtime.getRuntime().exec("konsole --separate --workdir " + this.folderPath + " -e " +
+            this.folderPath + "/start.sh " + this.getServerTask());
+        return true;
+      } catch (IOException var2) {
+        var2.printStackTrace();
+        return false;
+      }
     }
+  }
 
-    public boolean start() {
-        if (Network.isTmuxEnabled()) {
-            try {
-                new ProcessBuilder().command("/bin/bash", "-c", "tmux new-window -n " + this.name + " -t " +
-                        Network.TMUX_SESSION_NAME + ": " + this.folderPath.toAbsolutePath() + "/start.sh " +
-                        this.getServerTask()).start();
-                return true;
-            } catch (IOException var2) {
-                var2.printStackTrace();
-                return false;
-            }
-        } else {
-            try {
-                Runtime.getRuntime().exec("konsole --separate --workdir " + this.folderPath + " -e " +
-                        this.folderPath + "/start.sh " + this.getServerTask());
-                return true;
-            } catch (IOException var2) {
-                var2.printStackTrace();
-                return false;
-            }
-        }
-    }
+  public void stop() {
+    this.execute("stop");
+  }
 
-    public void stop() {
-        this.execute("stop");
-    }
+  public void execute(String cmd) {
+    Network.getChannel()
+        .sendMessage(new ChannelServerMessage<>(this.getName(), MessageType.Server.COMMAND, cmd));
+  }
 
-    public void execute(String cmd) {
-        Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getName(), MessageType.Server.COMMAND, cmd));
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public Path getFolderPath() {
+    return this.folderPath;
+  }
 
-    public Path getFolderPath() {
-        return this.folderPath;
-    }
+  public abstract Integer getPort();
 
-    public abstract Integer getPort();
-
-    public abstract String getServerTask();
+  public abstract String getServerTask();
 }

@@ -17,29 +17,29 @@ import java.util.List;
 
 public class KickAllCmd implements CommandListener<Sender, Argument> {
 
-    private Code perm;
+  private Code perm;
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        if (!sender.hasPermission(this.perm)) {
-            return;
-        }
-
-        for (User user : Network.getUsers()) {
-            Network.getPunishmentManager().kickPlayer(sender, user, "Network reset");
-        }
-        Network.setWork(true);
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    if (!sender.hasPermission(this.perm)) {
+      return;
     }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        return null;
+    for (User user : Network.getUsers()) {
+      Network.getPunishmentManager().kickPlayer(sender, user, "Network reset");
     }
+    Network.setWork(true);
+  }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("network.kickall");
-    }
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    return null;
+  }
+
+  @Override
+  public void loadCodes(Plugin plugin) {
+    this.perm = plugin.createPermssionCode("network.kickall");
+  }
 }

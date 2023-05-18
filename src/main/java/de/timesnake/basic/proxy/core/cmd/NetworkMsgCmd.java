@@ -18,36 +18,36 @@ import net.kyori.adventure.text.Component;
 
 public class NetworkMsgCmd implements CommandListener<Sender, Argument> {
 
-    private Code perm;
+  private Code perm;
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        if (sender.hasPermission(this.perm)) {
-            if (sender.isPlayer(true)) {
-                if (args.isLengthEquals(0, true)) {
-                    User user = sender.getUser();
-                    user.setListeningNetworkMessages(!user.isListeningNetworkMessages());
-                    if (user.isListeningNetworkMessages()) {
-                        sender.sendPluginMessage(
-                                Component.text("Enabled network messages", ExTextColor.PERSONAL));
-                    } else {
-                        sender.sendPluginMessage(
-                                Component.text("Disabled network messages", ExTextColor.PERSONAL));
-                    }
-                }
-            }
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    if (sender.hasPermission(this.perm)) {
+      if (sender.isPlayer(true)) {
+        if (args.isLengthEquals(0, true)) {
+          User user = sender.getUser();
+          user.setListeningNetworkMessages(!user.isListeningNetworkMessages());
+          if (user.isListeningNetworkMessages()) {
+            sender.sendPluginMessage(
+                Component.text("Enabled network messages", ExTextColor.PERSONAL));
+          } else {
+            sender.sendPluginMessage(
+                Component.text("Disabled network messages", ExTextColor.PERSONAL));
+          }
         }
+      }
     }
+  }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> arguments) {
-        return null;
-    }
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> arguments) {
+    return null;
+  }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("network.message");
-    }
+  @Override
+  public void loadCodes(Plugin plugin) {
+    this.perm = plugin.createPermssionCode("network.message");
+  }
 }

@@ -52,423 +52,423 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 public class NetworkManager {
 
-    public static NetworkManager getInstance() {
-        return instance;
-    }
-
-    private static final NetworkManager instance = new NetworkManager();
-
-
-    private final ConcurrentHashMap<UUID, User> users = new ConcurrentHashMap<>();
-
-    private final LinkedList<User> networkMessageListeners = new LinkedList<>();
-    private final LinkedList<User> privateMessageListeners = new LinkedList<>();
-    private final LinkedList<User> supportMessageListeners = new LinkedList<>();
-
-    private TimeDownParser timeDownParser;
-    private final CommandManager commandManager = new CommandManager();
-    private final PermissionManager permissionManager = new PermissionManager();
-    private final ServerCmd serverCmd = new ServerCmd();
-    private final ChannelPingPong channelPingPong = new ChannelPingPong();
-    private Integer maxPlayersLobby = 20;
-    private Integer maxPlayersBuild = 20;
-    private UserManager userManager;
-    private AutoShutdown autoShutdown;
-    private SupportManager supportManager;
-    private String velocitySecret;
-    private boolean tmuxEnabled;
-    private Path networkPath;
-    private NetworkUtils networkUtils;
-    private PunishmentManager punishmentManager;
-
-    private GroupManager groupManager;
-
-    private ServerManager serverManager;
-
-    private boolean isWork = false;
-
-
-    public void onEnable() {
-        this.timeDownParser = this.initTimeDownParser();
-        this.userManager = new UserManager();
-        this.groupManager = new GroupManager();
-        this.groupManager.loadGroups();
-
-        Config config = new Config();
-        this.networkPath = Path.of(config.getNetworkPath());
-        Database.getNetwork()
-                .addNetworkFile("templates", this.networkPath.resolve("templates").toFile());
-        Database.getNetwork().addNetworkFile("network", this.networkPath.toFile());
-
-        this.velocitySecret = config.getVelocitySecret();
-        this.tmuxEnabled = config.isTmuxEnabled();
-
-        if (!Database.getGroups().containsPermGroup(Network.GUEST_PERM_GROUP_NAME)) {
-            Database.getGroups()
-                    .addPermGroup(Network.GUEST_PERM_GROUP_NAME, Network.GUEST_PERM_GROUP_RANK);
-        }
-
-        if (!Database.getGroups().containsPermGroup(Network.MEMBER_PERM_GROUP_NAME)) {
-            Database.getGroups()
-                    .addPermGroup(Network.MEMBER_PERM_GROUP_NAME, Network.MEMBER_PERM_GROUP_RANK);
-        }
-
-        if (!Database.getGroups().containsDisplayGroup(Network.GUEST_DISPLAY_GROUP_NAME)) {
-            Database.getGroups().addDisplayGroup(Network.GUEST_DISPLAY_GROUP_NAME,
-                    Network.GUEST_DISPLAY_GROUP_RANK,
-                    "Guest", ExTextColor.GRAY);
-        }
-
-        if (!Database.getGroups().containsDisplayGroup(Network.MEMBER_DISPLAY_GROUP_NAME)) {
-            Database.getGroups().addDisplayGroup(Network.MEMBER_DISPLAY_GROUP_NAME,
-                    Network.MEMBER_DISPLAY_GROUP_RANK,
-                    null, null);
-        }
-
-        this.punishmentManager = new PunishmentManager();
-
-        maxPlayersLobby = config.getMaxPlayersLobby();
-        maxPlayersBuild = config.getMaxPlayersBuild();
-
-        this.serverManager = new ServerManager();
-
-        this.channelPingPong.startPingPong();
-        this.getChannel().addTimeOutListener(this.channelPingPong);
-
-        this.supportManager = new SupportManager();
-
-        this.autoShutdown = new AutoShutdown();
-        this.autoShutdown.start(AutoShutdown.START_TIME);
-
-        CmdFile cmdFile = new CmdFile();
-        cmdFile.executeStartCommands();
-
-        this.networkUtils = new NetworkUtils(this.networkPath);
-
-        Tuple<ServerCreationResult, Optional<Server>> res = this.createTmpServer(
-                new NetworkServer("lobby0", 25001, Type.Server.LOBBY)
-                        .setMaxPlayers(50)
-                        .options(o -> o.setWorldCopyType(CopyType.SYNC)),
-                false);
-
-        if (res.getA().isSuccessful()) {
-            this.printText(Plugin.NETWORK, "Created lobby0 server");
-        } else {
-            this.printWarning(Plugin.NETWORK, ((ServerCreationResult.Fail) res.getA()).getReason());
-        }
-    }
-
-    protected TimeDownParser initTimeDownParser() {
-        return new TimeDownParser();
-    }
-
-    public void broadcastMessage(String msg) {
-        BasicProxy.getServer().sendMessage(net.kyori.adventure.text.Component.text(msg));
-    }
-
-    public void broadcastMessage(Plugin plugin, String msg) {
-        BasicProxy.getServer()
-                .sendMessage(Chat.getSenderPlugin(plugin).append(Component.text(msg)));
-    }
-
-    public void broadcastTDMessage(Plugin plugin, String msg) {
-        BasicProxy.getServer().sendMessage(Chat.getSenderPlugin(plugin)
-                .append(this.getTimeDownParser().parse2Component(msg)));
-    }
-
-    public void broadcastMessage(Plugin plugin, Component msg) {
-        BasicProxy.getServer().sendMessage(Chat.getSenderPlugin(plugin).append(msg));
-    }
-
-    public void sendConsoleMessage(String message) {
-        BasicProxy.getServer().sendMessage(net.kyori.adventure.text.Component.text(message));
-    }
-
-
-    public Integer getPort() {
-        return 25565;
-    }
-
-    public String getName() {
-        return Channel.PROXY_NAME;
-    }
-
-    public User getUser(UUID uuid) {
-        return users.get(uuid);
-    }
-
-    public User getUser(Player p) {
-        return users.get(p.getUniqueId());
-    }
-
-    public boolean isUserOnline(UUID uuid) {
-        return users.containsKey(uuid);
-    }
-
-    public Collection<User> getUsers() {
-        return users.values();
-    }
-
-    public void sendUserToServer(User user, String server) {
-        user.connect(BasicProxy.getServer().getServer(server).get());
-    }
-
-    public void sendUserToServer(User user, Integer port) {
-        user.connect(BasicProxy.getServer().getServer(this.getServer(port).getName()).get());
-    }
-
-    public void removeUser(Player p) {
-        if (users.get(p.getUniqueId()) != null) {
-            users.get(p.getUniqueId()).quit();
-        }
-        users.remove(p.getUniqueId());
-    }
-
-    public User addUser(Player p, PreUser user) {
-        users.put(p.getUniqueId(), new User(p, user));
-        return users.get(p.getUniqueId());
-    }
-
-    public boolean isWork() {
-        return isWork;
-    }
-
-    public void setWork(boolean isWork) {
-        this.isWork = isWork;
-    }
-
-    public List<User> getNetworkMessageListeners() {
-        return networkMessageListeners;
-    }
-
-    public List<User> getPrivateMessageListeners() {
-        return privateMessageListeners;
-    }
-
-    public List<User> getSupportMessageListeners() {
-        return supportMessageListeners;
-    }
-
-    public void addNetworkMessageListener(User user) {
-        networkMessageListeners.add(user);
-    }
-
-    public void addPrivateMessageListener(User user) {
-        privateMessageListeners.add(user);
-    }
-
-    public void addSupportMessageListener(User user) {
-        supportMessageListeners.add(user);
-    }
-
-    public void removeNetworkMessageListener(User user) {
-        networkMessageListeners.remove(user);
-    }
-
-    public void removePrivateMessageListener(User user) {
-        privateMessageListeners.remove(user);
-    }
-
-    public void removeSupportMessageListener(User user) {
-        supportMessageListeners.remove(user);
-    }
-
-    public ScheduledTask runTaskLater(Task task, Duration delay) {
-        return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run)
-                .delay(delay).schedule();
-    }
-
-    public ScheduledTask runTaskAsync(Task task) {
-        return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run)
-                .schedule();
-    }
-
-    @Deprecated
-    public final void printText(Plugin plugin, String text, String... subPlugins) {
-        StringBuilder sb = new StringBuilder("[" + plugin.getName() + "]");
-        for (String subPlugin : subPlugins) {
-            sb.append("[");
-            sb.append(subPlugin);
-            sb.append("]");
-        }
-        sb.append(" ").append(text);
-        BasicProxy.getLogger().info(sb.toString());
-    }
-
-    @Deprecated
-    public final void printText(Plugin plugin, Component text, String... subPlugins) {
-        this.printText(plugin, PlainTextComponentSerializer.plainText().serialize(text),
-                subPlugins);
-    }
-
-    @Deprecated
-    public final void printWarning(Plugin plugin, String warning, String... subPlugins) {
-        StringBuilder sb = new StringBuilder("[" + plugin.getName() + "]");
-        for (String subPlugin : subPlugins) {
-            sb.append("[");
-            sb.append(subPlugin);
-            sb.append("]");
-        }
-        sb.append(" WARNING ").append(warning);
-        BasicProxy.getLogger().warning(sb.toString());
-    }
-
-    public void runCommand(String command) {
-        BasicProxy.getServer().getCommandManager()
-                .executeAsync(BasicProxy.getServer().getConsoleCommandSource(), command);
-    }
-
-    public void registerListener(Object listener) {
-        BasicProxy.getEventManager().register(BasicProxy.getPlugin(), listener);
-    }
-
-    public ProxyChannel getChannel() {
-        return (ProxyChannel) Channel.getInstance();
-    }
-
-    public Integer getMaxPlayersLobby() {
-        return maxPlayersLobby;
-    }
+  public static NetworkManager getInstance() {
+    return instance;
+  }
 
-    public Integer getMaxPlayersBuild() {
-        return maxPlayersBuild;
-    }
+  private static final NetworkManager instance = new NetworkManager();
 
-    public CommandManager getCommandManager() {
-        return this.commandManager;
-    }
 
-    public PermissionManager getPermissionHandler() {
-        return this.permissionManager;
-    }
+  private final ConcurrentHashMap<UUID, User> users = new ConcurrentHashMap<>();
 
-    public ServerCmd getBukkitCmdHandler() {
-        return this.serverCmd;
-    }
+  private final LinkedList<User> networkMessageListeners = new LinkedList<>();
+  private final LinkedList<User> privateMessageListeners = new LinkedList<>();
+  private final LinkedList<User> supportMessageListeners = new LinkedList<>();
 
-    public String getVelocitySecret() {
-        return velocitySecret;
-    }
+  private TimeDownParser timeDownParser;
+  private final CommandManager commandManager = new CommandManager();
+  private final PermissionManager permissionManager = new PermissionManager();
+  private final ServerCmd serverCmd = new ServerCmd();
+  private final ChannelPingPong channelPingPong = new ChannelPingPong();
+  private Integer maxPlayersLobby = 20;
+  private Integer maxPlayersBuild = 20;
+  private UserManager userManager;
+  private AutoShutdown autoShutdown;
+  private SupportManager supportManager;
+  private String velocitySecret;
+  private boolean tmuxEnabled;
+  private Path networkPath;
+  private NetworkUtils networkUtils;
+  private PunishmentManager punishmentManager;
 
-    public Path getNetworkPath() {
-        return this.networkPath;
-    }
+  private GroupManager groupManager;
 
-    public boolean isTmuxEnabled() {
-        return tmuxEnabled;
-    }
+  private ServerManager serverManager;
 
-    public NetworkUtils getNetworkUtils() {
-        return this.networkUtils;
-    }
+  private boolean isWork = false;
 
-    public ServerManager getServerManager() {
-        return serverManager;
-    }
 
-    public GroupManager getGroupManager() {
-        return this.groupManager;
-    }
+  public void onEnable() {
+    this.timeDownParser = this.initTimeDownParser();
+    this.userManager = new UserManager();
+    this.groupManager = new GroupManager();
+    this.groupManager.loadGroups();
 
-    // server manager
+    Config config = new Config();
+    this.networkPath = Path.of(config.getNetworkPath());
+    Database.getNetwork()
+        .addNetworkFile("templates", this.networkPath.resolve("templates").toFile());
+    Database.getNetwork().addNetworkFile("network", this.networkPath.toFile());
 
-    public int getOnlineLobbys() {
-        return getServerManager().getOnlineLobbys();
-    }
+    this.velocitySecret = config.getVelocitySecret();
+    this.tmuxEnabled = config.isTmuxEnabled();
 
-    public Collection<Server> getServers() {
-        return getServerManager().getServers();
+    if (!Database.getGroups().containsPermGroup(Network.GUEST_PERM_GROUP_NAME)) {
+      Database.getGroups()
+          .addPermGroup(Network.GUEST_PERM_GROUP_NAME, Network.GUEST_PERM_GROUP_RANK);
     }
 
-    @Deprecated
-    public Collection<Integer> getNotOfflineServerPorts() {
-        return getServerManager().getNotOfflineServerPorts();
+    if (!Database.getGroups().containsPermGroup(Network.MEMBER_PERM_GROUP_NAME)) {
+      Database.getGroups()
+          .addPermGroup(Network.MEMBER_PERM_GROUP_NAME, Network.MEMBER_PERM_GROUP_RANK);
     }
 
-    public Collection<String> getNotOfflineServerNames() {
-        return getServerManager().getNotOfflineServerNames();
+    if (!Database.getGroups().containsDisplayGroup(Network.GUEST_DISPLAY_GROUP_NAME)) {
+      Database.getGroups().addDisplayGroup(Network.GUEST_DISPLAY_GROUP_NAME,
+          Network.GUEST_DISPLAY_GROUP_RANK,
+          "Guest", ExTextColor.GRAY);
     }
 
-    public Server getServer(Integer port) {
-        return getServerManager().getServer(port);
+    if (!Database.getGroups().containsDisplayGroup(Network.MEMBER_DISPLAY_GROUP_NAME)) {
+      Database.getGroups().addDisplayGroup(Network.MEMBER_DISPLAY_GROUP_NAME,
+          Network.MEMBER_DISPLAY_GROUP_RANK,
+          null, null);
     }
 
-    public Server getServer(String name) {
-        return getServerManager().getServer(name);
-    }
+    this.punishmentManager = new PunishmentManager();
 
-    public Server getServer(DbServer server) {
-        return getServerManager().getServer(server);
-    }
+    maxPlayersLobby = config.getMaxPlayersLobby();
+    maxPlayersBuild = config.getMaxPlayersBuild();
 
-    public void updateServerTaskAll() {
-        getServerManager().updateServerTaskAll();
-    }
+    this.serverManager = new ServerManager();
 
-    public void updateServerTask(int port) {
-        getServerManager().updateServerTask(port);
-    }
+    this.channelPingPong.startPingPong();
+    this.getChannel().addTimeOutListener(this.channelPingPong);
 
-    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-            boolean registerServer) {
-        return getServerManager().createTmpServer(server, registerServer);
-    }
+    this.supportManager = new SupportManager();
 
-    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server) {
-        return this.createTmpServer(server, true);
-    }
+    this.autoShutdown = new AutoShutdown();
+    this.autoShutdown.start(AutoShutdown.START_TIME);
 
-    public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,
-            String name) {
-        return getServerManager().initNewPublicPlayerServer(type, task, name);
-    }
+    CmdFile cmdFile = new CmdFile();
+    cmdFile.executeStartCommands();
 
-    public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task,
-            String name) {
-        return getServerManager().initNewPlayerServer(uuid, type, task, name);
-    }
+    this.networkUtils = new NetworkUtils(this.networkPath);
 
-    public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid,
-            NetworkServer server) {
-        return getServerManager().loadPlayerServer(uuid, server);
-    }
+    Tuple<ServerCreationResult, Optional<Server>> res = this.createTmpServer(
+        new NetworkServer("lobby0", 25001, Type.Server.LOBBY)
+            .setMaxPlayers(50)
+            .options(o -> o.setWorldCopyType(CopyType.SYNC)),
+        false);
 
-    public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(
-            NetworkServer server) {
-        return getServerManager().loadPublicPlayerServer(server);
+    if (res.getA().isSuccessful()) {
+      this.printText(Plugin.NETWORK, "Created lobby0 server");
+    } else {
+      this.printWarning(Plugin.NETWORK, ((ServerCreationResult.Fail) res.getA()).getReason());
     }
+  }
 
-    public Tuple<ServerCreationResult, Optional<Server>> loadPlayerGameServer(UUID uuid,
-            NetworkServer server) {
-        return getServerManager().loadPlayerGameServer(uuid, server);
-    }
+  protected TimeDownParser initTimeDownParser() {
+    return new TimeDownParser();
+  }
 
-    public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerGameServer(
-            NetworkServer server) {
-        return getServerManager().loadPublicPlayerGameServer(server);
-    }
+  public void broadcastMessage(String msg) {
+    BasicProxy.getServer().sendMessage(net.kyori.adventure.text.Component.text(msg));
+  }
 
-    public boolean deleteServer(String name, boolean force) {
-        return getServerManager().deleteServer(name, force);
-    }
+  public void broadcastMessage(Plugin plugin, String msg) {
+    BasicProxy.getServer()
+        .sendMessage(Chat.getSenderPlugin(plugin).append(Component.text(msg)));
+  }
 
-    public CompletableFuture<Boolean> killAndDeleteServer(String name, Long pid) {
-        return getServerManager().killAndDeleteServer(name, pid);
-    }
+  public void broadcastTDMessage(Plugin plugin, String msg) {
+    BasicProxy.getServer().sendMessage(Chat.getSenderPlugin(plugin)
+        .append(this.getTimeDownParser().parse2Component(msg)));
+  }
 
-    public int nextEmptyPort() {
-        return getServerManager().nextEmptyPort();
-    }
+  public void broadcastMessage(Plugin plugin, Component msg) {
+    BasicProxy.getServer().sendMessage(Chat.getSenderPlugin(plugin).append(msg));
+  }
 
-    public Map<String, Path> getTmpDirsByServerName() {
-        return getServerManager().getTmpDirsByServerName();
-    }
+  public void sendConsoleMessage(String message) {
+    BasicProxy.getServer().sendMessage(net.kyori.adventure.text.Component.text(message));
+  }
 
-    public TimeDownParser getTimeDownParser() {
-        return timeDownParser;
-    }
 
-    public PunishmentManager getPunishmentManager() {
-        return punishmentManager;
-    }
+  public Integer getPort() {
+    return 25565;
+  }
+
+  public String getName() {
+    return Channel.PROXY_NAME;
+  }
+
+  public User getUser(UUID uuid) {
+    return users.get(uuid);
+  }
+
+  public User getUser(Player p) {
+    return users.get(p.getUniqueId());
+  }
+
+  public boolean isUserOnline(UUID uuid) {
+    return users.containsKey(uuid);
+  }
+
+  public Collection<User> getUsers() {
+    return users.values();
+  }
+
+  public void sendUserToServer(User user, String server) {
+    user.connect(BasicProxy.getServer().getServer(server).get());
+  }
+
+  public void sendUserToServer(User user, Integer port) {
+    user.connect(BasicProxy.getServer().getServer(this.getServer(port).getName()).get());
+  }
+
+  public void removeUser(Player p) {
+    if (users.get(p.getUniqueId()) != null) {
+      users.get(p.getUniqueId()).quit();
+    }
+    users.remove(p.getUniqueId());
+  }
+
+  public User addUser(Player p, PreUser user) {
+    users.put(p.getUniqueId(), new User(p, user));
+    return users.get(p.getUniqueId());
+  }
+
+  public boolean isWork() {
+    return isWork;
+  }
+
+  public void setWork(boolean isWork) {
+    this.isWork = isWork;
+  }
+
+  public List<User> getNetworkMessageListeners() {
+    return networkMessageListeners;
+  }
+
+  public List<User> getPrivateMessageListeners() {
+    return privateMessageListeners;
+  }
+
+  public List<User> getSupportMessageListeners() {
+    return supportMessageListeners;
+  }
+
+  public void addNetworkMessageListener(User user) {
+    networkMessageListeners.add(user);
+  }
+
+  public void addPrivateMessageListener(User user) {
+    privateMessageListeners.add(user);
+  }
+
+  public void addSupportMessageListener(User user) {
+    supportMessageListeners.add(user);
+  }
+
+  public void removeNetworkMessageListener(User user) {
+    networkMessageListeners.remove(user);
+  }
+
+  public void removePrivateMessageListener(User user) {
+    privateMessageListeners.remove(user);
+  }
+
+  public void removeSupportMessageListener(User user) {
+    supportMessageListeners.remove(user);
+  }
+
+  public ScheduledTask runTaskLater(Task task, Duration delay) {
+    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run)
+        .delay(delay).schedule();
+  }
+
+  public ScheduledTask runTaskAsync(Task task) {
+    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run)
+        .schedule();
+  }
+
+  @Deprecated
+  public final void printText(Plugin plugin, String text, String... subPlugins) {
+    StringBuilder sb = new StringBuilder("[" + plugin.getName() + "]");
+    for (String subPlugin : subPlugins) {
+      sb.append("[");
+      sb.append(subPlugin);
+      sb.append("]");
+    }
+    sb.append(" ").append(text);
+    BasicProxy.getLogger().info(sb.toString());
+  }
+
+  @Deprecated
+  public final void printText(Plugin plugin, Component text, String... subPlugins) {
+    this.printText(plugin, PlainTextComponentSerializer.plainText().serialize(text),
+        subPlugins);
+  }
+
+  @Deprecated
+  public final void printWarning(Plugin plugin, String warning, String... subPlugins) {
+    StringBuilder sb = new StringBuilder("[" + plugin.getName() + "]");
+    for (String subPlugin : subPlugins) {
+      sb.append("[");
+      sb.append(subPlugin);
+      sb.append("]");
+    }
+    sb.append(" WARNING ").append(warning);
+    BasicProxy.getLogger().warning(sb.toString());
+  }
+
+  public void runCommand(String command) {
+    BasicProxy.getServer().getCommandManager()
+        .executeAsync(BasicProxy.getServer().getConsoleCommandSource(), command);
+  }
+
+  public void registerListener(Object listener) {
+    BasicProxy.getEventManager().register(BasicProxy.getPlugin(), listener);
+  }
+
+  public ProxyChannel getChannel() {
+    return (ProxyChannel) Channel.getInstance();
+  }
+
+  public Integer getMaxPlayersLobby() {
+    return maxPlayersLobby;
+  }
+
+  public Integer getMaxPlayersBuild() {
+    return maxPlayersBuild;
+  }
+
+  public CommandManager getCommandManager() {
+    return this.commandManager;
+  }
+
+  public PermissionManager getPermissionHandler() {
+    return this.permissionManager;
+  }
+
+  public ServerCmd getBukkitCmdHandler() {
+    return this.serverCmd;
+  }
+
+  public String getVelocitySecret() {
+    return velocitySecret;
+  }
+
+  public Path getNetworkPath() {
+    return this.networkPath;
+  }
+
+  public boolean isTmuxEnabled() {
+    return tmuxEnabled;
+  }
+
+  public NetworkUtils getNetworkUtils() {
+    return this.networkUtils;
+  }
+
+  public ServerManager getServerManager() {
+    return serverManager;
+  }
+
+  public GroupManager getGroupManager() {
+    return this.groupManager;
+  }
+
+  // server manager
+
+  public int getOnlineLobbys() {
+    return getServerManager().getOnlineLobbys();
+  }
+
+  public Collection<Server> getServers() {
+    return getServerManager().getServers();
+  }
+
+  @Deprecated
+  public Collection<Integer> getNotOfflineServerPorts() {
+    return getServerManager().getNotOfflineServerPorts();
+  }
+
+  public Collection<String> getNotOfflineServerNames() {
+    return getServerManager().getNotOfflineServerNames();
+  }
+
+  public Server getServer(Integer port) {
+    return getServerManager().getServer(port);
+  }
+
+  public Server getServer(String name) {
+    return getServerManager().getServer(name);
+  }
+
+  public Server getServer(DbServer server) {
+    return getServerManager().getServer(server);
+  }
+
+  public void updateServerTaskAll() {
+    getServerManager().updateServerTaskAll();
+  }
+
+  public void updateServerTask(int port) {
+    getServerManager().updateServerTask(port);
+  }
+
+  public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
+      boolean registerServer) {
+    return getServerManager().createTmpServer(server, registerServer);
+  }
+
+  public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server) {
+    return this.createTmpServer(server, true);
+  }
+
+  public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,
+      String name) {
+    return getServerManager().initNewPublicPlayerServer(type, task, name);
+  }
+
+  public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task,
+      String name) {
+    return getServerManager().initNewPlayerServer(uuid, type, task, name);
+  }
+
+  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid,
+      NetworkServer server) {
+    return getServerManager().loadPlayerServer(uuid, server);
+  }
+
+  public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(
+      NetworkServer server) {
+    return getServerManager().loadPublicPlayerServer(server);
+  }
+
+  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerGameServer(UUID uuid,
+      NetworkServer server) {
+    return getServerManager().loadPlayerGameServer(uuid, server);
+  }
+
+  public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerGameServer(
+      NetworkServer server) {
+    return getServerManager().loadPublicPlayerGameServer(server);
+  }
+
+  public boolean deleteServer(String name, boolean force) {
+    return getServerManager().deleteServer(name, force);
+  }
+
+  public CompletableFuture<Boolean> killAndDeleteServer(String name, Long pid) {
+    return getServerManager().killAndDeleteServer(name, pid);
+  }
+
+  public int nextEmptyPort() {
+    return getServerManager().nextEmptyPort();
+  }
+
+  public Map<String, Path> getTmpDirsByServerName() {
+    return getServerManager().getTmpDirsByServerName();
+  }
+
+  public TimeDownParser getTimeDownParser() {
+    return timeDownParser;
+  }
+
+  public PunishmentManager getPunishmentManager() {
+    return punishmentManager;
+  }
 }

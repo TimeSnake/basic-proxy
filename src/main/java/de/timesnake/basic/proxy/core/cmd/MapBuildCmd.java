@@ -38,7 +38,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
             return;
         }
 
-        List<String> worldNames = Network.getNetworkUtils().getWorldNames(Type.Server.BUILD, null);
+        List<String> worldFiles = Network.getNetworkUtils().getWorldNames(Type.Server.BUILD, null);
 
         if (!args.isLengthEquals(1, true)) {
             return;
@@ -46,7 +46,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
 
         String worldName = args.getString(0);
 
-        if (!worldNames.contains(worldName)) {
+        if (!worldFiles.contains(worldName)) {
             sender.sendMessageWorldNotExist(worldName);
             return;
         }
@@ -70,10 +70,9 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
             if (buildServer == null) {
                 int port = Network.nextEmptyPort();
                 Tuple<ServerCreationResult, Optional<Server>> result =
-                        Network.createTmpServer(
-                                new NetworkServer("build" + (port % 1000), port, Type.Server.BUILD,
-                                        Network.getVelocitySecret()).setPlayerTrackingRange(128),
-                                false, true);
+                        Network.createTmpServer(new NetworkServer("build" + (port % 1000),
+                                port, Type.Server.BUILD)
+                                .setPlayerTrackingRange(128));
 
                 if (!result.getA().isSuccessful()) {
                     sender.sendPluginMessage(Component.text("Error while creating a" +

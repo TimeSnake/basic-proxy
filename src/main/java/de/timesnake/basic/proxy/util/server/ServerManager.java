@@ -104,18 +104,58 @@ public class ServerManager implements ChannelListener {
     }
 
     public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-            CopyType copyType, boolean syncPlayerData, boolean registerServer) {
-        this.serverCreationLock.lock();
-
-        if (Network.getServer(server.getName()) != null) {
-            return new Tuple<>(new Fail("server already exists"), Optional.empty());
-        }
+            boolean registerServer) {
 
         ServerCreationResult result;
         Optional<Server> serverOpt = Optional.empty();
 
         try {
-            result = Network.getNetworkUtils().createServer(server, copyType, syncPlayerData);
+            this.serverCreationLock.lock();
+
+            if (Network.getServer(server.getName()) != null) {
+                return new Tuple<>(new Fail("server already exists"), Optional.empty());
+            }
+
+            server.setVelocitySecret(Network.getVelocitySecret());
+
+            if (server.getType().equals(Type.Server.LOBBY)) {
+                result = Network.getNetworkUtils().createServer(server
+                        .options(o -> o
+                                .setWorldCopyType(CopyType.SYNC)
+                                .setSyncPlayerData(false)
+                                .setSyncLogs(true)));
+
+            } else if (server.getType().equals(Type.Server.BUILD)) {
+                result = Network.getNetworkUtils().createServer(server
+                        .options(o -> o
+                                .setWorldCopyType(CopyType.NONE)
+                                .setSyncPlayerData(true)
+                                .setSyncLogs(true)));
+
+            } else if (server.getType().equals(Type.Server.LOUNGE)) {
+                result = Network.getNetworkUtils().createServer(server
+                        .options(o -> o
+                                .setWorldCopyType(CopyType.COPY)
+                                .setSyncPlayerData(false)
+                                .setSyncLogs(true)));
+
+            } else if (server.getType().equals(Type.Server.TEMP_GAME)) {
+                result = Network.getNetworkUtils().createServer(server
+                        .options(o -> o
+                                // copy type determined by map option
+                                .setSyncPlayerData(false)
+                                .setSyncLogs(true)));
+
+            } else if (server.getType().equals(Type.Server.GAME)) {
+                result = Network.getNetworkUtils().createServer(server
+                        .options(o -> o
+                                .setWorldCopyType(CopyType.COPY)
+                                .setSyncPlayerData(false)
+                                .setSyncLogs(true)));
+            } else {
+                return new Tuple<>(new Fail("unsupported server type"), Optional.empty());
+            }
+
             if (result.isSuccessful()) {
                 Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
                 serverOpt = Optional.ofNullable(this.addServer(server, serverPath, registerServer));
@@ -123,44 +163,38 @@ public class ServerManager implements ChannelListener {
         } finally {
             this.serverCreationLock.unlock();
         }
+
         return new Tuple<>(result, serverOpt);
     }
 
-    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-            CopyType copyType, boolean syncPlayerData) {
-        return this.createTmpServer(server, copyType, syncPlayerData, true);
-    }
-
-    public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,
+    public ServerInitResult initNewPublicPlayerServer(Type.Server<?> type, String task,
             String name) {
         this.serverCreationLock.lock();
-
-        if (Network.getServer(name) != null) {
-            return new ServerInitResult.Fail("server already exists");
-        }
 
         ServerInitResult result;
 
         try {
-            result = Network.getNetworkUtils().initPublicPlayerServer(type, task, name);
+            if (Network.getServer(name) != null) {
+                return new ServerInitResult.Fail("server already exists");
+            }
+            result = Network.getNetworkUtils().initNewPublicPlayerServer(type, task, name);
         } finally {
             this.serverCreationLock.unlock();
         }
         return result;
     }
 
-    public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task,
+    public ServerInitResult initNewPlayerServer(UUID uuid, Type.Server<?> type, String task,
             String name) {
         this.serverCreationLock.lock();
-
-        if (Network.getServer(name) != null) {
-            return new ServerInitResult.Fail("server already exists");
-        }
 
         ServerInitResult result;
 
         try {
-            result = Network.getNetworkUtils().initPlayerServer(uuid, type, task, name);
+            if (Network.getServer(name) != null) {
+                return new ServerInitResult.Fail("server already exists");
+            }
+            result = Network.getNetworkUtils().initNewPlayerServer(uuid, type, task, name);
         } finally {
             this.serverCreationLock.unlock();
         }
@@ -171,15 +205,18 @@ public class ServerManager implements ChannelListener {
             NetworkServer server) {
         this.serverCreationLock.lock();
 
-        if (Network.getServer(server.getName()) != null) {
-            return new Tuple<>(new Fail("server already exists"), Optional.empty());
-        }
-
         ServerCreationResult result;
         Optional<Server> serverOpt = Optional.empty();
 
         try {
+            if (Network.getServer(server.getName()) != null) {
+                return new Tuple<>(new Fail("server already exists"), Optional.empty());
+            }
+
+            server.setVelocitySecret(Network.getVelocitySecret());
+
             result = Network.getNetworkUtils().createPlayerServer(uuid, server);
+
             if (result.isSuccessful()) {
                 Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
                 serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
@@ -194,15 +231,18 @@ public class ServerManager implements ChannelListener {
             NetworkServer server) {
         this.serverCreationLock.lock();
 
-        if (Network.getServer(server.getName()) != null) {
-            return new Tuple<>(new Fail("server already exists"), Optional.empty());
-        }
-
         ServerCreationResult result;
         Optional<Server> serverOpt = Optional.empty();
 
         try {
+            if (Network.getServer(server.getName()) != null) {
+                return new Tuple<>(new Fail("server already exists"), Optional.empty());
+            }
+
+            server.setVelocitySecret(Network.getVelocitySecret());
+
             result = Network.getNetworkUtils().createPublicPlayerServer(server);
+
             if (result.isSuccessful()) {
                 Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
                 serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));

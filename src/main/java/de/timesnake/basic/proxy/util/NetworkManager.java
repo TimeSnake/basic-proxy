@@ -146,8 +146,10 @@ public class NetworkManager {
         this.networkUtils = new NetworkUtils(this.networkPath);
 
         Tuple<ServerCreationResult, Optional<Server>> res = this.createTmpServer(
-                new NetworkServer("lobby0", 25001, Type.Server.LOBBY, this.getVelocitySecret())
-                        .setMaxPlayers(50), CopyType.SYNC, false, false);
+                new NetworkServer("lobby0", 25001, Type.Server.LOBBY)
+                        .setMaxPlayers(50)
+                        .options(o -> o.setWorldCopyType(CopyType.SYNC)),
+                false);
 
         if (res.getA().isSuccessful()) {
             this.printText(Plugin.NETWORK, "Created lobby0 server");
@@ -408,24 +410,22 @@ public class NetworkManager {
     }
 
     public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-            CopyType copyType, boolean syncPlayerData, boolean registerServer) {
-        return getServerManager().createTmpServer(server, copyType, syncPlayerData,
-                registerServer);
+            boolean registerServer) {
+        return getServerManager().createTmpServer(server, registerServer);
     }
 
-    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-            CopyType copyType, boolean syncPlayerData) {
-        return getServerManager().createTmpServer(server, copyType, syncPlayerData);
+    public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server) {
+        return this.createTmpServer(server, true);
     }
 
     public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,
             String name) {
-        return getServerManager().createPublicPlayerServer(type, task, name);
+        return getServerManager().initNewPublicPlayerServer(type, task, name);
     }
 
     public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task,
             String name) {
-        return getServerManager().createPlayerServer(uuid, type, task, name);
+        return getServerManager().initNewPlayerServer(uuid, type, task, name);
     }
 
     public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid,

@@ -19,6 +19,7 @@ import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.chat.TimeDownParser;
+import de.timesnake.library.extension.util.NetworkVariables;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkUtils;
@@ -49,6 +50,10 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
   public static final int MEMBER_DISPLAY_GROUP_RANK = 25;
 
   public static final int WORLDS_PER_BUILD_SERVER = 10;
+
+  public static NetworkVariables getVariables() {
+    return network.getVariables();
+  }
 
   @Deprecated
   public static void broadcastMessage(Plugin plugin, String msg) {

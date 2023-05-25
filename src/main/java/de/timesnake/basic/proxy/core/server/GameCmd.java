@@ -136,6 +136,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
         return this.checkOldPvP(sender, context);
       } else if (teams.size() == 1) {
         context.addOption(TEAM_SIZE, teams.get(0));
+        context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
       }
 

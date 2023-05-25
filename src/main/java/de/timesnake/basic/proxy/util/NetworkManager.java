@@ -30,6 +30,7 @@ import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.TimeDownParser;
+import de.timesnake.library.extension.util.NetworkVariables;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.network.NetworkServer;
@@ -80,6 +81,7 @@ public class NetworkManager {
   private Path networkPath;
   private NetworkUtils networkUtils;
   private PunishmentManager punishmentManager;
+  private NetworkVariables variables;
 
   private GroupManager groupManager;
 
@@ -99,6 +101,15 @@ public class NetworkManager {
     Database.getNetwork()
         .addNetworkFile("templates", this.networkPath.resolve("templates").toFile());
     Database.getNetwork().addNetworkFile("network", this.networkPath.toFile());
+
+    String networkName = Database.getNetwork().getValue(NetworkVariables.NETWORK_NAME);
+    if (networkName == null) {
+      networkName = Network.DEFAULT_NETWORK_NAME;
+      Database.getNetwork().setValue(NetworkVariables.NETWORK_NAME, networkName);
+    }
+
+    this.variables = new NetworkVariables();
+    this.variables.load();
 
     this.velocitySecret = config.getVelocitySecret();
     this.tmuxEnabled = config.isTmuxEnabled();
@@ -182,6 +193,10 @@ public class NetworkManager {
 
   public void sendConsoleMessage(String message) {
     BasicProxy.getServer().sendMessage(net.kyori.adventure.text.Component.text(message));
+  }
+
+  public NetworkVariables getVariables() {
+    return this.variables;
   }
 
 

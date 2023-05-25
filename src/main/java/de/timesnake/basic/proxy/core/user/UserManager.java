@@ -30,6 +30,7 @@ import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.extension.util.NetworkVariables;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.player.UserMap;
 import de.timesnake.library.extension.util.player.UserSet;
@@ -240,11 +241,11 @@ public class UserManager {
 
     if (user.agreedPrivacyPolicy()) {
       user.sendPluginMessage(Plugin.NETWORK,
-          Component.text("You accepted our data protection declaration (dpd)",
+          Component.text("You accepted our privacy policy!",
               ExTextColor.WARNING));
       user.sendPluginMessage(Plugin.NETWORK, Component.text("Type ", ExTextColor.WARNING)
-          .append(Component.text("/dpd disagree", ExTextColor.VALUE))
-          .append(Component.text(" to deny our dpd", ExTextColor.WARNING)));
+          .append(Component.text("/pp deny", ExTextColor.VALUE))
+          .append(Component.text(" to deny our privacy policy", ExTextColor.WARNING)));
     } else {
       user.forceToAcceptPrivacyPolicy();
     }
@@ -350,17 +351,12 @@ public class UserManager {
     }
 
     if (type.equals(Type.Punishment.BAN)) {
-      return Component.text("You were permanently banned.", ExTextColor.WARNING)
+      Component component = Component.text("You were permanently banned.", ExTextColor.WARNING)
           .append(Component.newline())
           .append(Component.text("Reason: ", ExTextColor.WARNING))
-          .append(Component.text(punishment.getReason(), ExTextColor.VALUE))
-          .append(Component.newline())
-          .append(Component.text("For more info use our discord: ", ExTextColor.PERSONAL))
-          .append(Component.text(Network.DISCORD_LINK, ExTextColor.VALUE))
-          .append(Component.newline())
-          .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
-          .append(Component.text(Network.SUPPORT_EMAIL, ExTextColor.VALUE));
+          .append(Component.text(punishment.getReason(), ExTextColor.VALUE));
 
+      return appendContactComponent(component);
     } else if (type.equals(Type.Punishment.TEMP_BAN)) {
       LocalDateTime dateSystem = LocalDateTime.now();
       LocalDateTime date = punishment.getDate()
@@ -371,23 +367,36 @@ public class UserManager {
         Network.getPunishmentManager().unbanPlayer(user.getUniqueId());
         return null;
       } else {
-        return Component.text("You are banned ", ExTextColor.WARNING)
+        Component component = Component.text("You are banned ", ExTextColor.WARNING)
             .append(Component.text("until ", ExTextColor.WARNING))
             .append(Component.text(dateString, ExTextColor.VALUE))
             .append(Component.text(".", ExTextColor.WARNING))
             .append(Component.newline())
             .append(Component.text("Reason: ", ExTextColor.WARNING))
-            .append(Component.text(punishment.getReason(), ExTextColor.VALUE))
-            .append(Component.newline())
-            .append(Component.text("For more info use our discord: ",
-                ExTextColor.PERSONAL))
-            .append(Component.text(Network.DISCORD_LINK, ExTextColor.VALUE))
-            .append(Component.newline())
-            .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
-            .append(Component.text(Network.SUPPORT_EMAIL, ExTextColor.VALUE));
+            .append(Component.text(punishment.getReason(), ExTextColor.VALUE));
+        return appendContactComponent(component);
       }
     }
 
     return null;
+  }
+
+  private Component appendContactComponent(Component component) {
+    String discordLink = Network.getVariables().getValue(NetworkVariables.DISCORD_LINK);
+    if (discordLink != null) {
+      component = component
+          .append(Component.newline())
+          .append(Component.text("For more info use our discord: ", ExTextColor.PERSONAL))
+          .append(Component.text(discordLink, ExTextColor.VALUE));
+    }
+    String supportEmail = Network.getVariables().getValue(NetworkVariables.SUPPORT_EMAIL);
+    if (supportEmail != null) {
+      component = component
+
+          .append(Component.newline())
+          .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
+          .append(Component.text(supportEmail, ExTextColor.VALUE));
+    }
+    return component;
   }
 }

@@ -38,18 +38,14 @@ import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.ServerCreationResult;
 import de.timesnake.library.network.ServerInitResult;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class NetworkManager {
 
@@ -205,7 +201,7 @@ public class NetworkManager {
   }
 
   public String getName() {
-    return Channel.PROXY_NAME;
+    return this.getChannel().getProxyName();
   }
 
   public User getUser(UUID uuid) {
@@ -425,7 +421,7 @@ public class NetworkManager {
   }
 
   public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-      boolean registerServer) {
+                                                                       boolean registerServer) {
     return getServerManager().createTmpServer(server, registerServer);
   }
 
@@ -434,17 +430,17 @@ public class NetworkManager {
   }
 
   public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,
-      String name) {
+                                                   String name) {
     return getServerManager().initNewPublicPlayerServer(type, task, name);
   }
 
   public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task,
-      String name) {
+                                             String name) {
     return getServerManager().initNewPlayerServer(uuid, type, task, name);
   }
 
   public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid,
-      NetworkServer server) {
+                                                                        NetworkServer server) {
     return getServerManager().loadPlayerServer(uuid, server);
   }
 
@@ -454,7 +450,7 @@ public class NetworkManager {
   }
 
   public Tuple<ServerCreationResult, Optional<Server>> loadPlayerGameServer(UUID uuid,
-      NetworkServer server) {
+                                                                            NetworkServer server) {
     return getServerManager().loadPlayerGameServer(uuid, server);
   }
 

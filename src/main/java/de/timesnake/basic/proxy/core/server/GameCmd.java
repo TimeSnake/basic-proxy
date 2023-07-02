@@ -21,20 +21,12 @@ import de.timesnake.database.util.object.Type.Availability;
 import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import de.timesnake.library.extension.util.cmd.IncCommandContext;
-import de.timesnake.library.extension.util.cmd.IncCommandListener;
-import de.timesnake.library.extension.util.cmd.IncCommandOption;
+import de.timesnake.library.extension.util.cmd.*;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandContext> {
@@ -43,7 +35,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
 
   @Override
   public IncCommandContext onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+                                     Arguments<Argument> args) {
 
     sender.hasPermissionElseExit(this.permCode);
 
@@ -58,13 +50,13 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
 
   @Override
   public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+                                       Arguments<Argument> args) {
     return List.of();
   }
 
   @Override
   public <V> boolean onUpdate(Sender sender, IncCommandContext context,
-      IncCommandOption<V> option, V value) {
+                              IncCommandOption<V> option, V value) {
     if (GAME.equals(option)) {
       return this.checkMaxPlayers(sender, context);
     } else if (MAX_PLAYERS.equals(option)) {
@@ -132,10 +124,11 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
       teams.sort(Comparator.reverseOrder());
 
       if (teams.size() == 0) {
+        context.addOption(TEAM_SIZE, null);
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
       } else if (teams.size() == 1) {
-        context.addOption(TEAM_SIZE, teams.get(0));
+        context.addOption(TEAM_SIZE, null);
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
       }
@@ -157,8 +150,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
 
       context.addOption(TEAM_MERGE, true);
 
-      this.sendSelectionTo(sender, this.createSelection(TEAM_SIZE)
-          .addValues(sizes));
+      this.sendSelectionTo(sender, this.createSelection(TEAM_SIZE).addValues(sizes));
     } else if (context.getOption(GAME) instanceof DbNonTmpGame) {
       return this.checkOldPvP(sender, context);
     }
@@ -168,8 +160,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
   private boolean checkOldPvP(Sender sender, IncCommandContext context) {
     Type.Availability oldPvP = context.getOption(GAME).getInfo().getOldPvPAvailability();
     if (oldPvP == Availability.ALLOWED) {
-      this.sendSelectionTo(sender, this.createSelection(OLD_PVP)
-          .addValues("yes", "no"));
+      this.sendSelectionTo(sender, this.createSelection(OLD_PVP).addValues("yes", "no"));
       return false;
     } else if (oldPvP == Availability.REQUIRED) {
       context.addOption(OLD_PVP, true);

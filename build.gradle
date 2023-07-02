@@ -1,6 +1,12 @@
+plugins {
+  id 'java-library'
+  id 'maven-publish'
+  id('com.github.johnrengelman.shadow')
+}
+
+
 group = project.group
-version = '1.2-SNAPSHOT'
-archivesBaseName = 'basic-proxy'
+version = '1-1.1'
 var projectId = 19
 
 repositories {
@@ -10,10 +16,6 @@ repositories {
     name 'papermc'
     url 'https://repo.papermc.io/repository/maven-public/'
   }
-  maven {
-    url = uri 'https://repo.maven.apache.org/maven2/'
-  }
-  mavenCentral()
 }
 
 dependencies {
@@ -35,40 +37,13 @@ dependencies {
   compileOnly project.freemarker
 }
 
-task buildFatJar(type: Jar) {
-  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  classifier = "all"
-  from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-  with jar
+shadowJar {
+  getDestinationDirectory().set(new File(project.plugins_dir));
 }
 
-task deleteOldPluginJar(type: Delete) {
-  delete fileTree(dir: "${project.plugins_dir}", include: "**/${archivesBaseName}-*.jar")
-  onlyIf {
-    !jar.state.upToDate
-  }
-}
-
-task copyJarToPlugins(type: Copy) {
-  from "build/libs/" + archivesBaseName + "-" + version + "-all" + ".jar"
-  into project.plugins_dir
-}
-
-jar.finalizedBy(buildFatJar)
-copyJarToPlugins.dependsOn(buildFatJar)
-copyJarToPlugins.dependsOn(deleteOldPluginJar)
-jar.finalizedBy(copyJarToPlugins)
+jar.finalizedBy(shadowJar)
 
 publishing {
-  publications {
-    mavenJavaAll(MavenPublication) {
-      version version + '-all'
-      artifact {
-        file "build/libs/" + archivesBaseName + "-" + version + ".jar"
-      }
-    }
-  }
-
   repositories {
     maven {
       url getDeployUrl(projectId)

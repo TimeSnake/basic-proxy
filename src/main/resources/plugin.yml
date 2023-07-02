@@ -2,7 +2,7 @@ main: de.timesnake.basic.proxy.core.main.BasicProxy
 version: 1.7.2
 name: basic-proxy
 author: Mn
-depends: [ database-proxy ]
+softdepend: [ database-proxy ]
 
 commands:
   perm:

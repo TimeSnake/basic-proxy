@@ -128,6 +128,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
       } else if (teams.size() == 1) {
+        context.addOption(TEAM_AMOUNT, teams.get(0));
         context.addOption(TEAM_SIZE, null);
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
@@ -180,8 +181,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
       Boolean kitsEnabled = context.getOption(KITS);
       Integer maxServerPlayers = context.getOption(MAX_PLAYERS);
       Integer teamSize = context.getOption(TEAM_SIZE);
-      Integer teamAmount = teamSize != null ?
-          (int) Math.ceil(maxServerPlayers / ((double) teamSize)) : null;
+      Integer teamAmount = teamSize != null ? (int) Math.ceil(maxServerPlayers / ((double) teamSize)) : context.getOption(TEAM_AMOUNT);
       Boolean teamMerging = context.getOption(TEAM_MERGE);
       Boolean oldPvP = context.getOption(OLD_PVP);
 
@@ -190,28 +190,23 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
 
         int loungePort = Network.nextEmptyPort();
         NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
-            Type.Server.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort,
-            Type.Server.LOUNGE);
+            Type.Server.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort, Type.Server.LOUNGE);
 
-        Tuple<ServerCreationResult, Optional<Server>> loungeResult =
-            Network.createTmpServer(loungeNetworkServer);
+        Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.createTmpServer(loungeNetworkServer);
 
         if (!loungeResult.getA().isSuccessful()) {
-          sender.sendPluginTDMessage("§wError while creating a" + " lounge server! " +
-              "Please contact an administrator ("
-              + ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")");
+          sender.sendPluginTDMessage("§wError while creating a lounge server! " +
+              "Please contact an administrator " +
+              "(" + ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")");
           return;
         }
 
         int tempGamePort = Network.nextEmptyPort();
 
-        NetworkServer gameNetworkServer = new NetworkServer(
-            (tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
-            tempGamePort, Type.Server.TEMP_GAME).setTask(
-            gameName);
+        NetworkServer gameNetworkServer = new NetworkServer((tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
+            tempGamePort, Type.Server.TEMP_GAME).setTask(gameName);
 
-        gameNetworkServer.options(o -> o
-            .setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE));
+        gameNetworkServer.options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE));
 
         if (game.getInfo().getPlayerTrackingRange() != null) {
           gameNetworkServer.setPlayerTrackingRange(
@@ -222,10 +217,9 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
           gameNetworkServer.setMaxHealth(game.getInfo().getMaxHealth());
         }
 
-        Tuple<ServerCreationResult, Optional<Server>> tempServerResult =
-            Network.createTmpServer(gameNetworkServer);
+        Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.createTmpServer(gameNetworkServer);
         if (!tempServerResult.getA().isSuccessful()) {
-          sender.sendPluginTDMessage("§wError while creating a" + " " + gameName
+          sender.sendPluginTDMessage("§wError while creating a " + gameName
               + " server! Please contact an administrator (" +
               ((ServerCreationResult.Fail) tempServerResult.getA()).getReason()
               + ")");
@@ -337,12 +331,10 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
       return Database.getGames().getGame(key);
     }
   };
-  private static final IncCommandOption<Integer> MAX_PLAYERS = new IncCommandOption.Int(
-      "max_players", "Max Players");
+  private static final IncCommandOption<Integer> MAX_PLAYERS = new IncCommandOption.Int("max_players", "Max Players");
   private static final IncCommandOption<Boolean> MAPS = new IncCommandOption.Bool("maps", "Maps");
   private static final IncCommandOption<Boolean> KITS = new IncCommandOption.Bool("kits", "Kits");
-  private static final IncCommandOption<Integer> TEAM_SIZE = new IncCommandOption<>("team_size",
-      "Team Size") {
+  private static final IncCommandOption<Integer> TEAM_SIZE = new IncCommandOption<>("team_size", "Team Size") {
     @Override
     public Integer parseValue(String key) {
       if (key.equalsIgnoreCase("solo")) {
@@ -351,10 +343,9 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
       return Integer.valueOf(key);
     }
   };
-  private static final IncCommandOption<Boolean> TEAM_MERGE = new IncCommandOption.Bool(
-      "team_merge", "Team Merge");
-  private static final IncCommandOption<Boolean> OLD_PVP = new IncCommandOption.Bool("pvp",
-      "Old PvP");
+  private static final IncCommandOption<Integer> TEAM_AMOUNT = new IncCommandOption.Int("team_amount", "Team Amount");
+  private static final IncCommandOption<Boolean> TEAM_MERGE = new IncCommandOption.Bool("team_merge", "Team Merge");
+  private static final IncCommandOption<Boolean> OLD_PVP = new IncCommandOption.Bool("pvp", "Old PvP");
 
   private static final List<IncCommandOption<?>> OPTIONS = List.of(GAME, MAX_PLAYERS, MAPS, KITS,
       TEAM_SIZE, TEAM_MERGE, OLD_PVP);

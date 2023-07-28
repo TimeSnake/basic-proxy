@@ -147,17 +147,17 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
   public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
       Arguments<Argument> args) {
     if (args.length() == 1) {
-      return List.of("create_own_game");
+      return List.of("create_own_game", "create_public_game");
     } else if (args.length() == 2) {
-      if (args.getString(0).equalsIgnoreCase("create_own_game")) {
+      if (args.get(0).equalsIgnoreCase("create_own_game", "create_public_game")) {
         return Network.getCommandManager().getGameNames();
       }
     } else if (args.length() == 3) {
-      if (args.getString(0).equalsIgnoreCase("create_own_game")) {
+      if (args.get(0).equalsIgnoreCase("create_own_game", "create_public_game")) {
         return List.of("<name>");
       }
     } else if (args.length() == 4) {
-      if (args.getString(0).equalsIgnoreCase("create_own_game")) {
+      if (args.get(0).equalsIgnoreCase("create_own_game", "create_public_game")) {
         return Network.getCommandManager().getPlayerNames();
       }
     }

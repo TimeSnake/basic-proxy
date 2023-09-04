@@ -17,28 +17,24 @@ import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
+import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.MultiKeyMap;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
-import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
 import de.timesnake.library.network.ServerCreationResult.Fail;
 import de.timesnake.library.network.ServerInitResult;
+import org.apache.commons.io.FileUtils;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
-import org.apache.commons.io.FileUtils;
 
 public class ServerManager implements ChannelListener {
 
@@ -276,19 +272,15 @@ public class ServerManager implements ChannelListener {
     } else if (Type.Server.LOUNGE.equals(server.getType())) {
       newServer = this.addLounge(server.getPort(), server.getName(), serverPath, server);
     } else if (Type.Server.GAME.equals(server.getType())) {
-      newServer = this.addGame(server.getPort(), server.getName(), server.getTask(),
-          serverPath, server);
+      newServer = this.addGame(server.getPort(), server.getName(), server.getTask(), serverPath, server);
     } else if (Type.Server.BUILD.equals(server.getType())) {
-      newServer = this.addBuild(server.getPort(), server.getName(), server.getTask(),
-          serverPath, server);
+      newServer = this.addBuild(server.getPort(), server.getName(), server.getTask(), serverPath, server);
     } else if (Type.Server.TEMP_GAME.equals(server.getType())) {
-      newServer = this.addTempGame(server.getPort(), server.getName(), server.getTask(),
-          serverPath, server);
+      newServer = this.addTempGame(server.getPort(), server.getName(), server.getTask(), serverPath, server);
     }
 
     if (registerServer) {
-      BasicProxy.getServer().registerServer(
-          new ServerInfo(server.getName(), new InetSocketAddress(server.getPort())));
+      BasicProxy.getServer().registerServer(new ServerInfo(server.getName(), new InetSocketAddress(server.getPort())));
     }
 
     this.tmpDirsByServerName.put(server.getName(), serverPath);
@@ -450,8 +442,7 @@ public class ServerManager implements ChannelListener {
       Server server = this.getServer(msg.getValue());
       if (server != null) {
         server.setStatus(Status.Server.OFFLINE, true);
-        Network.printText(Plugin.NETWORK,
-            "Updated status from server " + server.getName() + " to offline");
+        Loggers.NETWORK.info("Updated status of server " + server.getName() + " to offline");
       }
     }
   }

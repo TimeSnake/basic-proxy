@@ -15,7 +15,7 @@ import net.kyori.adventure.text.format.TextColor;
 
 public class MotdManager {
 
-  private static final String VERSION = "1.19";
+  private static final String VERSION = "1.20.1";
   private static final Component MOTD = Component.text("     The time is running!",
           ExTextColor.DARK_PURPLE)
       .append(Component.text("   tick", ExTextColor.WHITE))

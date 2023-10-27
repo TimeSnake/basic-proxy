@@ -7,7 +7,8 @@ package de.timesnake.basic.proxy.core.file;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.file.ExFile;
-import de.timesnake.library.extension.util.chat.Plugin;
+import de.timesnake.library.basic.util.Loggers;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +34,7 @@ public class CmdFile extends ExFile {
       int delay = 3;
       for (String cmd : this.startCommands) {
         BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
-          Network.printText(Plugin.NETWORK, "Executing command: " + cmd, "Commands");
+          Loggers.NETWORK.info("Executing command: " + cmd);
           Network.runCommand(cmd);
         }).delay(delay, TimeUnit.SECONDS).schedule();
         delay += 3;

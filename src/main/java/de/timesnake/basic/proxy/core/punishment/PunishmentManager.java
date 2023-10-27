@@ -4,11 +4,6 @@
 
 package de.timesnake.basic.proxy.core.punishment;
 
-import static de.timesnake.library.chat.ExTextColor.VALUE;
-import static de.timesnake.library.chat.ExTextColor.WARNING;
-import static net.kyori.adventure.text.Component.newline;
-import static net.kyori.adventure.text.Component.text;
-
 import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
@@ -18,12 +13,19 @@ import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.chat.ChatColor;
 import de.timesnake.library.extension.util.chat.Chat;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+
+import static de.timesnake.library.chat.ExTextColor.VALUE;
+import static de.timesnake.library.chat.ExTextColor.WARNING;
+import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.text;
 
 public class PunishmentManager {
 
@@ -46,35 +48,42 @@ public class PunishmentManager {
 
   public void unbanPlayer(UUID uuid) {
     DbUser user = Database.getUsers().getUser(uuid);
+
+    if (user == null) {
+      return;
+    }
+
     Type.Punishment type = user.getPunishment().getType();
     if (type == null) {
-      Network.printText(Plugin.PUNISH,
-          "§4This player (" + uuid.toString() + ") is not banned " +
-              Chat.getMessageCode("H", 101, Plugin.PUNISH));
+      Loggers.PUNISH.info("Failed to unban '" + uuid.toString() + "', player is not banned (Code: H101)");
+      return;
     }
 
     if (!type.equals(Type.Punishment.BAN) && !type.equals(Type.Punishment.TEMP_BAN)) {
-      Network.printWarning(Plugin.PUNISH,
-          "This player (" + uuid.toString() + ") is not banned (Code: H101)");
+      Loggers.PUNISH.warning("Failed to unban '" + uuid.toString() + "', player is not banned (Code: H101)");
     } else {
       user.getPunishment().delete();
-      Network.printText(Plugin.PUNISH, "Unbanned player " + uuid.toString() + " by system");
+      Loggers.PUNISH.info("Unbanned player '" + uuid.toString() + "' by system");
 
       broadcastTDMessage("§v" + user.getName() + "§w was unbanned");
     }
-
   }
 
   public void unbanPlayer(Sender sender, UUID uuid) {
     DbUser user = Database.getUsers().getUser(uuid);
+
+    if (user == null) {
+      return;
+    }
+
     if (!sender.hasGroupRankLower(user)) {
       return;
     }
 
     Type.Punishment type = user.getPunishment().getType();
     if (type == null) {
-      sender.sendPluginMessage(text("This player is not banned ", WARNING)
-          .append(Chat.getMessageCode("H", 101, Plugin.PUNISH)));
+      sender.sendPluginMessage(text("This player is not banned ", WARNING).append(Chat.getMessageCode("H", 101,
+          Plugin.PUNISH)));
       return;
     }
 

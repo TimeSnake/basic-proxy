@@ -16,21 +16,23 @@ import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
+import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.TextDecoration;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.TextDecoration;
 
 public class AutoShutdown implements CommandListener<Sender, Argument> {
 
@@ -80,7 +82,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
 
     if (enabled) {
       this.cancelable = false;
-      Network.printText(Plugin.SYSTEM, "AutoShutdown started");
+      Loggers.NETWORK.info("AutoShutdown started");
       task = BasicProxy.getServer().getScheduler()
           .buildTask(BasicProxy.getPlugin(), this::infoShutdown)
           .delay(time, TimeUnit.MINUTES).schedule();

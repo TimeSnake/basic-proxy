@@ -26,6 +26,7 @@ import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
+import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.chat.ExTextColor;
@@ -39,7 +40,6 @@ import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.ServerCreationResult;
 import de.timesnake.library.network.ServerInitResult;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -94,8 +94,7 @@ public class NetworkManager {
 
     Config config = new Config();
     this.networkPath = Path.of(config.getNetworkPath());
-    Database.getNetwork()
-        .addNetworkFile("templates", this.networkPath.resolve("templates").toFile());
+    Database.getNetwork().addNetworkFile("templates", this.networkPath.resolve("templates").toFile());
     Database.getNetwork().addNetworkFile("network", this.networkPath.toFile());
 
     String networkName = Database.getNetwork().getValue(NetworkVariables.NETWORK_NAME);
@@ -159,9 +158,9 @@ public class NetworkManager {
         false);
 
     if (res.getA().isSuccessful()) {
-      this.printText(Plugin.NETWORK, "Created lobby0 server");
+      Loggers.NETWORK.info("Created lobby server");
     } else {
-      this.printWarning(Plugin.NETWORK, ((ServerCreationResult.Fail) res.getA()).getReason());
+      Loggers.NETWORK.warning("Failed to start lobby server: " + ((ServerCreationResult.Fail) res.getA()).getReason());
     }
   }
 
@@ -285,48 +284,15 @@ public class NetworkManager {
   }
 
   public ScheduledTask runTaskLater(Task task, Duration delay) {
-    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run)
-        .delay(delay).schedule();
+    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run).delay(delay).schedule();
   }
 
   public ScheduledTask runTaskAsync(Task task) {
-    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run)
-        .schedule();
-  }
-
-  @Deprecated
-  public final void printText(Plugin plugin, String text, String... subPlugins) {
-    StringBuilder sb = new StringBuilder("[" + plugin.getName() + "]");
-    for (String subPlugin : subPlugins) {
-      sb.append("[");
-      sb.append(subPlugin);
-      sb.append("]");
-    }
-    sb.append(" ").append(text);
-    BasicProxy.getLogger().info(sb.toString());
-  }
-
-  @Deprecated
-  public final void printText(Plugin plugin, Component text, String... subPlugins) {
-    this.printText(plugin, PlainTextComponentSerializer.plainText().serialize(text),
-        subPlugins);
-  }
-
-  @Deprecated
-  public final void printWarning(Plugin plugin, String warning, String... subPlugins) {
-    StringBuilder sb = new StringBuilder("[" + plugin.getName() + "]");
-    for (String subPlugin : subPlugins) {
-      sb.append("[");
-      sb.append(subPlugin);
-      sb.append("]");
-    }
-    sb.append(" WARNING ").append(warning);
-    BasicProxy.getLogger().warning(sb.toString());
+    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run).schedule();
   }
 
   public void runCommand(String command) {
-    BasicProxy.getServer().getCommandManager()
-        .executeAsync(BasicProxy.getServer().getConsoleCommandSource(), command);
+    BasicProxy.getServer().getCommandManager().executeAsync(BasicProxy.getServer().getConsoleCommandSource(), command);
   }
 
   public void registerListener(Object listener) {
@@ -391,11 +357,6 @@ public class NetworkManager {
     return getServerManager().getServers();
   }
 
-  @Deprecated
-  public Collection<Integer> getNotOfflineServerPorts() {
-    return getServerManager().getNotOfflineServerPorts();
-  }
-
   public Collection<String> getNotOfflineServerNames() {
     return getServerManager().getNotOfflineServerNames();
   }
@@ -420,8 +381,7 @@ public class NetworkManager {
     getServerManager().updateServerTask(port);
   }
 
-  public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-                                                                       boolean registerServer) {
+  public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean registerServer) {
     return getServerManager().createTmpServer(server, registerServer);
   }
 
@@ -429,18 +389,15 @@ public class NetworkManager {
     return this.createTmpServer(server, true);
   }
 
-  public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,
-                                                   String name) {
+  public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task, String name) {
     return getServerManager().initNewPublicPlayerServer(type, task, name);
   }
 
-  public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task,
-                                             String name) {
+  public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {
     return getServerManager().initNewPlayerServer(uuid, type, task, name);
   }
 
-  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid,
-                                                                        NetworkServer server) {
+  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid, NetworkServer server) {
     return getServerManager().loadPlayerServer(uuid, server);
   }
 
@@ -449,8 +406,7 @@ public class NetworkManager {
     return getServerManager().loadPublicPlayerServer(server);
   }
 
-  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerGameServer(UUID uuid,
-                                                                            NetworkServer server) {
+  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerGameServer(UUID uuid, NetworkServer server) {
     return getServerManager().loadPlayerGameServer(uuid, server);
   }
 

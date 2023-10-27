@@ -11,7 +11,8 @@ import de.timesnake.channel.util.listener.ChannelListener;
 import de.timesnake.channel.util.listener.ListenerType;
 import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
-import de.timesnake.library.extension.util.chat.Plugin;
+import de.timesnake.library.basic.util.Loggers;
+
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
@@ -33,14 +34,12 @@ public class ChannelCmdHandler implements ChannelListener {
         Integer delaySec = (Integer) msg.getValue();
         Server server = Network.getServer(serverName);
         String name = server.getName();
-        Network.printText(Plugin.SYSTEM,
-            "Scheduled restart of server " + name + " (" + delaySec + "s)");
+        Loggers.NETWORK.info("Scheduled restart of server " + name + " (" + delaySec + "s)");
         int maxPlayers = server.getMaxPlayers();
         Network.runTaskLater(() -> {
           try {
             Thread.sleep(1000L * delaySec);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
+          } catch (InterruptedException ignored) {
           }
           Network.runCommand("start server " + name + " " + maxPlayers);
         }, Duration.ofSeconds(delaySec));
@@ -53,7 +52,7 @@ public class ChannelCmdHandler implements ChannelListener {
 
       Network.runTaskLater(() -> {
         if (!Network.deleteServer(serverName, true)) {
-          Network.printWarning(Plugin.NETWORK, "Server " + serverName + " could not be deleted");
+          Loggers.NETWORK.warning("Failed to delete server '" + serverName + "'");
         }
       }, Duration.ofSeconds(delaySec));
     } else if (type.equals(MessageType.Server.KILL_DESTROY)) {
@@ -65,13 +64,10 @@ public class ChannelCmdHandler implements ChannelListener {
       Network.runTaskAsync(() -> {
         try {
           if (!Network.killAndDeleteServer(serverName, pid).get()) {
-            Network.printWarning(Plugin.NETWORK,
-                "Server " + serverName + " could not be killed and deleted");
+            Loggers.NETWORK.warning("Failed to kill and delete server '" + serverName + "'");
           }
         } catch (InterruptedException | ExecutionException e) {
-          e.printStackTrace();
-          Network.printWarning(Plugin.NETWORK,
-              "Server " + serverName + " could not be killed and deleted");
+          Loggers.NETWORK.warning("Exception while killing and deleting server '" + serverName + "': " + e.getMessage());
         }
       });
 

@@ -4,23 +4,23 @@
 
 package de.timesnake.basic.proxy.core.server;
 
-import static de.timesnake.library.chat.ExTextColor.PERSONAL;
-import static de.timesnake.library.chat.ExTextColor.VALUE;
-import static de.timesnake.library.chat.ExTextColor.WARNING;
-import static net.kyori.adventure.text.Component.text;
-
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
+import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+
 import java.util.List;
+
+import static de.timesnake.library.chat.ExTextColor.*;
+import static net.kyori.adventure.text.Component.text;
 
 public class ServerCmd implements CommandListener<Sender, Argument> {
 
@@ -166,7 +166,7 @@ public class ServerCmd implements CommandListener<Sender, Argument> {
         .append(text("Started server ", PERSONAL))
         .append(text(server.getName(), VALUE)));
     if (!sender.isConsole(false)) {
-      Network.printText(Plugin.NETWORK, "Started server " + server.getName());
+      Loggers.NETWORK.info("Started server '" + server.getName() + "'");
     }
   }
 

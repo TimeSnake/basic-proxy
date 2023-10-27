@@ -8,14 +8,15 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
+import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.extension.util.player.UserSet;
 import de.timesnake.library.network.NetworkServer;
+
 import java.nio.file.Path;
 import java.time.Duration;
 
@@ -86,16 +87,14 @@ public abstract class Server extends BukkitServer {
     if (this.status == Status.Server.LAUNCHING) {
       this.startTimeoutTask = Network.runTaskLater(() -> {
         if (status == Status.Server.LAUNCHING || status == Status.Server.OFFLINE) {
-          Network.printWarning(Plugin.NETWORK,
-              "Failed to start server " + this.getName());
+          Loggers.NETWORK.warning("Failed to start server " + this.getName());
           this.setStatus(Status.Server.OFFLINE, true);
           return;
         }
 
         this.startTimeoutTask = Network.runTaskLater(() -> {
           if (!status.isRunning()) {
-            Network.printWarning(Plugin.NETWORK,
-                "Failed to start server " + this.getName());
+            Loggers.NETWORK.warning("Failed to start server " + this.getName());
             this.setStatus(Status.Server.OFFLINE, true);
           }
         }, Duration.ofMinutes(3));

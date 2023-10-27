@@ -25,15 +25,12 @@ import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkUtils;
 import de.timesnake.library.network.ServerCreationResult;
 import de.timesnake.library.network.ServerInitResult;
+import net.kyori.adventure.text.Component;
+
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import net.kyori.adventure.text.Component;
 
 public class Network implements de.timesnake.library.basic.util.server.Server {
 
@@ -104,11 +101,6 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     return network.getServers();
   }
 
-  @Deprecated
-  public static Collection<Integer> getNotOfflineServerPorts() {
-    return network.getNotOfflineServerPorts();
-  }
-
   public static Collection<String> getNotOfflineServerNames() {
     return network.getNotOfflineServerNames();
   }
@@ -133,14 +125,12 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     network.getServer(port);
   }
 
-  public static Tuple<ServerCreationResult, Optional<Server>> createTmpServer(
-      NetworkServer server) {
+  public static Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server) {
     return network.createTmpServer(server);
   }
 
-  public static Tuple<ServerCreationResult, Optional<Server>> createTmpServer(
-      NetworkServer server,
-      boolean registerServer) {
+  public static Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
+                                                                              boolean registerServer) {
     return network.createTmpServer(server, registerServer);
   }
 
@@ -240,26 +230,6 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     return network.getPermissionHandler();
   }
 
-  @Deprecated
-  public static void printText(Plugin plugin, String text, String... subPlugins) {
-    network.printText(plugin, text, subPlugins);
-  }
-
-  @Deprecated
-  public static void printText(Plugin plugin, Component text, String... subPlugins) {
-    network.printText(plugin, text, subPlugins);
-  }
-
-  @Deprecated
-  public static void printWarning(Plugin plugin, String warning, String... subPlugins) {
-    network.printWarning(plugin, warning, subPlugins);
-  }
-
-  @Deprecated
-  public static void printWarning(Plugin plugin, Component text, String... subPlugins) {
-    network.printText(plugin, text, subPlugins);
-  }
-
   public static ServerCmd getBukkitCmdHandler() {
     return network.getBukkitCmdHandler();
   }
@@ -304,23 +274,19 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     return network.getNetworkUtils();
   }
 
-  public static ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task,
-      String name) {
+  public static ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task, String name) {
     return network.createPublicPlayerServer(type, task, name);
   }
 
-  public static ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task,
-      String name) {
+  public static ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {
     return network.createPlayerServer(uuid, type, task, name);
   }
 
-  public static Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid,
-      NetworkServer server) {
+  public static Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid, NetworkServer server) {
     return network.loadPlayerServer(uuid, server);
   }
 
-  public static Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(
-      NetworkServer server) {
+  public static Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(NetworkServer server) {
     return network.loadPublicPlayerServer(server);
   }
 

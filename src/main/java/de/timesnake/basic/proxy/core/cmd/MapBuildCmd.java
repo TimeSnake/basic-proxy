@@ -4,14 +4,13 @@
 
 package de.timesnake.basic.proxy.core.cmd;
 
-import static de.timesnake.library.chat.ExTextColor.WARNING;
-
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.BuildServer;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.database.util.object.Type;
+import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.ExTextColor;
@@ -22,18 +21,20 @@ import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.ServerCreationResult;
+import net.kyori.adventure.text.Component;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import net.kyori.adventure.text.Component;
+
+import static de.timesnake.library.chat.ExTextColor.WARNING;
 
 public class MapBuildCmd implements CommandListener<Sender, Argument> {
 
   private Code perm;
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
     if (!sender.hasPermission(this.perm)) {
       return;
     }
@@ -54,8 +55,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
     BuildServer buildServer = null;
     boolean worldLoaded = false;
 
-    for (Server server : Network.getServers().stream()
-        .filter(s -> s.getType().equals(Type.Server.BUILD)).toList()) {
+    for (Server server : Network.getServers().stream().filter(s -> s.getType().equals(Type.Server.BUILD)).toList()) {
       Collection<String> loadedWorlds = ((BuildServer) server).getDatabase().getWorldNames();
       if (loadedWorlds.contains(worldName)) {
         buildServer = ((BuildServer) server);
@@ -70,15 +70,11 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
       if (buildServer == null) {
         int port = Network.nextEmptyPort();
         Tuple<ServerCreationResult, Optional<Server>> result =
-            Network.createTmpServer(new NetworkServer("build" + (port % 1000),
-                port, Type.Server.BUILD)
-                .setPlayerTrackingRange(128));
+            Network.createTmpServer(new NetworkServer("build" + (port % 1000), port, Type.Server.BUILD).setPlayerTrackingRange(128));
 
         if (!result.getA().isSuccessful()) {
-          sender.sendPluginMessage(Component.text("Error while creating a" +
-                  " build server! Please contact an administrator (" +
-                  ((ServerCreationResult.Fail) result.getA()).getReason() + ")",
-              WARNING));
+          sender.sendPluginMessage(Component.text("Error while creating a" + " build server! Please contact an " +
+              "administrator (" + ((ServerCreationResult.Fail) result.getA()).getReason() + ")", WARNING));
           return;
         }
 
@@ -93,8 +89,8 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
       boolean worldResult = buildServer.loadWorld(worldName);
 
       if (!worldResult) {
-        sender.sendPluginMessage(Component.text("Error while loading" +
-            " the world! Please contact an administrator", WARNING));
+        sender.sendPluginMessage(Component.text("Error while loading" + " the world! Please contact an administrator"
+            , WARNING));
         return;
       }
     }
@@ -104,28 +100,23 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
     if (sender.isPlayer(false)) {
       sender.getUser().addJoinCommand(buildServer.getName(), "mw tp " + worldName);
 
-      if (buildServer.getStatus().equals(Status.Server.ONLINE) || buildServer.getStatus()
-          .equals(Status.Server.SERVICE)) {
+      if (buildServer.getStatus().equals(Status.Server.ONLINE) || buildServer.getStatus().equals(Status.Server.SERVICE)) {
         sender.sendPluginMessage(Component.text("Loaded world ", ExTextColor.PERSONAL)
             .append(Component.text(worldName, ExTextColor.VALUE)));
         sender.getUser().connect(buildServer.getBungeeInfo());
       } else {
         sender.sendPluginMessage(Component.text("Loading world ", ExTextColor.PERSONAL)
             .append(Component.text(worldName, ExTextColor.VALUE))
-            .append(Component.text(". You will be moved in a few moments.",
-                ExTextColor.PERSONAL)));
+            .append(Component.text(". You will be moved in a few moments.", ExTextColor.PERSONAL)));
         sender.getUser().scheduledConnect(buildServer);
       }
     }
 
-    Network.printText(Plugin.SYSTEM,
-        "Loaded world '" + worldName + "' on server '" + buildServer.getName() +
-            "' by user " + sender.getName());
+    Loggers.WORLDS.info("Loaded world '" + worldName + "' on server '" + buildServer.getName() + "' by user '" + sender.getName() + "'");
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
     if (args.length() == 1) {
       return Network.getNetworkUtils().getWorldNames(Type.Server.BUILD, null);
     }

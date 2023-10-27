@@ -28,6 +28,7 @@ import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.NetworkVariables;
@@ -111,7 +112,7 @@ public class UserManager {
               .append(Component.text(" joined", ExTextColor.PUBLIC)));
     }
 
-    Network.printText(Plugin.NETWORK, "Players online " + Network.getUsers().size());
+    Loggers.NETWORK.info("Players online: " + Network.getUsers().size());
     Network.getChannel().sendMessage(
         new ChannelServerMessage<>(Network.getName(), MessageType.Server.ONLINE_PLAYERS,
             Network.getUsers().size()));
@@ -123,16 +124,15 @@ public class UserManager {
     String name = e.getPlayer().getUsername();
     DbUser user = Database.getUsers().getUser(uuid);
 
-    Network.printText(Plugin.NETWORK, "Player: " + name + " (" + uuid.toString() + ") joined");
+    Loggers.NETWORK.info("Player '" + name + "' ('" + uuid.toString() + "') joined");
 
-    if (user.exists()) {
+    if (user != null && user.exists()) {
 
       // check if user has service work permission
       Network.runTaskAsync(() -> {
         if (Network.isWork() && !user.hasPermission("network.work.join")) {
           if (!Database.getUsers().getUser(user.getUniqueId()).hasPermGroup()) {
-            e.setResult(ResultedEvent.ComponentResult.denied(
-                Component.text("§cService-Work    " + "Wartungsarbeiten")));
+            e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§cService-Work    " + "Wartungsarbeiten")));
             return;
           }
 
@@ -142,8 +142,8 @@ public class UserManager {
               && !group.hasPermission("network.work" + ".join")) {
             group = group.getInheritance();
             if (group == null) {
-              e.setResult(ResultedEvent.ComponentResult.denied(
-                  Component.text("§cService-Work    " + "Wartungsarbeiten")));
+              e.setResult(ResultedEvent.ComponentResult.denied(Component.text("§cService-Work    " +
+                  "Wartungsarbeiten")));
               return;
             }
           }

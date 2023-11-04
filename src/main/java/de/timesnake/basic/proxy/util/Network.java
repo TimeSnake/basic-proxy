@@ -17,7 +17,6 @@ import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Tuple;
-import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.chat.TimeDownParser;
 import de.timesnake.library.extension.util.NetworkVariables;
 import de.timesnake.library.extension.util.chat.Plugin;
@@ -234,11 +233,11 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     return network.getBukkitCmdHandler();
   }
 
-  public static ScheduledTask runTaskLater(Task task, Duration delay) {
+  public static ScheduledTask runTaskLater(Runnable task, Duration delay) {
     return network.runTaskLater(task, delay);
   }
 
-  public static ScheduledTask runTaskAsync(Task task) {
+  public static ScheduledTask runTaskAsync(Runnable task) {
     return network.runTaskAsync(task);
   }
 

@@ -28,7 +28,6 @@ import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Tuple;
-import de.timesnake.library.basic.util.server.Task;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.TimeDownParser;
 import de.timesnake.library.extension.util.NetworkVariables;
@@ -283,12 +282,12 @@ public class NetworkManager {
     supportMessageListeners.remove(user);
   }
 
-  public ScheduledTask runTaskLater(Task task, Duration delay) {
-    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run).delay(delay).schedule();
+  public ScheduledTask runTaskLater(Runnable task, Duration delay) {
+    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task).delay(delay).schedule();
   }
 
-  public ScheduledTask runTaskAsync(Task task) {
-    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task::run).schedule();
+  public ScheduledTask runTaskAsync(Runnable task) {
+    return BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), task).schedule();
   }
 
   public void runCommand(String command) {

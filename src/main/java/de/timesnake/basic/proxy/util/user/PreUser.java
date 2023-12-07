@@ -12,16 +12,11 @@ import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.permission.ExPermission;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.UUID;
 import net.kyori.adventure.text.Component;
+
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class PreUser {
 
@@ -63,11 +58,11 @@ public class PreUser {
 
     this.airMode = dbLocalUser.isAirMode();
 
-    this.prefix = Chat.parseStringToComponent(dbLocalUser.getPrefix());
+    this.prefix = Network.getTimeDownParser().parse2Component(dbLocalUser.getPrefix(), '&');
 
-    this.suffix = Chat.parseStringToComponent(dbLocalUser.getSuffix());
+    this.suffix = Network.getTimeDownParser().parse2Component(dbLocalUser.getSuffix(), '&');
 
-    this.nick = Chat.parseStringToComponent(dbLocalUser.getNick());
+    this.nick = Network.getTimeDownParser().parse2Component(dbLocalUser.getNick(), '&');
 
     DbPermGroup dbGroup = dbLocalUser.getPermGroup();
     String permGroupName;

@@ -232,7 +232,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
   @NotNull
   @Override
   public String getChatName() {
-    return LegacyComponentSerializer.legacyAmpersand().serialize(this.getChatNameComponent());
+    return LegacyComponentSerializer.legacySection().serialize((this.getChatNameComponent()));
   }
 
   public Sender getAsSender(de.timesnake.library.extension.util.chat.Plugin plugin) {

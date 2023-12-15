@@ -260,7 +260,7 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
   public void sendPluginMessage(de.timesnake.library.extension.util.chat.Plugin plugin,
       String message) {
     this.getPlayer().sendMessage(
-        Chat.getSenderPlugin(plugin).append(Chat.parseStringToComponent(message)));
+        Chat.getSenderPlugin(plugin).append(Network.getTimeDownParser().parse2Component(message)));
   }
 
   public void sendPluginMessage(de.timesnake.library.extension.util.chat.Plugin plugin,

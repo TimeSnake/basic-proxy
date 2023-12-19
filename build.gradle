@@ -48,16 +48,18 @@ dependencies {
 
 configurations.configureEach {
   resolutionStrategy.dependencySubstitution {
-    substitute module("de.timesnake:database-proxy") using project(":database-proxy")
-    substitute module("de.timesnake:database-api") using project(":database-api")
+    if (project.parent != null) {
+      substitute module("de.timesnake:database-proxy") using project(":database-proxy")
+      substitute module("de.timesnake:database-api") using project(":database-api")
 
-    substitute module("de.timesnake:channel-proxy") using project(":channel-proxy")
-    substitute module("de.timesnake:channel-api") using project(":channel-api")
+      substitute module("de.timesnake:channel-proxy") using project(":channel-proxy")
+      substitute module("de.timesnake:channel-api") using project(":channel-api")
 
-    substitute module("de.timesnake:library-network") using project(":library-network")
-    substitute module("de.timesnake:library-extension") using project(":library-extension")
-    substitute module("de.timesnake:library-basic") using project(":library-basic")
-    substitute module("de.timesnake:library-chat") using project(":library-chat")
+      substitute module("de.timesnake:library-network") using project(":library-network")
+      substitute module("de.timesnake:library-extension") using project(":library-extension")
+      substitute module("de.timesnake:library-basic") using project(":library-basic")
+      substitute module("de.timesnake:library-chat") using project(":library-chat")
+    }
   }
 }
 

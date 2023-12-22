@@ -63,8 +63,11 @@ configurations.configureEach {
   }
 }
 
-shadowJar {
-  getDestinationDirectory().set(new File(timesnakePluginDir));
+tasks.register('exportAsPlugin', Copy) {
+  from "$buildDir/libs/${archivesBaseName}-${project.version}.jar"
+  into "${timesnakePluginDir}"
+
+  dependsOn(assemble)
 }
 
 jar.finalizedBy(shadowJar)

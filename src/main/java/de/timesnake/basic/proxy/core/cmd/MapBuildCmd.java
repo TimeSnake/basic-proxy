@@ -9,8 +9,8 @@ import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.BuildServer;
 import de.timesnake.basic.proxy.util.server.Server;
-import de.timesnake.database.util.object.Type;
 import de.timesnake.library.basic.util.Loggers;
+import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.ExTextColor;
@@ -39,7 +39,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
       return;
     }
 
-    List<String> worldFiles = Network.getNetworkUtils().getWorldNames(Type.Server.BUILD, null);
+    List<String> worldFiles = Network.getNetworkUtils().getWorldNames(ServerType.BUILD, null);
 
     if (!args.isLengthEquals(1, true)) {
       return;
@@ -55,7 +55,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
     BuildServer buildServer = null;
     boolean worldLoaded = false;
 
-    for (Server server : Network.getServers().stream().filter(s -> s.getType().equals(Type.Server.BUILD)).toList()) {
+    for (Server server : Network.getServers().stream().filter(s -> s.getType().equals(ServerType.BUILD)).toList()) {
       Collection<String> loadedWorlds = ((BuildServer) server).getDatabase().getWorldNames();
       if (loadedWorlds.contains(worldName)) {
         buildServer = ((BuildServer) server);
@@ -70,7 +70,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
       if (buildServer == null) {
         int port = Network.nextEmptyPort();
         Tuple<ServerCreationResult, Optional<Server>> result =
-            Network.createTmpServer(new NetworkServer("build" + (port % 1000), port, Type.Server.BUILD).setPlayerTrackingRange(128));
+            Network.createTmpServer(new NetworkServer("build" + (port % 1000), port, ServerType.BUILD).setPlayerTrackingRange(128));
 
         if (!result.getA().isSuccessful()) {
           sender.sendPluginMessage(Component.text("Error while creating a" + " build server! Please contact an " +
@@ -118,7 +118,7 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
   @Override
   public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
     if (args.length() == 1) {
-      return Network.getNetworkUtils().getWorldNames(Type.Server.BUILD, null);
+      return Network.getNetworkUtils().getWorldNames(ServerType.BUILD, null);
     }
     return List.of();
   }

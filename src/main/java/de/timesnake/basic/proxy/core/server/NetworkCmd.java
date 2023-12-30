@@ -4,17 +4,14 @@
 
 package de.timesnake.basic.proxy.core.server;
 
-import static de.timesnake.library.chat.ExTextColor.PERSONAL;
-import static de.timesnake.library.chat.ExTextColor.WARNING;
-
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbNonTmpGame;
-import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
@@ -22,9 +19,13 @@ import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.CommandListener;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import de.timesnake.library.network.ServerInitResult;
+import net.kyori.adventure.text.Component;
+
 import java.util.Collection;
 import java.util.List;
-import net.kyori.adventure.text.Component;
+
+import static de.timesnake.library.chat.ExTextColor.PERSONAL;
+import static de.timesnake.library.chat.ExTextColor.WARNING;
 
 public class NetworkCmd implements CommandListener<Sender, Argument> {
 
@@ -33,7 +34,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
 
   @Override
   public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+                        Arguments<Argument> args) {
     if (!args.isLengthHigherEquals(1, true)) {
       return;
     }
@@ -60,9 +61,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
       return;
     }
 
-    Collection<String> serverNames = Network.getNetworkUtils()
-        .getPublicPlayerServerNames(Type.Server.GAME,
-            nonTmpGame.getName());
+    Collection<String> serverNames = Network.getNetworkUtils().getPublicPlayerServerNames(ServerType.GAME, nonTmpGame.getName());
 
     String serverName = args.get(2).toLowerCase();
 
@@ -71,13 +70,10 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
       return;
     }
 
-    ServerInitResult result = Network.createPublicPlayerServer(Type.Server.GAME,
-        ((DbNonTmpGame) game).getName(),
-        serverName);
+    ServerInitResult result = Network.createPublicPlayerServer(ServerType.GAME, ((DbNonTmpGame) game).getName(), serverName);
 
     if (!result.isSuccessful()) {
-      sender.sendPluginMessage(Component.text("Error while creating server (" +
-          ((ServerInitResult.Fail) result).getReason() + ")", WARNING));
+      sender.sendPluginMessage(Component.text("Error while creating server (" + ((ServerInitResult.Fail) result).getReason() + ")", WARNING));
       return;
     }
 
@@ -117,7 +113,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
     DbUser user = playerArg.toDbUser();
 
     Collection<String> serverNames = Network.getNetworkUtils()
-        .getOwnerServerNames(user.getUniqueId(), Type.Server.GAME,
+        .getOwnerServerNames(user.getUniqueId(), ServerType.GAME,
             ((DbNonTmpGame) game).getName());
 
     String serverName = args.get(2).toLowerCase();
@@ -127,9 +123,8 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
       return;
     }
 
-    ServerInitResult result = Network.createPlayerServer(user.getUniqueId(), Type.Server.GAME,
-        ((DbNonTmpGame) game).getName(),
-        user.getUniqueId().hashCode() + serverName);
+    ServerInitResult result = Network.createPlayerServer(user.getUniqueId(), ServerType.GAME,
+        ((DbNonTmpGame) game).getName(), user.getUniqueId().hashCode() + serverName);
 
     if (!result.isSuccessful()) {
       sender.sendPluginMessage(Component.text("Error while creating server (" +
@@ -139,13 +134,12 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
 
     sender.sendPluginMessage(Component.text("Created server ", PERSONAL)
         .append(Component.text(serverName, ExTextColor.VALUE))
-        .append(Component.text(" (" + user.getUniqueId().hashCode() + serverName + ")",
-            ExTextColor.QUICK_INFO)));
+        .append(Component.text(" (" + user.getUniqueId().hashCode() + serverName + ")", ExTextColor.QUICK_INFO)));
   }
 
   @Override
   public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+                                       Arguments<Argument> args) {
     if (args.length() == 1) {
       return List.of("create_own_game", "create_public_game");
     } else if (args.length() == 2) {

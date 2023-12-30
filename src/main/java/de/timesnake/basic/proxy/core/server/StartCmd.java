@@ -4,28 +4,18 @@
 
 package de.timesnake.basic.proxy.core.server;
 
-import static de.timesnake.library.chat.ExTextColor.PERSONAL;
-import static de.timesnake.library.chat.ExTextColor.VALUE;
-import static de.timesnake.library.chat.ExTextColor.WARNING;
-import static net.kyori.adventure.text.Component.text;
-
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.Sender;
-import de.timesnake.basic.proxy.util.server.BuildServer;
-import de.timesnake.basic.proxy.util.server.GameServer;
-import de.timesnake.basic.proxy.util.server.LoungeServer;
-import de.timesnake.basic.proxy.util.server.NonTmpGameServer;
-import de.timesnake.basic.proxy.util.server.Server;
-import de.timesnake.basic.proxy.util.server.TaskServer;
-import de.timesnake.basic.proxy.util.server.TmpGameServer;
+import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbNonTmpGame;
 import de.timesnake.database.util.game.DbTmpGame;
-import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbLoungeServer;
+import de.timesnake.library.basic.util.Availability;
+import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.extension.util.chat.Chat;
@@ -37,11 +27,15 @@ import de.timesnake.library.extension.util.cmd.ExCommand;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
+import net.kyori.adventure.text.Component;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.kyori.adventure.text.Component;
+
+import static de.timesnake.library.chat.ExTextColor.*;
+import static net.kyori.adventure.text.Component.text;
 
 public class StartCmd implements CommandListener<Sender, Argument> {
 
@@ -52,7 +46,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
   @Override
   public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+                        Arguments<Argument> args) {
     if (args.isLengthHigherEquals(2, true)) {
       switch (args.get(0).toLowerCase()) {
         case "server" -> {
@@ -111,12 +105,12 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     Integer maxPlayers = null;
     if (args.isLengthEquals(3, false) && args.get(2).isInt(false)) {
       maxPlayers = args.get(2).toInt();
-    } else if (server instanceof GameServer && !(server instanceof BuildServer)) {
+    } else if (server instanceof GameServer) {
       String task = ((TaskServer) server).getTask();
       maxPlayers = Database.getGames().getGame(task).getInfo().getMaxPlayers();
-    } else if (server.getType().equals(Type.Server.LOBBY)) {
+    } else if (server.getType().equals(ServerType.LOBBY)) {
       maxPlayers = Network.getMaxPlayersLobby();
-    } else if (server.getType().equals(Type.Server.BUILD)) {
+    } else if (server.getType().equals(ServerType.BUILD)) {
       maxPlayers = Network.getMaxPlayersBuild();
     }
     if (maxPlayers != null) {
@@ -162,7 +156,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
     Collection<String> serverNames = Network.getNetworkUtils()
         .getOwnerServerNames(user.getUniqueId(),
-            Type.Server.GAME, ((DbNonTmpGame) game).getName());
+            ServerType.GAME, ((DbNonTmpGame) game).getName());
 
     String serverName = args.getString(2);
 
@@ -177,7 +171,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     int port = Network.nextEmptyPort();
     NetworkServer networkServer = new NetworkServer(
         user.getUniqueId().hashCode() + "_" + serverName, port,
-        Type.Server.GAME)
+        ServerType.GAME)
         .setFolderName(serverName)
         .setTask(((DbNonTmpGame) game).getName())
         .setMaxPlayers(20)
@@ -233,7 +227,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     }
 
     Collection<String> serverNames = Network.getNetworkUtils()
-        .getPublicPlayerServerNames(Type.Server.GAME, ((DbNonTmpGame) game).getName());
+        .getPublicPlayerServerNames(ServerType.GAME, ((DbNonTmpGame) game).getName());
 
     String serverName = args.getString(2);
 
@@ -246,7 +240,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     Integer viewDistance = ((DbNonTmpGame) game).getViewDistance();
 
     int port = Network.nextEmptyPort();
-    NetworkServer networkServer = new NetworkServer(serverName, port, Type.Server.GAME)
+    NetworkServer networkServer = new NetworkServer(serverName, port, ServerType.GAME)
         .setTask(((DbNonTmpGame) game).getName())
         .setMaxPlayers(20)
         .allowNether(netherEnd).allowEnd(netherEnd);
@@ -308,20 +302,20 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     String gameName = game.getName();
     Integer gameMaxPlayers = game.getMaxPlayers();
 
-    Type.Availability gameKitAvailability = game.getKitAvailability();
-    Type.Availability gameMapAvailability = game.getMapAvailability();
+    Availability gameKitAvailability = game.getKitAvailability();
+    Availability gameMapAvailability = game.getMapAvailability();
 
     // kits
     boolean kitsEnabled = args.getArgumentByString("kits") != null;
 
-    if (gameKitAvailability.equals(Type.Availability.FORBIDDEN) && kitsEnabled) {
+    if (gameKitAvailability.equals(Availability.FORBIDDEN) && kitsEnabled) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
           .append(text(" forbid kits", WARNING)));
       return;
     }
 
-    if (gameKitAvailability.equals(Type.Availability.REQUIRED) && !kitsEnabled) {
+    if (gameKitAvailability.equals(Availability.REQUIRED) && !kitsEnabled) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
           .append(text(" require kits", WARNING)));
@@ -331,14 +325,14 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     // maps
     boolean mapsEnabled = args.getArgumentByString("maps") != null;
 
-    if (gameMapAvailability.equals(Type.Availability.FORBIDDEN) && mapsEnabled) {
+    if (gameMapAvailability.equals(Availability.FORBIDDEN) && mapsEnabled) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
           .append(text(" forbid maps", WARNING)));
       return;
     }
 
-    if (gameMapAvailability.equals(Type.Availability.REQUIRED) && !mapsEnabled) {
+    if (gameMapAvailability.equals(Availability.REQUIRED) && !mapsEnabled) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
           .append(text(" require maps", WARNING)));
@@ -355,7 +349,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     Network.runTaskAsync(() -> {
       int port = Network.nextEmptyPort();
       NetworkServer networkServer = new NetworkServer(
-          (port % 1000) + gameName + Network.TMP_SERVER_SUFFIX, port, Type.Server.GAME)
+          (port % 1000) + gameName + Network.TMP_SERVER_SUFFIX, port, ServerType.GAME)
           .setTask(gameName)
           .allowEnd(netherEnd).allowNether(netherEnd)
           .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE));
@@ -400,24 +394,24 @@ public class StartCmd implements CommandListener<Sender, Argument> {
   private void handleStartTmpGame(Sender sender, Arguments<Argument> args, DbTmpGame game) {
 
     String gameName = game.getName();
-    Type.Availability gameKitAvailability = game.getKitAvailability();
-    Type.Availability gameMapAvailability = game.getMapAvailability();
+    Availability gameKitAvailability = game.getKitAvailability();
+    Availability gameMapAvailability = game.getMapAvailability();
     Collection<Integer> gameTeamAmounts = game.getTeamSizes();
     Integer gameMaxPlayers = game.getMaxPlayers();
     Integer gameMinPlayers = game.getMinPlayerNumber();
-    Type.Availability gameMergeTeams = game.getTeamMergeAvailability();
+    Availability gameMergeTeams = game.getTeamMergeAvailability();
 
     // kits
     boolean kitsEnabled = args.getArgumentByString("kits") != null;
 
-    if (gameKitAvailability.equals(Type.Availability.FORBIDDEN) && kitsEnabled) {
+    if (gameKitAvailability.equals(Availability.FORBIDDEN) && kitsEnabled) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
           .append(text(" forbid kits", WARNING)));
       return;
     }
 
-    if (gameKitAvailability.equals(Type.Availability.REQUIRED) && !kitsEnabled) {
+    if (gameKitAvailability.equals(Availability.REQUIRED) && !kitsEnabled) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
           .append(text(" require kits", WARNING)));
@@ -427,14 +421,14 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     // maps
     boolean mapsEnabled = args.getArgumentByString("maps") != null;
 
-    if (gameMapAvailability.equals(Type.Availability.FORBIDDEN) && mapsEnabled) {
+    if (gameMapAvailability.equals(Availability.FORBIDDEN) && mapsEnabled) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
           .append(text(" forbid maps", WARNING)));
       return;
     }
 
-    if (gameMapAvailability.equals(Type.Availability.REQUIRED) && !mapsEnabled) {
+    if (gameMapAvailability.equals(Availability.REQUIRED) && !mapsEnabled) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
           .append(text(" require maps", WARNING)));
@@ -513,17 +507,17 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     boolean teamMerging = argMaxPerTeam != null && args.getArgumentByString("merge") != null;
 
     if (gameMergeTeams == null) {
-      gameMergeTeams = Type.Availability.FORBIDDEN;
+      gameMergeTeams = Availability.FORBIDDEN;
     }
 
-    if (gameMergeTeams.equals(Type.Availability.FORBIDDEN) && teamMerging) {
+    if (gameMergeTeams.equals(Availability.FORBIDDEN) && teamMerging) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
           .append(text(" forbid team merging", WARNING)));
       return;
     }
 
-    if (gameMergeTeams.equals(Type.Availability.REQUIRED) && !teamMerging && teamAmount > 0) {
+    if (gameMergeTeams.equals(Availability.REQUIRED) && !teamMerging && teamAmount > 0) {
       sender.sendPluginMessage(text("Game ", WARNING).
           append(text(gameName, VALUE))
           .append(text(" require team merging", WARNING)));
@@ -543,8 +537,8 @@ public class StartCmd implements CommandListener<Sender, Argument> {
       sender.sendPluginMessage(text("Creating server...", PERSONAL));
       int loungePort = Network.nextEmptyPort();
       NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
-          Type.Server.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort,
-          Type.Server.LOUNGE)
+          ServerType.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort,
+          ServerType.LOUNGE)
           .options(o -> o.setWorldCopyType(CopyType.COPY));
 
       Tuple<ServerCreationResult, Optional<Server>> loungeResult =
@@ -562,7 +556,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
       NetworkServer gameNetworkServer = new NetworkServer(
           (tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
-          tempGamePort, Type.Server.TEMP_GAME).setTask(
+          tempGamePort, ServerType.TEMP_GAME).setTask(
               gameName)
           .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE));
 
@@ -620,7 +614,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
 
   @Override
   public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+                                       Arguments<Argument> args) {
     int length = args.getLength();
     if (length == 1 || length == 0) {
       return List.of("game", "server", "own_game", "public_game");
@@ -650,7 +644,7 @@ public class StartCmd implements CommandListener<Sender, Argument> {
       if (args.getString(0).equalsIgnoreCase("public_game")) {
         if (Database.getGames().containsGame(args.getString(1).toLowerCase())) {
           return Network.getNetworkUtils()
-              .getPublicPlayerServerNames(Type.Server.GAME, args.getString(1));
+              .getPublicPlayerServerNames(ServerType.GAME, args.getString(1));
         }
         return List.of();
       }

@@ -16,9 +16,9 @@ import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbNonTmpGame;
 import de.timesnake.database.util.game.DbTmpGame;
-import de.timesnake.database.util.object.Type;
-import de.timesnake.database.util.object.Type.Availability;
 import de.timesnake.database.util.server.DbLoungeServer;
+import de.timesnake.library.basic.util.Availability;
+import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.cmd.*;
@@ -123,7 +123,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
       teams.sort(Integer::compareTo);
       teams.sort(Comparator.reverseOrder());
 
-      if (teams.size() == 0) {
+      if (teams.isEmpty()) {
         context.addOption(TEAM_SIZE, null);
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
@@ -159,7 +159,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
   }
 
   private boolean checkOldPvP(Sender sender, IncCommandContext context) {
-    Type.Availability oldPvP = context.getOption(GAME).getInfo().getOldPvPAvailability();
+    Availability oldPvP = context.getOption(GAME).getInfo().getOldPvPAvailability();
     if (oldPvP == Availability.ALLOWED) {
       this.sendSelectionTo(sender, this.createSelection(OLD_PVP).addValues("yes", "no"));
       return false;
@@ -190,7 +190,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
 
         int loungePort = Network.nextEmptyPort();
         NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
-            Type.Server.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort, Type.Server.LOUNGE);
+            ServerType.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort, ServerType.LOUNGE);
 
         Tuple<ServerCreationResult, Optional<Server>> loungeResult = Network.createTmpServer(loungeNetworkServer);
 
@@ -204,7 +204,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
         int tempGamePort = Network.nextEmptyPort();
 
         NetworkServer gameNetworkServer = new NetworkServer((tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
-            tempGamePort, Type.Server.TEMP_GAME).setTask(gameName);
+            tempGamePort, ServerType.TEMP_GAME).setTask(gameName);
 
         gameNetworkServer.options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE));
 
@@ -270,7 +270,7 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
 
         int port = Network.nextEmptyPort();
         NetworkServer networkServer = new NetworkServer((port % 1000) + gameName +
-            Network.TMP_SERVER_SUFFIX, port, Type.Server.GAME)
+            Network.TMP_SERVER_SUFFIX, port, ServerType.GAME)
             .setTask(gameName)
             .allowEnd(netherEnd)
             .allowNether(netherEnd)

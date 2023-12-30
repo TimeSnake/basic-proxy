@@ -24,11 +24,12 @@ import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
-import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Loggers;
+import de.timesnake.library.basic.util.PunishType;
+import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.NetworkVariables;
@@ -219,7 +220,7 @@ public class UserManager {
     Server s = Network.getServer(
         serverInfo.getAddress().getPort());
 
-    if (s.getType().equals(Type.Server.LOBBY)) {
+    if (s.getType().equals(ServerType.LOBBY)) {
       user.setLobby(serverInfo.getName());
     }
 
@@ -343,20 +344,20 @@ public class UserManager {
     DbUser user = Database.getUsers().getUser(name);
 
     DbPunishment punishment = user.getPunishment();
-    Type.Punishment type = punishment.getType();
+    PunishType type = punishment.getType();
 
-    if (punishment == null || type == null) {
+    if (type == null) {
       return null;
     }
 
-    if (type.equals(Type.Punishment.BAN)) {
+    if (type.equals(PunishType.BAN)) {
       Component component = Component.text("You were permanently banned.", ExTextColor.WARNING)
           .append(Component.newline())
           .append(Component.text("Reason: ", ExTextColor.WARNING))
           .append(Component.text(punishment.getReason(), ExTextColor.VALUE));
 
       return appendContactComponent(component);
-    } else if (type.equals(Type.Punishment.TEMP_BAN)) {
+    } else if (type.equals(PunishType.TEMP_BAN)) {
       LocalDateTime dateSystem = LocalDateTime.now();
       LocalDateTime date = punishment.getDate()
           .plusSeconds(punishment.getDuration().toSeconds());

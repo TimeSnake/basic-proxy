@@ -9,7 +9,7 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.KickedFromServerEvent;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.database.util.object.Type;
+import de.timesnake.library.basic.util.ServerType;
 
 public class FallbackManager {
 
@@ -19,8 +19,7 @@ public class FallbackManager {
       return;
     }
 
-    if (Network.getServer(e.getServer().getServerInfo().getName()).getType()
-        .equals(Type.Server.LOBBY)) {
+    if (Network.getServer(e.getServer().getServerInfo().getName()).getType().equals(ServerType.LOBBY)) {
       return;
     }
 

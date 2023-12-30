@@ -24,9 +24,9 @@ import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.core.ServerChannel;
 import de.timesnake.channel.proxy.channel.ProxyChannel;
 import de.timesnake.database.util.Database;
-import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Loggers;
+import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.TimeDownParser;
@@ -151,7 +151,7 @@ public class NetworkManager {
     this.networkUtils = new NetworkUtils(this.networkPath);
 
     Tuple<ServerCreationResult, Optional<Server>> res = this.createTmpServer(
-        new NetworkServer("lobby0", 25001, Type.Server.LOBBY)
+        new NetworkServer("lobby0", 25001, ServerType.LOBBY)
             .setMaxPlayers(50)
             .options(o -> o.setWorldCopyType(CopyType.SYNC)),
         false);
@@ -388,11 +388,11 @@ public class NetworkManager {
     return this.createTmpServer(server, true);
   }
 
-  public ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task, String name) {
+  public ServerInitResult createPublicPlayerServer(ServerType type, String task, String name) {
     return getServerManager().initNewPublicPlayerServer(type, task, name);
   }
 
-  public ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {
+  public ServerInitResult createPlayerServer(UUID uuid, ServerType type, String task, String name) {
     return getServerManager().initNewPlayerServer(uuid, type, task, name);
   }
 

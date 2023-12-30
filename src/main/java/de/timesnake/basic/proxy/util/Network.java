@@ -14,8 +14,8 @@ import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.proxy.channel.ProxyChannel;
-import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
+import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.TimeDownParser;
 import de.timesnake.library.extension.util.NetworkVariables;
@@ -273,11 +273,11 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     return network.getNetworkUtils();
   }
 
-  public static ServerInitResult createPublicPlayerServer(Type.Server<?> type, String task, String name) {
+  public static ServerInitResult createPublicPlayerServer(ServerType type, String task, String name) {
     return network.createPublicPlayerServer(type, task, name);
   }
 
-  public static ServerInitResult createPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {
+  public static ServerInitResult createPlayerServer(UUID uuid, ServerType type, String task, String name) {
     return network.createPlayerServer(uuid, type, task, name);
   }
 

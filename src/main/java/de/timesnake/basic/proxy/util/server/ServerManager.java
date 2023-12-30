@@ -17,12 +17,8 @@ import de.timesnake.channel.util.message.ChannelListenerMessage;
 import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
-import de.timesnake.database.util.object.Type;
 import de.timesnake.database.util.server.DbServer;
-import de.timesnake.library.basic.util.Loggers;
-import de.timesnake.library.basic.util.MultiKeyMap;
-import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.basic.util.Tuple;
+import de.timesnake.library.basic.util.*;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
@@ -117,7 +113,7 @@ public class ServerManager implements ChannelListener {
   }
 
   public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-      boolean registerServer) {
+                                                                       boolean registerServer) {
 
     ServerCreationResult result;
     Optional<Server> serverOpt = Optional.empty();
@@ -131,35 +127,35 @@ public class ServerManager implements ChannelListener {
 
       this.applyDefaults(server);
 
-      if (server.getType().equals(Type.Server.LOBBY)) {
+      if (server.getType().equals(ServerType.LOBBY)) {
         result = Network.getNetworkUtils().createServer(server
             .options(o -> o
                 .setWorldCopyType(CopyType.SYNC)
                 .setSyncPlayerData(false)
                 .setSyncLogs(true)));
 
-      } else if (server.getType().equals(Type.Server.BUILD)) {
+      } else if (server.getType().equals(ServerType.BUILD)) {
         result = Network.getNetworkUtils().createServer(server
             .options(o -> o
                 .setWorldCopyType(CopyType.NONE)
                 .setSyncPlayerData(true)
                 .setSyncLogs(true)));
 
-      } else if (server.getType().equals(Type.Server.LOUNGE)) {
+      } else if (server.getType().equals(ServerType.LOUNGE)) {
         result = Network.getNetworkUtils().createServer(server
             .options(o -> o
                 .setWorldCopyType(CopyType.COPY)
                 .setSyncPlayerData(false)
                 .setSyncLogs(true)));
 
-      } else if (server.getType().equals(Type.Server.TEMP_GAME)) {
+      } else if (server.getType().equals(ServerType.TEMP_GAME)) {
         result = Network.getNetworkUtils().createServer(server
             .options(o -> o
                 // copy type determined by map option
                 .setSyncPlayerData(false)
                 .setSyncLogs(true)));
 
-      } else if (server.getType().equals(Type.Server.GAME)) {
+      } else if (server.getType().equals(ServerType.GAME)) {
         result = Network.getNetworkUtils().createServer(server
             .options(o -> o
                 .setWorldCopyType(CopyType.COPY)
@@ -180,7 +176,7 @@ public class ServerManager implements ChannelListener {
     return new Tuple<>(result, serverOpt);
   }
 
-  public ServerInitResult initNewPublicPlayerServer(Type.Server<?> type, String task, String name) {
+  public ServerInitResult initNewPublicPlayerServer(ServerType type, String task, String name) {
     this.serverCreationLock.lock();
 
     ServerInitResult result;
@@ -196,7 +192,7 @@ public class ServerManager implements ChannelListener {
     return result;
   }
 
-  public ServerInitResult initNewPlayerServer(UUID uuid, Type.Server<?> type, String task, String name) {
+  public ServerInitResult initNewPlayerServer(UUID uuid, ServerType type, String task, String name) {
     this.serverCreationLock.lock();
 
     ServerInitResult result;
@@ -278,15 +274,15 @@ public class ServerManager implements ChannelListener {
 
   private Server addServer(NetworkServer server, Path serverPath, boolean registerServer) {
     Server newServer = null;
-    if (Type.Server.LOBBY.equals(server.getType())) {
+    if (ServerType.LOBBY.equals(server.getType())) {
       newServer = this.addLobby(server.getPort(), server.getName(), serverPath, server);
-    } else if (Type.Server.LOUNGE.equals(server.getType())) {
+    } else if (ServerType.LOUNGE.equals(server.getType())) {
       newServer = this.addLounge(server.getPort(), server.getName(), serverPath, server);
-    } else if (Type.Server.GAME.equals(server.getType())) {
+    } else if (ServerType.GAME.equals(server.getType())) {
       newServer = this.addGame(server.getPort(), server.getName(), server.getTask(), serverPath, server);
-    } else if (Type.Server.BUILD.equals(server.getType())) {
+    } else if (ServerType.BUILD.equals(server.getType())) {
       newServer = this.addBuild(server.getPort(), server.getName(), server.getTask(), serverPath, server);
-    } else if (Type.Server.TEMP_GAME.equals(server.getType())) {
+    } else if (ServerType.TEMP_GAME.equals(server.getType())) {
       newServer = this.addTempGame(server.getPort(), server.getName(), server.getTask(), serverPath, server);
     }
 
@@ -362,45 +358,45 @@ public class ServerManager implements ChannelListener {
   }
 
   public LobbyServer addLobby(int port, String name, Path folderPath,
-      NetworkServer networkServer) {
+                              NetworkServer networkServer) {
     Database.getServers().addLobby(name, port, Status.Server.OFFLINE, folderPath);
-    LobbyServer server = new LobbyServer(Database.getServers().getServer(Type.Server.LOBBY, port), folderPath, networkServer);
+    LobbyServer server = new LobbyServer(Database.getServers().getServer(ServerType.LOBBY, port), folderPath, networkServer);
     servers.put(name, port, server);
     return server;
   }
 
 
   public GameServer addGame(int port, String name, String task, Path folderPath,
-      NetworkServer networkServer) {
+                            NetworkServer networkServer) {
     Database.getServers().addGame(name, port, task, Status.Server.OFFLINE, folderPath);
-    GameServer server = new NonTmpGameServer(Database.getServers().getServer(Type.Server.GAME, port), folderPath, networkServer);
+    GameServer server = new NonTmpGameServer(Database.getServers().getServer(ServerType.GAME, port), folderPath, networkServer);
     servers.put(name, port, server);
     return server;
   }
 
 
   public LoungeServer addLounge(int port, String name, Path folderPath,
-      NetworkServer networkServer) {
+                                NetworkServer networkServer) {
     Database.getServers().addLounge(name, port, Status.Server.OFFLINE, folderPath);
-    LoungeServer server = new LoungeServer(Database.getServers().getServer(Type.Server.LOUNGE, port), folderPath, networkServer);
+    LoungeServer server = new LoungeServer(Database.getServers().getServer(ServerType.LOUNGE, port), folderPath, networkServer);
     servers.put(name, port, server);
     return server;
   }
 
 
   public TmpGameServer addTempGame(int port, String name, String task, Path folderPath,
-      NetworkServer networkServer) {
+                                   NetworkServer networkServer) {
     Database.getServers().addTempGame(name, port, task, Status.Server.OFFLINE, folderPath);
-    TmpGameServer server = new TmpGameServer(Database.getServers().getServer(Type.Server.TEMP_GAME, port), folderPath, networkServer);
+    TmpGameServer server = new TmpGameServer(Database.getServers().getServer(ServerType.TEMP_GAME, port), folderPath, networkServer);
     servers.put(name, port, server);
     return server;
   }
 
 
   public BuildServer addBuild(int port, String name, String task, Path folderPath,
-      NetworkServer networkServer) {
+                              NetworkServer networkServer) {
     Database.getServers().addBuild(name, port, task, Status.Server.OFFLINE, folderPath);
-    BuildServer server = new BuildServer(Database.getServers().getServer(Type.Server.BUILD, port), folderPath, networkServer);
+    BuildServer server = new BuildServer(Database.getServers().getServer(ServerType.BUILD, port), folderPath, networkServer);
     servers.put(name, port, server);
     return server;
   }
@@ -424,7 +420,7 @@ public class ServerManager implements ChannelListener {
 
       server.updateStatus();
 
-      if (server.getType().equals(Type.Server.LOBBY)) {
+      if (server.getType().equals(ServerType.LOBBY)) {
         if (server.getStatus().equals(Status.Server.ONLINE)) {
           this.onlineLobbys++;
         } else if (server.getStatus().equals(Status.Server.OFFLINE)) {

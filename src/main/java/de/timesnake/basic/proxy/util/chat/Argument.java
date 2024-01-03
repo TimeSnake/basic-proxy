@@ -9,13 +9,19 @@ import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.User;
-import java.util.Optional;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public class Argument extends de.timesnake.library.extension.util.cmd.Argument {
+import java.util.Optional;
+import java.util.function.Function;
+
+public class Argument extends de.timesnake.library.commands.Argument {
 
   public Argument(Sender sender, String string) {
     super(sender, string);
+  }
+
+  public void assertElseExit(Function<Argument, Boolean> function) {
+    super.assertElseExitBasis(function);
   }
 
   public boolean isPlayerName(boolean sendMessage) {

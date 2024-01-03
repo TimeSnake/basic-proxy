@@ -4,7 +4,8 @@
 
 package de.timesnake.basic.proxy.util.chat;
 
-public interface ExCommandListener extends
-    de.timesnake.library.extension.util.cmd.ExCommandListener<Sender, Argument> {
+import de.timesnake.library.commands.extended.ExArguments;
+
+public interface ExCommandListener extends de.timesnake.library.commands.extended.ExCommandListener<Sender, Argument, ExArguments<Argument>, ExCompletion> {
 
 }

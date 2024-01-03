@@ -11,7 +11,7 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
 import net.kyori.adventure.text.Component;
 
-public class CommandSender implements de.timesnake.library.extension.util.cmd.CommandSender {
+public class CommandSender implements de.timesnake.library.commands.CommandSender {
 
   private final CommandSource cmdSender;
 

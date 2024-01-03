@@ -6,20 +6,23 @@ package de.timesnake.basic.proxy.core.cmd;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.channel.util.message.ChannelUserMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
+import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 
-public class AliasCmd implements CommandListener<Sender, Argument> {
+public class AliasCmd implements CommandListener {
+
+  private final Code perm = Plugin.NETWORK.createPermssionCode("alias");
 
   public static void setAlias(Sender sender, DbUser user, Argument type, Argument name) {
     Component msg;
@@ -86,21 +89,18 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
+    sender.hasPermissionElseExit(this.perm);
+
     if (args.isLengthHigherEquals(1, true)) {
       if (Database.getUsers().containsUser(args.get(0).getString())) {
-        if (sender.hasPermission("alias.other")) {
-          if (args.isLengthEquals(3, false)) {
-            AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), args.get(2));
-          } else {
-            AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), null);
-          }
+        if (args.isLengthEquals(3, false)) {
+          AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), args.get(2));
+        } else {
+          AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), null);
         }
       } else if (args.get(0).equalsIgnoreCase("help")) {
-        sender.sendTDMessageCommandHelp("Set alias for player",
-            "alias [player] " + "<prefix/suffix/nick> " +
-                "[value]");
+        sender.sendTDMessageCommandHelp("Set alias for player", "alias [player] <prefix/suffix/nick> [value]");
         sender.sendTDMessageCommandHelp("Get alias from player", "alias [player] info");
       } else if (sender.isPlayer(true)) {
         if (args.isLengthEquals(2, false)) {
@@ -114,26 +114,17 @@ public class AliasCmd implements CommandListener<Sender, Argument> {
     } else {
       sender.sendTDMessageCommandHelp("For help", "alias help");
     }
-
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    int length = args.getLength();
-    if (length == 1) {
-      return Network.getCommandManager().getPlayerNames();
-    }
-
-    if (length == 2) {
-      return List.of("info", "prefix", "suffix", "nick");
-    }
-    return null;
+  public Completion getTabCompletion() {
+    return new Completion(this.perm)
+        .addArgument(Completion.ofPlayerNames()
+            .addArgument(new Completion("info", "prefix", "suffix", "nick")));
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-
+  public String getPermission() {
+    return this.perm.getPermission();
   }
-
 }

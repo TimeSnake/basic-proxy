@@ -6,25 +6,25 @@ package de.timesnake.basic.proxy.core.group;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import net.kyori.adventure.text.Component;
 
-public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
+import java.util.UUID;
 
-  private Code perm;
+public class DisplayGroupCmd implements CommandListener {
+
+  private final Code perm = Plugin.NETWORK.createPermssionCode("chat.display_group");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+  public void onCommand(Sender sender, PluginCommand cmd,
       Arguments<Argument> args) {
     if (!sender.hasPermission(this.perm)) {
       return;
@@ -99,20 +99,15 @@ public class DisplayGroupCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    if (args.length() == 1) {
-      return Network.getCommandManager().getPlayerNames();
-    } else if (args.length() == 2) {
-      return List.of("add", "remove");
-    } else if (args.length() == 3) {
-      return Network.getCommandManager().getDisplayGroupNames();
-    }
-    return new ArrayList<>(0);
+  public Completion getTabCompletion() {
+    return new Completion(this.perm)
+        .addArgument(Completion.ofPlayerNames()
+            .addArgument(new Completion("add", "remove")
+                .addArgument(Completion.ofDisplayGroupNames())));
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.perm = plugin.createPermssionCode("chat.display_group");
+  public String getPermission() {
+    return this.perm.getPermission();
   }
 }

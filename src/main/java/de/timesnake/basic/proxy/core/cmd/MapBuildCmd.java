@@ -6,6 +6,8 @@ package de.timesnake.basic.proxy.core.cmd;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.BuildServer;
 import de.timesnake.basic.proxy.util.server.Server;
@@ -14,11 +16,10 @@ import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.ServerCreationResult;
 import net.kyori.adventure.text.Component;
@@ -29,12 +30,12 @@ import java.util.Optional;
 
 import static de.timesnake.library.chat.ExTextColor.WARNING;
 
-public class MapBuildCmd implements CommandListener<Sender, Argument> {
+public class MapBuildCmd implements CommandListener {
 
-  private Code perm;
+  private final Code perm = Plugin.NETWORK.createPermssionCode("network.start.build");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
     if (!sender.hasPermission(this.perm)) {
       return;
     }
@@ -116,15 +117,13 @@ public class MapBuildCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
-    if (args.length() == 1) {
-      return Network.getNetworkUtils().getWorldNames(ServerType.BUILD, null);
-    }
-    return List.of();
+  public Completion getTabCompletion() {
+    return new Completion(this.perm)
+        .addArgument(new Completion(Network.getNetworkUtils().getWorldNames(ServerType.BUILD, null)));
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.perm = plugin.createPermssionCode("network.start.build");
+  public String getPermission() {
+    return this.perm.getPermission();
   }
 }

@@ -7,23 +7,27 @@ package de.timesnake.basic.proxy.core.permission;
 import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
+import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 
-public class PermissionCmd implements CommandListener<Sender, Argument> {
+public class PermissionCmd implements CommandListener {
+
+  private final Code perm = Plugin.NETWORK.createPermssionCode("permission");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
+    sender.hasPermissionElseExit(this.perm);
+
     if (args.isLengthHigherEquals(1, true)) {
       if (args.get(0).equalsIgnoreCase("user")) {
         this.handleUserPermissionCmd(sender, args);
@@ -48,8 +52,7 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
             "perm group <group> " + "add/remove" +
                 " <permission> <mode>");
         sender.sendTDMessageCommandHelp("Set/Remove inheritance",
-            "perm group <group> " + "setinherit" +
-                "/removeinherit <group>");
+            "perm group <group> " + "setinherit" + "/removeinherit <group>");
         sender.sendTDMessageCommandHelp("Reload permissions", "perm reload");
       } else {
         sender.sendMessageUseHelp("perm help");
@@ -68,16 +71,13 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
       if (args.isLengthHigherEquals(4, true)) {
         switch (args.getString(2).toLowerCase()) {
           case "add" -> {
-            if (args.isLengthHigherEquals(5, true) && args.get(4)
-                .isPermissionStatus(true)) {
-              Network.getPermissionHandler().addPlayerPermission(sender, user,
-                  args.get(3).toLowerCase(), args.get(4).toPermissionStatus());
+            if (args.isLengthHigherEquals(5, true) && args.get(4).isPermissionStatus(true)) {
+              Network.getPermissionHandler().addPlayerPermission(sender, user, args.get(3).toLowerCase(), args.get(4).toPermissionStatus());
             }
           }
-          case "remove" -> Network.getPermissionHandler()
-              .removePlayerPermission(sender, user, args.get(3).toLowerCase());
-          case "setgroup" -> Network.getPermissionHandler()
-              .setPlayerGroup(sender, user, args.get(3).toLowerCase());
+          case "remove" ->
+              Network.getPermissionHandler().removePlayerPermission(sender, user, args.get(3).toLowerCase());
+          case "setgroup" -> Network.getPermissionHandler().setPlayerGroup(sender, user, args.get(3).toLowerCase());
           case "removegroup" -> Network.getPermissionHandler().setPlayerGroup(sender, user, null);
           default -> {
           }
@@ -121,55 +121,22 @@ public class PermissionCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    int length = args.getLength();
-    if (length == 0) {
-      return null;
-    }
-    if (length == 1) {
-      return List.of("user", "group");
-    }
-    if (args.getString(0).equalsIgnoreCase("user")) {
-      if (length == 2) {
-        return Network.getCommandManager().getPlayerNames();
-      }
-      if (length == 3) {
-        return List.of("add", "remove", "setgroup", "removegroup");
-      }
-      if (length == 4) {
-        if (args.getString(2).equalsIgnoreCase("setgroup") || args.getString(2)
-            .equalsIgnoreCase("removegroup"
-            )) {
-          return Network.getCommandManager().getPermGroupNames();
-        }
-      }
-      return null;
-    }
-
-    if (args.getString(0).equalsIgnoreCase("group")) {
-      if (length == 2) {
-        return Network.getCommandManager().getPermGroupNames();
-      }
-      if (length == 3) {
-        return List.of("add", "remove", "create", "delete", "setinherit", "removeinherit");
-      }
-
-      if (length == 4) {
-        if (args.getString(3).equalsIgnoreCase("setinherit") || args.getString(3)
-            .equalsIgnoreCase(
-                "removeinherit")) {
-          return Network.getCommandManager().getPermGroupNames();
-        }
-      }
-      return null;
-    }
-    return null;
+  public Completion getTabCompletion() {
+    return new Completion()
+        .addArgument(new Completion("user")
+            .addArgument(Completion.ofPlayerNames()
+                .addArgument(new Completion("add", "remove"))
+                .addArgument(new Completion("setgroup", "removegroup")
+                    .addArgument(Completion.ofPermGroupNames()))))
+        .addArgument(new Completion("group")
+            .addArgument(Completion.ofPermGroupNames()
+                .addArgument(new Completion("add", "remove", "create", "delete"))
+                .addArgument(new Completion("setinherit", "removeinherit")
+                    .addArgument(Completion.ofPermGroupNames()))));
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-
+  public String getPermission() {
+    return this.perm.getPermission();
   }
-
 }

@@ -5,31 +5,25 @@
 package de.timesnake.basic.proxy.core.server;
 
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.Argument;
-import de.timesnake.basic.proxy.util.chat.Plugin;
-import de.timesnake.basic.proxy.util.chat.Sender;
+import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-
-import java.util.List;
 
 import static de.timesnake.library.chat.ExTextColor.*;
 import static net.kyori.adventure.text.Component.text;
 
-public class ServerCmd implements CommandListener<Sender, Argument> {
+public class ServerCmd implements CommandListener {
 
-  private Code cmdPerm;
+  private final Code perm = Plugin.NETWORK.createPermssionCode("network.server.cmd");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    if (!sender.hasPermission(this.cmdPerm)) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
+    if (!sender.hasPermission(this.perm)) {
       return;
     }
 
@@ -79,22 +73,6 @@ public class ServerCmd implements CommandListener<Sender, Argument> {
           .append(text(": ", PERSONAL))
           .append(text(bukkitCmd, VALUE)));
     }
-  }
-
-  @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    if (args.length() == 1) {
-      return Network.getCommandManager().getServerNames();
-    } else if (args.length() == 2) {
-      return List.of("start", "stop", "password", "<cmd>");
-    }
-    return List.of();
-  }
-
-  @Override
-  public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
-    this.cmdPerm = plugin.createPermssionCode("network.server.cmd");
   }
 
   public void startServer(Sender sender, Arguments<Argument> args) {
@@ -176,5 +154,17 @@ public class ServerCmd implements CommandListener<Sender, Argument> {
         server.stop();
       }
     }
+  }
+
+  @Override
+  public Completion getTabCompletion() {
+    return new Completion(this.perm)
+        .addArgument(Completion.ofServerNames()
+            .addArgument(new Completion("start", "stop", "password", "<cmd>")));
+  }
+
+  @Override
+  public String getPermission() {
+    return this.perm.getPermission();
   }
 }

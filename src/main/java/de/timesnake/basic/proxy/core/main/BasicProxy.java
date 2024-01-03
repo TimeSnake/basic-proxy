@@ -14,15 +14,7 @@ import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.PluginManager;
 import com.velocitypowered.api.proxy.ProxyServer;
 import de.timesnake.basic.proxy.core.channel.ChannelCmdHandler;
-import de.timesnake.basic.proxy.core.cmd.AirModeCmd;
-import de.timesnake.basic.proxy.core.cmd.AliasCmd;
-import de.timesnake.basic.proxy.core.cmd.CodeCmd;
-import de.timesnake.basic.proxy.core.cmd.CoinsCmd;
-import de.timesnake.basic.proxy.core.cmd.LoggerCmd;
-import de.timesnake.basic.proxy.core.cmd.MapBuildCmd;
-import de.timesnake.basic.proxy.core.cmd.NetworkMsgCmd;
-import de.timesnake.basic.proxy.core.cmd.RuleCmd;
-import de.timesnake.basic.proxy.core.cmd.UuidCmd;
+import de.timesnake.basic.proxy.core.cmd.*;
 import de.timesnake.basic.proxy.core.group.DisplayGroupCmd;
 import de.timesnake.basic.proxy.core.network.MotdManager;
 import de.timesnake.basic.proxy.core.network.ServiceWorkCmd;
@@ -31,25 +23,19 @@ import de.timesnake.basic.proxy.core.permission.PermissionCmd;
 import de.timesnake.basic.proxy.core.permission.PermissionTestCmd;
 import de.timesnake.basic.proxy.core.punishment.KickAllCmd;
 import de.timesnake.basic.proxy.core.punishment.PunishCmd;
-import de.timesnake.basic.proxy.core.server.CleanupServersCmd;
-import de.timesnake.basic.proxy.core.server.DeleteTmpServerCmd;
-import de.timesnake.basic.proxy.core.server.FallbackManager;
-import de.timesnake.basic.proxy.core.server.GameCmd;
-import de.timesnake.basic.proxy.core.server.NetworkCmd;
-import de.timesnake.basic.proxy.core.server.PidCmd;
-import de.timesnake.basic.proxy.core.server.ServerCmd;
-import de.timesnake.basic.proxy.core.server.StartCmd;
+import de.timesnake.basic.proxy.core.server.*;
 import de.timesnake.basic.proxy.core.user.ChatManager;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.channel.proxy.main.ChannelProxy;
 import de.timesnake.database.util.Database;
+import org.apache.commons.io.FileUtils;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
-import org.apache.commons.io.FileUtils;
 
 @com.velocitypowered.api.plugin.Plugin(id = "basic-proxy", name = "BasicProxy", version = "1.0-SNAPSHOT",
     url = "https://git.timesnake.de", authors = {"MarkusNils"},
@@ -123,8 +109,8 @@ public class BasicProxy {
     Network.getCommandManager().addCommand(this, "start", new StartCmd(), Plugin.NETWORK);
     Network.getCommandManager().addCommand(this, "cmd", new ServerCmd(), Plugin.NETWORK);
 
-    Network.getCommandManager().addCommand(this, "netmessages",
-        List.of("netmsg", "networkmsg", "networkmessages", "networkmessage", "netmsgs"),
+    Network.getCommandManager().addCommand(this, "netmsg",
+        List.of("netmessages", "networkmsg", "networkmessages", "networkmessage", "netmsgs"),
         new NetworkMsgCmd(), Plugin.SUPPORT);
 
     Network.getCommandManager()
@@ -148,7 +134,7 @@ public class BasicProxy {
     Network.getCommandManager().addCommand(this, "cleanup_servers",
         new CleanupServersCmd(), Plugin.SYSTEM);
 
-    Network.getCommandManager().addCommand(this, "dgroup", List.of("displaygroup", "dg"),
+    Network.getCommandManager().addCommand(this, "dg", List.of("displaygroup", "dgroup"),
         new DisplayGroupCmd(), Plugin.NETWORK);
 
     Network.getCommandManager().addCommand(this, "build", new MapBuildCmd(), Plugin.NETWORK);

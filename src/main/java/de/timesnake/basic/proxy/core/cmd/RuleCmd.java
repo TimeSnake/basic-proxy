@@ -4,25 +4,19 @@
 
 package de.timesnake.basic.proxy.core.cmd;
 
-import de.timesnake.basic.proxy.util.chat.Argument;
-import de.timesnake.basic.proxy.util.chat.Plugin;
-import de.timesnake.basic.proxy.util.chat.Sender;
+import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Chat;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 
-public class RuleCmd implements CommandListener<Sender, Argument> {
-
+public class RuleCmd implements CommandListener {
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
     Component text = Chat.getSenderPlugin(Plugin.NETWORK)
         .append(Component.text("https://timesnake.de/rules/", ExTextColor.PERSONAL))
         .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL,
@@ -34,15 +28,12 @@ public class RuleCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    return List.of();
+  public Completion getTabCompletion() {
+    return new Completion();
   }
 
   @Override
-  public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
-
+  public String getPermission() {
+    return null;
   }
-
-
 }

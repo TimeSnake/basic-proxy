@@ -6,53 +6,60 @@ package de.timesnake.basic.proxy.core.punishment;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
+import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.basic.util.PunishType;
+import de.timesnake.library.basic.util.Punishment;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
-public class PunishCmd implements CommandListener<Sender, Argument> {
+import static de.timesnake.basic.proxy.util.chat.Plugin.PUNISH;
 
-  private Code mutePerm;
-  private Code kickPerm;
-  private Code unmutePerm;
-  private Code tempbanPerm;
-  private Code banPerm;
-  private Code unbanPerm;
-  private Code jailPerm;
+public class PunishCmd implements CommandListener {
+
+  private final Code punishPerm = PUNISH.createPermssionCode("punish");
+  private final Code mutePerm = PUNISH.createPermssionCode("punish.netmute");
+  private final Code kickPerm = PUNISH.createPermssionCode("punish.netunmute");
+  private final Code unmutePerm = PUNISH.createPermssionCode("punish.kick");
+  private final Code tempbanPerm = PUNISH.createPermssionCode("punish.tempban");
+  private final Code banPerm = PUNISH.createPermssionCode("punish.ban");
+  private final Code unbanPerm = PUNISH.createPermssionCode("punish.unban");
+  private final Code jailPerm = PUNISH.createPermssionCode("punish.jail");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
+    args.isLengthHigherEqualsElseExit(1, true);
+    args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
+    DbUser user = args.get(0).toDbUser();
+
     switch (cmd.getName().toLowerCase()) {
-      case "netmute", "mute" -> {
+      case "nettempmute", "tempmute" -> {
         sender.hasPermissionElseExit(this.mutePerm);
 
-        if (!args.isLengthHigherEquals(2, true)) {
-          sender.sendTDMessageCommandHelp("Mute a player", "netmute <player> <reason>");
-          return;
+        if (!args.isLengthHigherEquals(3, true)) {
+          sender.sendTDMessageCommandHelp("Temp-mute a player", "tempmute <player> <duration> <reason>");
         }
 
-        args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
-
-        Network.getPunishmentManager()
-            .mutePlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
+        Network.getPunishmentManager().tempMutePlayer(sender, user, new Punishment(user.getUniqueId(),
+            PunishType.TEMP_MUTE, LocalDateTime.now(), parseDuration(args.get(1).getString()), sender.getName(),
+            args.toMessage(2)));
       }
       case "netkick", "kick" -> {
         sender.hasPermissionElseExit(this.kickPerm);
 
         if (!args.isLengthHigherEquals(2, true)) {
-          sender.sendTDMessageCommandHelp("Kick a player", "netkick <player> <reason>");
+          sender.sendTDMessageCommandHelp("Kick a player", "kick <player> <reason>");
           return;
         }
 
-        args.get(0).assertElseExit(a -> ((Argument) a).isPlayerName(true));
-
-        Network.getPunishmentManager()
-            .kickPlayer(sender, args.get(0).toUser(), args.toMessage(1));
+        Network.getPunishmentManager().kickPlayer(sender, args.get(0).toUser(), args.toMessage(1));
       }
       case "netunmute", "unmute" -> {
         sender.hasPermissionElseExit(this.unmutePerm);
@@ -62,36 +69,30 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
           return;
         }
 
-        args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
-
         Network.getPunishmentManager().unmutePlayer(sender, args.get(0).toDbUser());
       }
       case "nettempban", "nettmpban", "tempban", "tmpban" -> {
         sender.hasPermissionElseExit(this.tempbanPerm);
 
         if (!args.isLengthHigherEquals(3, true)) {
-          sender.sendTDMessageCommandHelp("Temp-ban a player", "nettempban <player> " +
+          sender.sendTDMessageCommandHelp("Temp-ban a player", "tempban <player> " +
               "<durationInSec> <reason>");
           return;
         }
 
-        args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
-
-        Network.getPunishmentManager().tempBanPlayer(sender, args.get(0).toDbUser(),
-            args.get(1).getString(), args.toMessage(2));
+        Network.getPunishmentManager().tempBanPlayer(sender, user, new Punishment(user.getUniqueId(), PunishType.TEMP_BAN,
+            LocalDateTime.now(), parseDuration(args.get(1).getString()), sender.getName(), args.toMessage(2)));
       }
       case "netban", "ban" -> {
         sender.hasPermissionElseExit(this.banPerm);
 
         if (!args.isLengthHigherEquals(2, true)) {
-          sender.sendTDMessageCommandHelp("Ban a player", "netban <player> <reason>");
+          sender.sendTDMessageCommandHelp("Ban a player", "ban <player> <reason>");
           return;
         }
 
-        args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
-
-        Network.getPunishmentManager()
-            .banPlayer(sender, args.get(0).toDbUser(), args.toMessage(1));
+        Network.getPunishmentManager().banPlayer(sender, user, new Punishment(user.getUniqueId(), PunishType.BAN,
+            LocalDateTime.now(), null, sender.getName(), args.toMessage(1)));
       }
       case "netunban", "unban", "pardon", "netpardon" -> {
         sender.hasPermissionElseExit(this.unbanPerm);
@@ -101,10 +102,7 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
           return;
         }
 
-        args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
-
-        Network.getPunishmentManager()
-            .unbanPlayer(sender, args.get(0).toDbUser().getUniqueId());
+        Network.getPunishmentManager().unbanPlayer(sender, args.get(0).toDbUser().getUniqueId());
       }
       case "netjail", "jail" -> {
         sender.hasPermissionElseExit(this.jailPerm);
@@ -115,45 +113,43 @@ public class PunishCmd implements CommandListener<Sender, Argument> {
           return;
         }
 
-        args.get(0).assertElseExit(a -> a.isPlayerDatabaseName(true));
-
-        Network.getPunishmentManager()
-            .jailPlayer(sender, args.get(0).toDbUser(), args.get(1).getString(),
-                args.toMessage(2));
+        Network.getPunishmentManager().jailPlayer(sender, user, new Punishment(user.getUniqueId(), PunishType.JAIL,
+            LocalDateTime.now(), parseDuration(args.get(1).getString()), sender.getName(), args.toMessage(2)));
       }
     }
 
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    int length = args.getLength();
-    if (length == 1) {
-      return Network.getCommandManager().getPlayerNames();
-    }
-
-    String arg0 = args.getString(0);
-
-    if (length == 2 && (arg0.equalsIgnoreCase("tempban")
-        || arg0.equalsIgnoreCase("tmpban")
-        || arg0.equalsIgnoreCase("nettempban")
-        || arg0.equalsIgnoreCase("nettmpban")
-        || arg0.equalsIgnoreCase("jail")
-        || arg0.equalsIgnoreCase("netjail"))) {
-      return List.of("10", "10*60", "5*60");
-    }
-    return null;
+  public Completion getTabCompletion() {
+    return new Completion(this.punishPerm)
+        .addArgument(Completion.ofPlayerNames()
+            .addArgument((sender, cmd, args) -> List.of("tmpban", "tempban", "jail", "tmpmute").contains(cmd),
+                new Completion("10", "10*60", "5*60")
+                    .addArgument(new Completion("<reason>")))
+            .addArgument((sender, cmd, args) -> List.of("ban", "kick").contains(cmd),
+                new Completion("<reason>")));
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.mutePerm = plugin.createPermssionCode("punish.netmute");
-    this.unmutePerm = plugin.createPermssionCode("punish.netunmute");
-    this.kickPerm = plugin.createPermssionCode("punish.kick");
-    this.tempbanPerm = plugin.createPermssionCode("punish.tempban");
-    this.banPerm = plugin.createPermssionCode("punish.ban");
-    this.unbanPerm = plugin.createPermssionCode("punish.unban");
-    this.jailPerm = plugin.createPermssionCode("punish.jail");
+  public String getPermission() {
+    return this.punishPerm.getPermission();
+  }
+
+  private static Duration parseDuration(String s) {
+    String[] plusParts = s.split("\\+");
+
+    long result = 0;
+
+    for (String plusPart : plusParts) {
+      String[] multParts = plusPart.split("\\*");
+      long multResult = 1;
+      for (String multPart : multParts) {
+        multResult *= Integer.parseInt(multPart);
+      }
+      result += multResult;
+    }
+
+    return Duration.ofSeconds(result);
   }
 }

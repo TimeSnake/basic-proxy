@@ -6,6 +6,8 @@ package de.timesnake.basic.proxy.core.server;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.game.DbGame;
@@ -13,27 +15,27 @@ import de.timesnake.database.util.game.DbNonTmpGame;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
 import de.timesnake.library.network.ServerInitResult;
 import net.kyori.adventure.text.Component;
 
 import java.util.Collection;
-import java.util.List;
 
 import static de.timesnake.library.chat.ExTextColor.PERSONAL;
 import static de.timesnake.library.chat.ExTextColor.WARNING;
 
-public class NetworkCmd implements CommandListener<Sender, Argument> {
+public class NetworkCmd implements CommandListener {
 
-  private Code serverAlreadyExists;
-  private Code createOwnPerm;
+  private final Code perm = Plugin.INFO.createPermssionCode("network.create.game");
+  private final Code serverAlreadyExists = Plugin.NETWORK.createHelpCode("Server name already exists");
+  private final Code createOwnPerm = Plugin.NETWORK.createPermssionCode("network.create.own_game");
+  private final Code createPublicGame = Plugin.NETWORK.createPermssionCode("network.create.public_game");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+  public void onCommand(Sender sender, PluginCommand cmd,
                         Arguments<Argument> args) {
     if (!args.isLengthHigherEquals(1, true)) {
       return;
@@ -46,7 +48,7 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
   }
 
   private void handleCreatePublicGameCmd(Sender sender, Arguments<Argument> args) {
-    if (!sender.hasPermission("network.create.public_game")) {
+    if (!sender.hasPermission(this.createPublicGame)) {
       return;
     }
 
@@ -138,30 +140,16 @@ public class NetworkCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-                                       Arguments<Argument> args) {
-    if (args.length() == 1) {
-      return List.of("create_own_game", "create_public_game");
-    } else if (args.length() == 2) {
-      if (args.get(0).equalsIgnoreCase("create_own_game", "create_public_game")) {
-        return Network.getCommandManager().getGameNames();
-      }
-    } else if (args.length() == 3) {
-      if (args.get(0).equalsIgnoreCase("create_own_game", "create_public_game")) {
-        return List.of("<name>");
-      }
-    } else if (args.length() == 4) {
-      if (args.get(0).equalsIgnoreCase("create_own_game", "create_public_game")) {
-        return Network.getCommandManager().getPlayerNames();
-      }
-    }
-
-    return List.of();
+  public Completion getTabCompletion() {
+    return new Completion(this.perm)
+        .addArgument(new Completion("create_own_game", "create_public_game")
+            .addArgument(Completion.ofGameNames()
+                .addArgument(new Completion("<name>")
+                    .addArgument(Completion.ofPlayerNames()))));
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.serverAlreadyExists = plugin.createHelpCode("Server name already exists");
-    this.createOwnPerm = plugin.createPermssionCode("network.create.own_game");
+  public String getPermission() {
+    return this.perm.getPermission();
   }
 }

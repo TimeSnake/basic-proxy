@@ -12,17 +12,14 @@ import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.core.server.ServerCmd;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
-import de.timesnake.basic.proxy.util.chat.Argument;
-import de.timesnake.basic.proxy.util.chat.Plugin;
-import de.timesnake.basic.proxy.util.chat.Sender;
+import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -34,7 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class AutoShutdown implements CommandListener<Sender, Argument> {
+public class AutoShutdown implements CommandListener {
 
   public static final int START_TIME = 15;
   private static final int PLAYER_TIME_0 = 5;
@@ -45,32 +42,26 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
   private int requiredVotes = 1;
   private ScheduledTask task;
 
-  private Code helloPerm;
-  private Code shutdownPerm;
-  private Code autoShutdownPerm;
+  private final Code helloPerm = Plugin.NETWORK.createPermssionCode("network.hello");
+  private final Code shutdownPerm = Plugin.NETWORK.createPermssionCode("network.shutdown");
+  private final Code autoShutdownPerm = Plugin.NETWORK.createPermssionCode("network.autoshutdown");
 
   public AutoShutdown() {
-    NetworkManager.getInstance().getCommandManager().addCommand(BasicProxy.getPlugin(),
-        "shutdown", this, Plugin.NETWORK);
-
-    NetworkManager.getInstance().getCommandManager().addCommand(BasicProxy.getPlugin(),
-        "autoshutdown", this, Plugin.NETWORK);
-
-    NetworkManager.getInstance().getCommandManager().addCommand(BasicProxy.getPlugin(),
-        "hello", List.of("hallo", "hi", "helo"),
-        this, Plugin.NETWORK);
+    NetworkManager.getInstance().getCommandManager().addCommand(BasicProxy.getPlugin(), "shutdown", this, Plugin.NETWORK);
+    NetworkManager.getInstance().getCommandManager().addCommand(BasicProxy.getPlugin(), "autoshutdown", this, Plugin.NETWORK);
+    NetworkManager.getInstance().getCommandManager().addCommand(BasicProxy.getPlugin(), "hello", List.of("hallo", "hi", "helo"), this, Plugin.NETWORK);
   }
 
   @Subscribe
   public void onPlayerJoin(PostLoginEvent e) {
-    if (Network.getUsers().size() > 0) {
+    if (!Network.getUsers().isEmpty()) {
       this.start(PLAYER_TIME_1);
     }
   }
 
   @Subscribe
   public void onPlayerDisconnect(DisconnectEvent e) {
-    if (Network.getUsers().size() == 0) {
+    if (Network.getUsers().isEmpty()) {
       this.start(PLAYER_TIME_0);
     }
   }
@@ -165,13 +156,13 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
       Network.broadcastMessage(Plugin.NETWORK,
           Component.text("Shutdown cancelled", ExTextColor.WARNING));
       if (enabled) {
-        this.start(Network.getUsers().size() > 0 ? PLAYER_TIME_1 : PLAYER_TIME_0);
+        this.start(!Network.getUsers().isEmpty() ? PLAYER_TIME_1 : PLAYER_TIME_0);
       }
     }
   }
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+  public void onCommand(Sender sender, PluginCommand cmd,
       Arguments<Argument> args) {
     if (cmd.getName().equalsIgnoreCase("hello")
         || cmd.getName().equalsIgnoreCase("hallo")
@@ -242,7 +233,7 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
         } else {
           this.enabled = true;
           this.votedUsers.clear();
-          this.start(Network.getUsers().size() > 0 ? PLAYER_TIME_1 : PLAYER_TIME_0);
+          this.start(!Network.getUsers().isEmpty() ? PLAYER_TIME_1 : PLAYER_TIME_0);
           sender.sendPluginMessage(
               Component.text("Enabled auto-shutdown", ExTextColor.PERSONAL));
         }
@@ -252,15 +243,12 @@ public class AutoShutdown implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    return List.of();
+  public Completion getTabCompletion() {
+    return new Completion(this.helloPerm);
   }
 
   @Override
-  public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
-    this.helloPerm = plugin.createPermssionCode("network.hello");
-    this.shutdownPerm = plugin.createPermssionCode("network.shutdown");
-    this.autoShutdownPerm = plugin.createPermssionCode("network.autoshutdown");
+  public String getPermission() {
+    return this.helloPerm.getPermission();
   }
 }

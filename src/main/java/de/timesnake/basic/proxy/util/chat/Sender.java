@@ -13,7 +13,7 @@ import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.chat.Plugin;
 import net.kyori.adventure.text.Component;
 
-public class Sender extends de.timesnake.library.extension.util.cmd.Sender {
+public class Sender extends de.timesnake.library.commands.Sender {
 
   public Sender(CommandSender cmdSender, Plugin plugin) {
     super(cmdSender, plugin, Network.getTimeDownParser());

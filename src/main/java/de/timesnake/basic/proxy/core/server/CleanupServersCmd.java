@@ -6,24 +6,23 @@ package de.timesnake.basic.proxy.core.server;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 
-public class CleanupServersCmd implements CommandListener<Sender, Argument> {
+public class CleanupServersCmd implements CommandListener {
 
-  private Code perm;
+  private final Code perm = Plugin.SYSTEM.createPermssionCode("network.cleanup_servers");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
     if (!sender.hasPermission(this.perm)) {
       return;
     }
@@ -46,13 +45,12 @@ public class CleanupServersCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    return List.of();
+  public Completion getTabCompletion() {
+    return new Completion();
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.perm = plugin.createPermssionCode("network.cleanup_servers");
+  public String getPermission() {
+    return this.perm.getPermission();
   }
 }

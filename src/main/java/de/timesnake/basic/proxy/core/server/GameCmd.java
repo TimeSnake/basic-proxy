@@ -6,6 +6,7 @@ package de.timesnake.basic.proxy.core.server;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.IncCommandListener;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.LoungeServer;
@@ -20,8 +21,11 @@ import de.timesnake.database.util.server.DbLoungeServer;
 import de.timesnake.library.basic.util.Availability;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Tuple;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.inchat.IncCommandContext;
+import de.timesnake.library.commands.inchat.IncCommandOption;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.cmd.*;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
@@ -29,15 +33,13 @@ import de.timesnake.library.network.ServerCreationResult;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandContext> {
+public class GameCmd extends IncCommandListener {
 
-  private final Code permCode = Plugin.GAME.createPermssionCode("network.start.game");
+  private final Code perm = Plugin.GAME.createPermssionCode("network.start.game");
 
   @Override
-  public IncCommandContext onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-                                     Arguments<Argument> args) {
-
-    sender.hasPermissionElseExit(this.permCode);
+  public IncCommandContext onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
+    sender.hasPermissionElseExit(this.perm);
 
     List<String> games = new ArrayList<>(Database.getGames().getGamesName());
     games.sort(String::compareTo);
@@ -49,9 +51,14 @@ public class GameCmd extends IncCommandListener<Sender, Argument, IncCommandCont
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+  public List<String> getTabCompletion(PluginCommand cmd,
                                        Arguments<Argument> args) {
     return List.of();
+  }
+
+  @Override
+  public String getPermission() {
+    return this.perm.getPermission();
   }
 
   @Override

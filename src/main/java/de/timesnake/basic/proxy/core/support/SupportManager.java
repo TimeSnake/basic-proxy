@@ -9,9 +9,7 @@ import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.Argument;
-import de.timesnake.basic.proxy.util.chat.Plugin;
-import de.timesnake.basic.proxy.util.chat.Sender;
+import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.util.listener.ChannelHandler;
 import de.timesnake.channel.util.listener.ChannelListener;
@@ -20,31 +18,26 @@ import de.timesnake.channel.util.message.ChannelSupportMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.Component;
 
-public class SupportManager implements ChannelListener, CommandListener<Sender, Argument> {
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+public class SupportManager implements ChannelListener, CommandListener {
 
   private final HashMap<Integer, Tuple<String, ScheduledTask>> lockedTicketsById = new HashMap<>();
 
   private final Set<UUID> ticketListeners = new HashSet<>();
 
-  private Code msgPerm;
+  private final Code msgPerm = Plugin.SUPPORT.createPermssionCode("support.message");
 
   public SupportManager() {
     Network.getCommandManager().addCommand(BasicProxy.getPlugin(),
         "supportmsg", List.of("supportmessage", "supportmessages", "supportmsgs", "smsg"),
-        this,
-        Plugin.SUPPORT);
+        this, Plugin.SUPPORT);
     Network.getChannel().addListener(this);
     Network.registerListener(this);
   }
@@ -103,7 +96,7 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
   }
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+  public void onCommand(Sender sender, PluginCommand cmd,
       Arguments<Argument> args) {
     if (!sender.isPlayer(true)) {
       return;
@@ -128,14 +121,13 @@ public class SupportManager implements ChannelListener, CommandListener<Sender, 
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    return null;
+  public Completion getTabCompletion() {
+    return new Completion(this.msgPerm);
   }
 
   @Override
-  public void loadCodes(de.timesnake.library.extension.util.chat.Plugin plugin) {
-    this.msgPerm = plugin.createPermssionCode("support.message");
+  public String getPermission() {
+    return this.msgPerm.getPermission();
   }
 
   @Subscribe

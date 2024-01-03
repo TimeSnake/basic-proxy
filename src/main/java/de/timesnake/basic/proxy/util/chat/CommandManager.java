@@ -12,49 +12,28 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
-import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.CommandHandler;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.basis.CommandListenerBasis;
+import de.timesnake.library.commands.extended.ExArguments;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.ArgumentParseException;
-import de.timesnake.library.extension.util.cmd.CommandExitException;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.CommandListenerBasis;
-import de.timesnake.library.extension.util.cmd.DuplicateOptionException;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import de.timesnake.library.extension.util.cmd.IncCommandContext;
-import de.timesnake.library.extension.util.cmd.IncCommandListener;
-import de.timesnake.library.extension.util.cmd.IncCommandOption;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-import net.kyori.adventure.text.Component;
 
-public class CommandManager {
+public class CommandManager extends CommandHandler<Sender, Argument, Arguments<Argument>, ExArguments<Argument>> {
 
-  private final HashMap<String, ExCommand<Sender, Argument>> commands = new HashMap<>();
-  private final HashMap<String, IncCommandContext> incCmdContexts = new HashMap<>();
-
-  public void addCommand(Object mainClass, String cmd,
-      CommandListenerBasis<Sender, Argument> listener, Plugin basicPlugin) {
-    listener.loadCodes(basicPlugin);
-
-    ExCommand<Sender, Argument> exCommand = new ExCommand<>(cmd, listener, basicPlugin);
-    this.commands.put(cmd, exCommand);
+  public void addCommand(Object mainClass, String cmd, CommandListenerBasis listener, Plugin basicPlugin) {
+    this.addCommand(cmd, listener, basicPlugin);
 
     BasicProxy.getCommandManager().register(BasicProxy.getCommandManager()
         .metaBuilder(cmd).plugin(mainClass).build(), new Command());
   }
 
-  public void addCommand(Object mainClass, String cmd, List<String> aliases,
-      CommandListener<Sender, Argument> listener, Plugin basicPlugin) {
-    listener.loadCodes(basicPlugin);
-    ExCommand<Sender, Argument> exCommand = new ExCommand<>(cmd, listener, basicPlugin);
-    this.commands.put(cmd, exCommand);
-
-    for (String alias : aliases) {
-      this.commands.put(alias, exCommand);
-    }
+  public void addCommand(Object mainClass, String cmd, List<String> aliases, CommandListenerBasis listener, Plugin basicPlugin) {
+    this.addCommand(cmd, aliases, listener, basicPlugin);
 
     BasicProxy.getCommandManager().register(BasicProxy.getCommandManager().metaBuilder(cmd)
         .aliases(aliases.toArray(new String[0])).plugin(mainClass).build(), new Command());
@@ -84,58 +63,59 @@ public class CommandManager {
     return this.getPermGroupNames();
   }
 
+  @Deprecated
   public List<String> getPermGroupNames() {
     return Network.getGroupManager().getPermGroups().values().stream().map(PermGroup::getName)
         .collect(Collectors.toList());
   }
 
+  @Deprecated
   public List<String> getDisplayGroupNames() {
     return Network.getGroupManager().getDisplayGroups().values().stream()
         .map(DisplayGroup::getName)
         .collect(Collectors.toList());
   }
 
+  @Deprecated
   public List<String> getGameNames() {
     return new ArrayList<>(Database.getGames().getGamesName());
   }
 
-  public static class Arguments extends
-      de.timesnake.library.extension.util.cmd.Arguments<Argument> {
+  @Override
+  public Sender createSender(de.timesnake.library.commands.CommandSender sender, PluginCommand cmd) {
+    return new Sender(((CommandSender) sender), cmd.getPlugin());
+  }
+
+  @Override
+  public de.timesnake.library.commands.simple.Arguments<Argument> createArguments(Sender sender, String[] args) {
+    return new Arguments(sender, args);
+  }
+
+  @Override
+  public de.timesnake.library.commands.extended.ExArguments<Argument> createExArguments(Sender sender, String[] args, boolean allowDuplicates) {
+    return new ExArguments(sender, args, allowDuplicates);
+  }
+
+  private static class Arguments extends de.timesnake.library.commands.simple.Arguments<Argument> {
 
     public Arguments(Sender sender, String[] args) {
       super(sender, args);
     }
 
-    public Arguments(Sender sender, LinkedList<Argument> args) {
-      super(sender, args);
-    }
-
-    public Arguments(de.timesnake.library.extension.util.cmd.Arguments<Argument> args) {
-      super(args);
-    }
-
-    public Arguments(Sender sender, Argument... args) {
-      super(sender, args);
-    }
-
     @Override
-    public Argument createArgument(de.timesnake.library.extension.util.cmd.Sender sender,
-        String arg) {
+    public Argument createArgument(de.timesnake.library.commands.Sender sender, String arg) {
       return new Argument((Sender) sender, arg);
     }
   }
 
-  public static class ExArguments extends
-      de.timesnake.library.extension.util.cmd.ExArguments<Argument> {
+  private static class ExArguments extends de.timesnake.library.commands.extended.ExArguments<Argument> {
 
-    public ExArguments(de.timesnake.library.extension.util.cmd.Sender sender, String[] args,
-        boolean allowDuplicateOptions) {
+    public ExArguments(de.timesnake.library.commands.Sender sender, String[] args, boolean allowDuplicateOptions) {
       super(sender, args, allowDuplicateOptions);
     }
 
     @Override
-    public Argument createArgument(de.timesnake.library.extension.util.cmd.Sender sender,
-        String arg) {
+    public Argument createArgument(de.timesnake.library.commands.Sender sender, String arg) {
       return new Argument(((Sender) sender), arg);
     }
   }
@@ -147,84 +127,20 @@ public class CommandManager {
     }
 
     @Override
+    public boolean hasPermission(Invocation invocation) {
+      return CommandManager.this.showCommmand(new CommandSender(invocation.source()), invocation.alias().toLowerCase());
+    }
+
+    @Override
     public List<String> suggest(final Invocation invocation) {
-      if (commands.containsKey(invocation.alias())) {
-        ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
-        Sender sender = new Sender(new CommandSender(invocation.source()),
-            basicCmd.getPlugin());
-        String cmdName = invocation.alias().toLowerCase();
-        String[] args = invocation.arguments();
-
-        List<String> suggestions = List.of();
-
-        if (basicCmd.getListener() instanceof CommandListener listener) {
-          suggestions = listener.getTabCompletion(basicCmd, new Arguments(sender, args));
-        } else if (basicCmd.getListener() instanceof ExCommandListener listener) {
-          suggestions = listener.getTabCompletion(basicCmd,
-              new ExArguments(sender, args, listener.allowDuplicates(cmdName, args)));
-        } else if (basicCmd.getListener() instanceof IncCommandListener listener) {
-          suggestions = listener.getTabCompletion(basicCmd, new Arguments(sender, args));
-        }
-
-        if (suggestions != null) {
-          return suggestions;
-        }
-      }
-      return List.of();
+      String[] args = invocation.arguments();
+      return CommandManager.this.handleTabCompletion(new CommandSender(invocation.source()),
+          invocation.alias().toLowerCase(), args, args.length > 0 ? args.length : 1);
     }
 
     @Override
     public void execute(Invocation invocation) {
-      if (!commands.containsKey(invocation.alias())) {
-        return;
-      }
-
-      ExCommand<Sender, Argument> basicCmd = commands.get(invocation.alias());
-      Sender sender = new Sender(new CommandSender(invocation.source()),
-          basicCmd.getPlugin());
-      String cmdName = invocation.alias().toLowerCase();
-      String[] args = invocation.arguments();
-
-      try {
-        if (basicCmd.getListener() instanceof CommandListener listener) {
-          listener.onCommand(sender, basicCmd, new Arguments(sender, args));
-        } else if (basicCmd.getListener() instanceof ExCommandListener listener) {
-          listener.onCommand(sender, basicCmd, new ExArguments(sender, args,
-              listener.allowDuplicates(cmdName, args)));
-        } else if (basicCmd.getListener() instanceof IncCommandListener listener) {
-          if (args.length > 0) {
-            IncCommandContext context = incCmdContexts.get(sender.getName());
-            IncCommandOption option = (IncCommandOption) listener.getOptions().stream()
-                .filter(o -> ((IncCommandOption) o).getName().equals(args[0]))
-                .findFirst().get();
-
-            if (context == null || option == null) {
-              return;
-            }
-
-            Object value = option.parseValue(args[1]);
-            context.addOption(option, value);
-
-            boolean finished = listener.onUpdate(sender, context, option, value);
-
-            if (finished) {
-              incCmdContexts.remove(sender.getName());
-            }
-          } else {
-            IncCommandContext context = listener.onCommand(sender, basicCmd,
-                new Arguments(sender, args));
-
-            if (context != null) {
-              incCmdContexts.put(sender.getName(), context);
-            }
-
-          }
-        }
-      } catch (CommandExitException ignored) {
-
-      } catch (ArgumentParseException | DuplicateOptionException e) {
-        sender.sendPluginMessage(Component.text(e.getMessage(), ExTextColor.WARNING));
-      }
+      CommandManager.this.handleCommand(new CommandSender(invocation.source()), invocation.alias().toLowerCase(), invocation.arguments());
     }
   }
 }

@@ -1,32 +1,27 @@
 main: de.timesnake.basic.proxy.core.main.BasicProxy
 version: 1.3
 name: basic-proxy
-author: Mn
+author: timesnake
 softdepend: [ database-proxy ]
 
 commands:
-  perm:
   permission:
-  alias:
-  al:
-  work:
-  netban:
-  nettempban:
-  nettmpban:
-  netkick:
-  netmute:
-  nettempmute:
-  netunmute:
-  netunban:
-  netpardon:
-  netjail:
-  jail:
+    aliases:
+      - perm
+      - perms
 
+  alias:
+
+
+  work:
+
+  jail:
   ban:
   tempban:
-  tmpban:
+    aliases:
+      - tmpban
+
   kick:
-  mute:
   tempmute:
   unmute:
   unban:
@@ -35,51 +30,54 @@ commands:
   support:
   ticket:
   tickets:
-  supportmessages:
-  supportmessage:
+
   supportmsg:
-  supportmsgs:
+    aliases:
+      - supportmessages
+      - supportmessage
+      - supportmsgs
 
-  netmessages:
-
-  channelmsg:
-  channelmsgs:
-  channelmessages:
-  channelmessage:
+  netmsg:
+    aliases:
+      - netmessages
+      - networkmsg
+      - networkmessages
+      - networkmessage
+      - netmsgs
 
   shutdown:
-  autoshutdown:
 
-  databasemsg:
-  databasemsgs:
-  databasemessage:
-  databasemesseges:
+  autoshutdown:
 
   permcheck:
 
   rule:
-  rules:
-  regel:
-  regeln:
+    aliases:
+      - rules
+      - regel
+      - regeln
 
   pid:
 
   kickall:
 
   dtmp:
-  delete_tmp:
+    aliases:
+      - delete_tmp
   cleanup_servers:
 
-  dgroup:
-  displaygroup:
   dg:
+    aliases:
+      - dgroup
+      - displaygroup
 
   build:
 
   network:
 
-  log:
   logger:
+    aliases:
+      - log
 
   uuid:
 

@@ -5,26 +5,24 @@
 package de.timesnake.basic.proxy.core.cmd;
 
 
-import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 
-public class CoinsCmd implements CommandListener<Sender, Argument> {
+public class CoinsCmd implements CommandListener {
 
-  private Code perm;
+  private final Code perm = Plugin.TIME_COINS.createPermssionCode("timecoins.settings");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
     if (sender.hasPermission(this.perm)) {
       if (args.isLengthEquals(3, true)) {
         if (args.get(0).isPlayerName(true)) {
@@ -72,22 +70,15 @@ public class CoinsCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    if (args.getLength() == 1) {
-      return Network.getCommandManager().getPlayerNames();
-    }
-    if (args.getLength() == 2) {
-      return List.of("add", "remove", "set", "reset");
-    }
-    if (args.getLength() == 3) {
-      return List.of("0", "1", "10", "100");
-    }
-    return null;
+  public Completion getTabCompletion() {
+    return new Completion(this.perm)
+        .addArgument(Completion.ofPlayerNames()
+            .addArgument(new Completion("add", "remove", "set", "reset")
+                .addArgument(new Completion("0", "1", "10", "100"))));
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.perm = plugin.createPermssionCode("timecoins.settings");
+  public String getPermission() {
+    return this.perm.getPermission();
   }
 }

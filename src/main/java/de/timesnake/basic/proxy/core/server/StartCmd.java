@@ -6,6 +6,8 @@ package de.timesnake.basic.proxy.core.server;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.*;
 import de.timesnake.basic.proxy.util.user.User;
@@ -18,12 +20,11 @@ import de.timesnake.library.basic.util.Availability;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Chat;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
@@ -37,16 +38,15 @@ import java.util.Optional;
 import static de.timesnake.library.chat.ExTextColor.*;
 import static net.kyori.adventure.text.Component.text;
 
-public class StartCmd implements CommandListener<Sender, Argument> {
+public class StartCmd implements CommandListener {
 
-  private Code serverPerm;
-  private Code ownGamePerm;
-  private Code publicGamePerm;
-  private Code gamePerm;
+  private final Code serverPerm = Plugin.NETWORK.createPermssionCode("network.start.server");
+  private final Code gamePerm = Plugin.NETWORK.createPermssionCode("network.start.game");
+  private final Code ownGamePerm = Plugin.NETWORK.createPermssionCode("network.start.own_game");
+  private final Code publicGamePerm = Plugin.NETWORK.createPermssionCode("network.start.public_game");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-                        Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
     if (args.isLengthHigherEquals(2, true)) {
       switch (args.get(0).toLowerCase()) {
         case "server" -> {
@@ -598,12 +598,12 @@ public class StartCmd implements CommandListener<Sender, Argument> {
       sender.sendPluginTDMessage("§sStarted game §v" + gameName);
       sender.sendPluginTDMessage("§sGame server: §v" + tmpGameServer.getName());
       sender.sendPluginTDMessage("§sLounge server: §v" + loungeServer.getName());
-      sender.sendPluginTDMessage("§sMax players: §v" + "" + finalMaxServerPlayers);
+      sender.sendPluginTDMessage("§sMax players: §v" + finalMaxServerPlayers);
       sender.sendPluginTDMessage("§sMaps: §v" + mapsEnabled);
       sender.sendPluginTDMessage("§sKits: §v" + kitsEnabled);
       sender.sendPluginTDMessage("§sTeam amount: §v" + finalTeamAmount);
       sender.sendPluginTDMessage("§sTeam merging: §v" + teamMerging);
-      sender.sendPluginTDMessage("§sTeam size: §v" + "" + finalPlayersPerTeam);
+      sender.sendPluginTDMessage("§sTeam size: §v" + finalPlayersPerTeam);
       sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
 
       Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);
@@ -611,52 +611,22 @@ public class StartCmd implements CommandListener<Sender, Argument> {
     });
   }
 
-
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-                                       Arguments<Argument> args) {
-    int length = args.getLength();
-    if (length == 1 || length == 0) {
-      return List.of("game", "server", "own_game", "public_game");
-    }
-
-    if (length == 2) {
-      if (args.getString(0).equalsIgnoreCase("server")) {
-        return Network.getCommandManager().getServerNames();
-      }
-
-      if (args.getString(0).equalsIgnoreCase("game")) {
-        return Network.getCommandManager().getGameNames();
-      }
-
-      if (args.getString(0).equalsIgnoreCase("own_game")
-          || args.getString(0).equalsIgnoreCase("public_game")) {
-        return Network.getCommandManager().getGameNames();
-      }
-    }
-
-    if (length == 3) {
-      if (args.getString(0).equalsIgnoreCase("own_game")) {
-        // TODO player server names
-        return List.of();
-      }
-
-      if (args.getString(0).equalsIgnoreCase("public_game")) {
-        if (Database.getGames().containsGame(args.getString(1).toLowerCase())) {
-          return Network.getNetworkUtils()
-              .getPublicPlayerServerNames(ServerType.GAME, args.getString(1));
-        }
-        return List.of();
-      }
-    }
-    return null;
+  public Completion getTabCompletion() {
+    return new Completion(this.gamePerm)
+        .addArgument(new Completion("game")
+            .addArgument(Completion.ofGameNames()))
+        .addArgument(new Completion("server")
+            .addArgument(Completion.ofServerNames()))
+        .addArgument(new Completion("own_game"))
+        .addArgument(new Completion("public_game")
+            .addArgument((sender, cmd, args) -> Database.getGames().containsGame(args.getString(1)),
+                new Completion((sender, cmd, args) -> Database.getGames().containsGame(args.getString(1)) ?
+                    Network.getNetworkUtils().getPublicPlayerServerNames(ServerType.GAME, args.getString(1)) : List.of())));
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.serverPerm = plugin.createPermssionCode("network.start.server");
-    this.gamePerm = plugin.createPermssionCode("network.start.game");
-    this.ownGamePerm = plugin.createPermssionCode("network.start.own_game");
-    this.publicGamePerm = plugin.createPermssionCode("network.start.public_game");
+  public String getPermission() {
+    return this.gamePerm.getPermission();
   }
 }

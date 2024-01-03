@@ -6,22 +6,22 @@ package de.timesnake.basic.proxy.core.network;
 
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 
-public class ServiceWorkCmd implements CommandListener<Sender, Argument> {
+public class ServiceWorkCmd implements CommandListener {
 
-  private Code perm;
+  private final Code perm = Plugin.NETWORK.createPermssionCode("network.work.set");
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+  public void onCommand(Sender sender, PluginCommand cmd,
       Arguments<Argument> args) {
     if (sender.hasPermission(this.perm)) {
       Network.setWork(!Network.isWork());
@@ -31,13 +31,12 @@ public class ServiceWorkCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> arguments) {
-    return null;
+  public Completion getTabCompletion() {
+    return new Completion();
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.perm = plugin.createPermssionCode("network.work.set");
+  public String getPermission() {
+    return this.perm.getPermission();
   }
 }

@@ -5,24 +5,25 @@
 package de.timesnake.basic.proxy.core.cmd;
 
 import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.commands.PluginCommand;
+import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.extension.util.chat.Code;
 import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.cmd.Arguments;
-import de.timesnake.library.extension.util.cmd.CommandListener;
-import de.timesnake.library.extension.util.cmd.ExCommand;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 
-public class AirModeCmd implements CommandListener<Sender, Argument> {
+public class AirModeCmd implements CommandListener {
 
-  private Code perm;
+  private final Code perm = Plugin.NETWORK.createPermssionCode("air");
+  ;
 
   @Override
-  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+  public void onCommand(Sender sender, PluginCommand cmd,
       Arguments<Argument> args) {
     if (sender.hasPermission(this.perm)) {
       if (sender.isPlayer(false)) {
@@ -39,8 +40,7 @@ public class AirModeCmd implements CommandListener<Sender, Argument> {
         if (args.isLengthEquals(1, true)) {
           if (args.get(0).isPlayerDatabaseName(true)) {
             if (args.get(0).isPlayerName(false)) {
-              sender.sendPluginMessage(Component.text("Only for offline players",
-                  ExTextColor.WARNING));
+              sender.sendPluginMessage(Component.text("Only for offline players", ExTextColor.WARNING));
               return;
             }
 
@@ -63,13 +63,13 @@ public class AirModeCmd implements CommandListener<Sender, Argument> {
   }
 
   @Override
-  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-      Arguments<Argument> args) {
-    return null;
+  public Completion getTabCompletion() {
+    return new Completion(this.perm)
+        .addArgument(Completion.ofPlayerNames());
   }
 
   @Override
-  public void loadCodes(Plugin plugin) {
-    this.perm = plugin.createPermssionCode("air");
+  public String getPermission() {
+    return this.perm.getPermission();
   }
 }

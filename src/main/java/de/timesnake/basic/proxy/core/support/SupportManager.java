@@ -17,10 +17,10 @@ import de.timesnake.channel.util.listener.ListenerType;
 import de.timesnake.channel.util.message.ChannelSupportMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.library.basic.util.Tuple;
+import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.extension.util.chat.Code;
 import net.kyori.adventure.text.Component;
 
 import java.util.*;

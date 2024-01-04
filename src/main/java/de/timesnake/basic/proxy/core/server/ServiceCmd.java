@@ -11,7 +11,7 @@ import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.extension.util.permission.Permission;
+import de.timesnake.library.permissions.Permission;
 
 public class ServiceCmd implements CommandListener {
 

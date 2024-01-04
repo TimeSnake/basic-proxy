@@ -27,15 +27,10 @@ import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.Loggers;
-import de.timesnake.library.basic.util.PunishType;
-import de.timesnake.library.basic.util.ServerType;
-import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.basic.util.*;
+import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.ExTextColor;
-import de.timesnake.library.extension.util.NetworkVariables;
-import de.timesnake.library.extension.util.chat.Chat;
-import de.timesnake.library.extension.util.player.UserMap;
-import de.timesnake.library.extension.util.player.UserSet;
+import de.timesnake.library.network.NetworkVariables;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 

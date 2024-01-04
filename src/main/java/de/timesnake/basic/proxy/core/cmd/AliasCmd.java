@@ -13,11 +13,11 @@ import de.timesnake.channel.util.message.ChannelUserMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
+import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.chat.Plugin;
 import net.kyori.adventure.text.Component;
 
 public class AliasCmd implements CommandListener {

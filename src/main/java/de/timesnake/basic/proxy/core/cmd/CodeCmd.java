@@ -5,10 +5,10 @@
 package de.timesnake.basic.proxy.core.cmd;
 
 import de.timesnake.basic.proxy.util.chat.*;
+import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.extended.ExArguments;
-import de.timesnake.library.extension.util.chat.Code;
 import net.kyori.adventure.text.Component;
 
 public class CodeCmd implements ExCommandListener {

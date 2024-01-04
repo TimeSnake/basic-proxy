@@ -10,7 +10,8 @@ import com.velocitypowered.api.permission.PermissionFunction;
 import com.velocitypowered.api.permission.Tristate;
 import com.velocitypowered.api.proxy.Player;
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.library.extension.util.permission.ExPermission;
+import de.timesnake.library.permissions.ExPermission;
+
 import java.util.HashSet;
 import java.util.Set;
 

@@ -11,9 +11,9 @@ import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.library.basic.util.Loggers;
-import de.timesnake.library.extension.util.permission.ExPermission;
+import de.timesnake.library.permissions.ExPermission;
 
-public class PermGroup extends de.timesnake.library.extension.util.permission.PermGroup<User> {
+public class PermGroup extends de.timesnake.library.permissions.PermGroup<User> {
 
   public PermGroup(DbPermGroup database) {
     super(database);

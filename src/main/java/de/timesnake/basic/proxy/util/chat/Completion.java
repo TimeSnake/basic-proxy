@@ -8,10 +8,10 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
+import de.timesnake.library.chat.Code;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.chat.DisplayGroup;
-import de.timesnake.library.extension.util.permission.PermGroup;
+import de.timesnake.library.permissions.DisplayGroup;
+import de.timesnake.library.permissions.PermGroup;
 
 import java.util.Collection;
 import java.util.List;

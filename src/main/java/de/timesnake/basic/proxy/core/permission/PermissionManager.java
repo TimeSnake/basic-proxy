@@ -4,11 +4,6 @@
 
 package de.timesnake.basic.proxy.core.permission;
 
-import static de.timesnake.library.chat.ExTextColor.PERSONAL;
-import static de.timesnake.library.chat.ExTextColor.VALUE;
-import static de.timesnake.library.chat.ExTextColor.WARNING;
-import static net.kyori.adventure.text.Component.text;
-
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
@@ -19,11 +14,15 @@ import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.extension.util.chat.Chat;
-import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.chat.Chat;
+import de.timesnake.library.chat.Code;
+import net.kyori.adventure.text.Component;
+
 import java.util.Arrays;
 import java.util.UUID;
-import net.kyori.adventure.text.Component;
+
+import static de.timesnake.library.chat.ExTextColor.*;
+import static net.kyori.adventure.text.Component.text;
 
 public class PermissionManager {
 

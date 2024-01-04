@@ -12,9 +12,9 @@ import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.PunishType;
 import de.timesnake.library.basic.util.Punishment;
+import de.timesnake.library.chat.Code;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.extension.util.chat.Code;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

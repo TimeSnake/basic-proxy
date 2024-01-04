@@ -12,7 +12,7 @@ import de.timesnake.database.util.Database;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.extension.util.permission.ExPermission;
+import de.timesnake.library.permissions.ExPermission;
 import net.kyori.adventure.text.Component;
 
 import java.time.LocalDateTime;

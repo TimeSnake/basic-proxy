@@ -9,10 +9,10 @@ import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.chat.Chat;
+import de.timesnake.library.chat.Code;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.extension.util.chat.Chat;
-import de.timesnake.library.extension.util.chat.Code;
 
 import static de.timesnake.library.chat.ExTextColor.*;
 import static net.kyori.adventure.text.Component.text;

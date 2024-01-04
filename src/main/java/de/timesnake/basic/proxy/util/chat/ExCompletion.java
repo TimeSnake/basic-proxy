@@ -4,9 +4,9 @@
 
 package de.timesnake.basic.proxy.util.chat;
 
+import de.timesnake.library.chat.Code;
 import de.timesnake.library.commands.Completion;
 import de.timesnake.library.commands.extended.ExArguments;
-import de.timesnake.library.extension.util.chat.Code;
 
 import java.util.Collection;
 

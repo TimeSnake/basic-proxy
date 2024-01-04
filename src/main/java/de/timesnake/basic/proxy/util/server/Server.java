@@ -14,7 +14,7 @@ import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.extension.util.player.UserSet;
+import de.timesnake.library.basic.util.UserSet;
 import de.timesnake.library.network.NetworkServer;
 
 import java.nio.file.Path;

@@ -8,7 +8,7 @@ import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.group.DbDisplayGroup;
 import de.timesnake.library.basic.util.Loggers;
 
-public class DisplayGroup extends de.timesnake.library.extension.util.chat.DisplayGroup<User> {
+public class DisplayGroup extends de.timesnake.library.permissions.DisplayGroup<User> {
 
   public DisplayGroup(DbDisplayGroup database) {
     super(database);

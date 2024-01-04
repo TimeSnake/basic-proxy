@@ -5,10 +5,10 @@
 package de.timesnake.basic.proxy.core.cmd;
 
 import de.timesnake.basic.proxy.util.chat.*;
+import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.extension.util.chat.Chat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;

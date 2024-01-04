@@ -14,11 +14,11 @@ import de.timesnake.database.util.game.DbGame;
 import de.timesnake.database.util.game.DbNonTmpGame;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.ServerType;
+import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.ExTextColor;
+import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.network.ServerInitResult;
 import net.kyori.adventure.text.Component;
 

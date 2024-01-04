@@ -12,12 +12,12 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
+import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.CommandHandler;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.basis.CommandListenerBasis;
 import de.timesnake.library.commands.extended.ExArguments;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.extension.util.chat.Plugin;
 
 import java.util.ArrayList;
 import java.util.List;

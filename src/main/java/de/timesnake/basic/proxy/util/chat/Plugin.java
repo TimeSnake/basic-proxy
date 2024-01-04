@@ -4,7 +4,7 @@
 
 package de.timesnake.basic.proxy.util.chat;
 
-public class Plugin extends de.timesnake.library.extension.util.chat.Plugin {
+public class Plugin extends de.timesnake.library.chat.Plugin {
 
   public static final Plugin GAME = new Plugin("Game", "PSG");
   public static final Plugin SUPPORT = new Plugin("Support", "PSS");

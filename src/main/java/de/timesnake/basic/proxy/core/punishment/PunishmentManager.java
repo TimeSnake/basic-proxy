@@ -20,8 +20,8 @@ import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.PunishType;
 import de.timesnake.library.basic.util.Punishment;
+import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.ChatColor;
-import de.timesnake.library.extension.util.chat.Chat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

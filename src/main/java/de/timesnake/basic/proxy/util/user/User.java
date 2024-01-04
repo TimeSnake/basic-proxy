@@ -27,11 +27,11 @@ import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.chat.Chat;
+import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.ExTextColor;
-import de.timesnake.library.extension.util.chat.Chat;
-import de.timesnake.library.extension.util.chat.Code;
-import de.timesnake.library.extension.util.chat.Plugin;
-import de.timesnake.library.extension.util.permission.ExPermission;
+import de.timesnake.library.chat.Plugin;
+import de.timesnake.library.permissions.ExPermission;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +44,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
-public class User implements de.timesnake.library.extension.util.player.User, ChannelListener {
+public class User implements ChannelListener {
 
   private final DbUser dbUser;
   private final Player player;
@@ -230,12 +230,11 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
   }
 
   @NotNull
-  @Override
   public String getChatName() {
     return LegacyComponentSerializer.legacySection().serialize((this.getChatNameComponent()));
   }
 
-  public Sender getAsSender(de.timesnake.library.extension.util.chat.Plugin plugin) {
+  public Sender getAsSender(Plugin plugin) {
     return new Sender(new CommandSender(player), plugin);
   }
 
@@ -257,14 +256,14 @@ public class User implements de.timesnake.library.extension.util.player.User, Ch
   }
 
   @Deprecated
-  public void sendPluginMessage(de.timesnake.library.extension.util.chat.Plugin plugin,
-      String message) {
+  public void sendPluginMessage(Plugin plugin,
+                                String message) {
     this.getPlayer().sendMessage(
         Chat.getSenderPlugin(plugin).append(Network.getTimeDownParser().parse2Component(message)));
   }
 
-  public void sendPluginMessage(de.timesnake.library.extension.util.chat.Plugin plugin,
-      Component message) {
+  public void sendPluginMessage(Plugin plugin,
+                                Component message) {
     this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin).append(message));
   }
 

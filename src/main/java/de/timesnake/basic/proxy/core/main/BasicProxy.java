@@ -37,9 +37,16 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
 
-@com.velocitypowered.api.plugin.Plugin(id = "basic-proxy", name = "BasicProxy", version = "1.0-SNAPSHOT",
-    url = "https://git.timesnake.de", authors = {"MarkusNils"},
-    dependencies = {@Dependency(id = "database-proxy"), @Dependency(id = "channel-proxy")})
+@com.velocitypowered.api.plugin.Plugin(
+    id = "basic-proxy",
+    name = "BasicProxy",
+    version = "1.3",
+    url = "https://git.timesnake.de/timesnake/minecraft/basic-proxy",
+    authors = {"timesnake"},
+    dependencies = {
+        @Dependency(id = "database-proxy"),
+        @Dependency(id = "channel-proxy")
+    })
 public class BasicProxy {
 
   public static BasicProxy getPlugin() {

@@ -128,7 +128,7 @@ public class CommandManager extends CommandHandler<Sender, Argument, Arguments<A
 
     @Override
     public boolean hasPermission(Invocation invocation) {
-      return CommandManager.this.showCommmand(new CommandSender(invocation.source()), invocation.alias().toLowerCase());
+      return CommandManager.this.showCommand(new CommandSender(invocation.source()), invocation.alias().toLowerCase());
     }
 
     @Override

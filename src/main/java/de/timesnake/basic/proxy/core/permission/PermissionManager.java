@@ -70,12 +70,11 @@ public class PermissionManager {
     UUID uuid = user.getUniqueId();
 
     if (Network.isUserOnline(uuid)) {
-      user.addPermission(permission, mode,
-          () -> Network.getUser(uuid).updatePermissions(true), servers);
+      user.addPermission(permission, mode, () -> Network.getUser(uuid).updatePermissions(true));
     } else {
-      user.addPermission(permission, mode, servers);
+      user.addPermission(permission, mode);
     }
-    this.sendMessageAddedPermission(sender, user.getName(), permission, mode, servers);
+    this.sendMessageAddedPermission(sender, user.getName(), permission, mode);
   }
 
   public void removePlayerPermission(Sender sender, DbUser user, String permission) {
@@ -171,9 +170,7 @@ public class PermissionManager {
     UUID uuid = user.getUniqueId();
   }
 
-  public void addGroupPermission(Sender sender, String groupName, String permission,
-      Status.Permission mode,
-      String... servers) {
+  public void addGroupPermission(Sender sender, String groupName, String permission, Status.Permission mode) {
     if (!sender.hasPermission(this.groupAddPerm)) {
       return;
     }
@@ -194,10 +191,8 @@ public class PermissionManager {
       return;
     }
 
-    group.addPermission(permission, mode,
-        () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions(),
-        servers);
-    this.sendMessageAddedPermission(sender, groupName, permission, mode, servers);
+    group.addPermission(permission, mode, () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
+    this.sendMessageAddedPermission(sender, groupName, permission, mode);
 
   }
 
@@ -271,7 +266,7 @@ public class PermissionManager {
     }
 
     for (DbPermission perm : group.getPermissions()) {
-      group.removePermission(perm.getName());
+      group.removePermission(perm.getPermission());
     }
     for (UUID uuid : Database.getUsers().getUsersUuid()) {
       DbUser user = Database.getUsers().getUser(uuid);

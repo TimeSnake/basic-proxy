@@ -90,8 +90,7 @@ public class PreUser {
     this.privacyPolicyDateTime = dbLocalUser.getPrivacyPolicyDateTime();
 
     for (DbPermission perm : dbLocalUser.getPermissions()) {
-      this.databasePermissions.add(
-          new ExPermission(perm.getName(), perm.getMode(), perm.getServers()));
+      this.databasePermissions.add(new ExPermission(perm.getPermission(), perm.getMode()));
     }
     this.databasePermissions.addAll(this.permGroup.getPermissions());
   }

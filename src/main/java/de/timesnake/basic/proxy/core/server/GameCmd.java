@@ -44,15 +44,13 @@ public class GameCmd extends IncCommandListener {
     List<String> games = new ArrayList<>(Database.getGames().getGamesName());
     games.sort(String::compareTo);
 
-    this.sendSelectionTo(sender, this.createSelection(GAME)
-        .addValues(games));
+    this.sendSelectionTo(sender, this.createSelection(GAME).addValues(games));
 
     return new IncCommandContext();
   }
 
   @Override
-  public List<String> getTabCompletion(PluginCommand cmd,
-                                       Arguments<Argument> args) {
+  public List<String> getTabCompletion(PluginCommand cmd, Arguments<Argument> args) {
     return List.of();
   }
 
@@ -62,8 +60,7 @@ public class GameCmd extends IncCommandListener {
   }
 
   @Override
-  public <V> boolean onUpdate(Sender sender, IncCommandContext context,
-                              IncCommandOption<V> option, V value) {
+  public <V> boolean onUpdate(Sender sender, IncCommandContext context, IncCommandOption<V> option, V value) {
     if (GAME.equals(option)) {
       return this.checkMaxPlayers(sender, context);
     } else if (MAX_PLAYERS.equals(option)) {
@@ -72,7 +69,7 @@ public class GameCmd extends IncCommandListener {
       return this.checkKits(sender, context);
     } else if (KITS.equals(option)) {
       return this.checkTeamsSizes(sender, context);
-    } else if (TEAM_SIZE.equals(option)) {
+    } else if (PLAYERS_PER_TEAM.equals(option)) {
       return this.checkOldPvP(sender, context);
     } else if (OLD_PVP.equals(option)) {
       return this.startGame(sender, context);
@@ -131,12 +128,12 @@ public class GameCmd extends IncCommandListener {
       teams.sort(Comparator.reverseOrder());
 
       if (teams.isEmpty()) {
-        context.addOption(TEAM_SIZE, null);
+        context.addOption(PLAYERS_PER_TEAM, null);
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
       } else if (teams.size() == 1) {
         context.addOption(TEAM_AMOUNT, teams.get(0));
-        context.addOption(TEAM_SIZE, null);
+        context.addOption(PLAYERS_PER_TEAM, null);
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
       }
@@ -158,7 +155,7 @@ public class GameCmd extends IncCommandListener {
 
       context.addOption(TEAM_MERGE, true);
 
-      this.sendSelectionTo(sender, this.createSelection(TEAM_SIZE).addValues(sizes));
+      this.sendSelectionTo(sender, this.createSelection(PLAYERS_PER_TEAM).addValues(sizes));
     } else if (context.getOption(GAME) instanceof DbNonTmpGame) {
       return this.checkOldPvP(sender, context);
     }
@@ -187,7 +184,7 @@ public class GameCmd extends IncCommandListener {
       Boolean mapsEnabled = context.getOption(MAPS);
       Boolean kitsEnabled = context.getOption(KITS);
       Integer maxServerPlayers = context.getOption(MAX_PLAYERS);
-      Integer teamSize = context.getOption(TEAM_SIZE);
+      Integer teamSize = context.getOption(PLAYERS_PER_TEAM);
       Integer teamAmount = teamSize != null ? (int) Math.ceil(maxServerPlayers / ((double) teamSize)) : context.getOption(TEAM_AMOUNT);
       Boolean teamMerging = context.getOption(TEAM_MERGE);
       Boolean oldPvP = context.getOption(OLD_PVP);
@@ -258,7 +255,7 @@ public class GameCmd extends IncCommandListener {
         sender.sendPluginTDMessage("§sKits: §v" + kitsEnabled);
         sender.sendPluginTDMessage("§sTeam amount: §v" + teamAmount);
         sender.sendPluginTDMessage("§sTeam merging: §v" + teamMerging);
-        sender.sendPluginTDMessage("§sTeam size: §v" + teamSize);
+        sender.sendPluginTDMessage("§sPlayer per Team: §v" + teamSize);
         sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
 
         Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);
@@ -341,7 +338,8 @@ public class GameCmd extends IncCommandListener {
   private static final IncCommandOption<Integer> MAX_PLAYERS = new IncCommandOption.Int("max_players", "Max Players");
   private static final IncCommandOption<Boolean> MAPS = new IncCommandOption.Bool("maps", "Maps");
   private static final IncCommandOption<Boolean> KITS = new IncCommandOption.Bool("kits", "Kits");
-  private static final IncCommandOption<Integer> TEAM_SIZE = new IncCommandOption<>("team_size", "Team Size") {
+  private static final IncCommandOption<Integer> PLAYERS_PER_TEAM = new IncCommandOption<>("players_per_team",
+      "Players per Team") {
     @Override
     public Integer parseValue(String key) {
       if (key.equalsIgnoreCase("solo")) {
@@ -355,5 +353,5 @@ public class GameCmd extends IncCommandListener {
   private static final IncCommandOption<Boolean> OLD_PVP = new IncCommandOption.Bool("pvp", "Old PvP");
 
   private static final List<IncCommandOption<?>> OPTIONS = List.of(GAME, MAX_PLAYERS, MAPS, KITS,
-      TEAM_SIZE, TEAM_MERGE, OLD_PVP);
+      PLAYERS_PER_TEAM, TEAM_MERGE, OLD_PVP);
 }

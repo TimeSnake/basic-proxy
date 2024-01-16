@@ -336,8 +336,7 @@ public class User implements ChannelListener {
       this.databasePermissions.clear();
 
       for (DbPermission perm : this.dbUser.getPermissions()) {
-        this.databasePermissions.add(
-            new ExPermission(perm.getName(), perm.getMode(), perm.getServers()));
+        this.databasePermissions.add(new ExPermission(perm.getPermission(), perm.getMode()));
       }
 
       this.databasePermissions.addAll(this.permGroup.getPermissions());
@@ -363,21 +362,16 @@ public class User implements ChannelListener {
       statusServer = this.getServer().getStatus();
     }
     Status.User statusPlayer = this.dbUser.getStatus();
-    Collection<String> server = perm.getServer();
 
     if (perm.getPermission() != null) {
-      if (server == null || (this.getServer() != null && server.contains(
-          this.getServer().getName())) || server.isEmpty()) {
-        if (mode == Status.Permission.IN_GAME) {
-          this.permissions.add(perm);
-        } else if (statusServer == Status.Server.SERVICE) {
-          this.permissions.add(perm);
-        } else if (this.isService()) {
-          this.permissions.add(perm);
-        } else if (mode == Status.Permission.ONLINE && (statusServer == Status.Server.ONLINE
-            && statusPlayer == Status.User.ONLINE)) {
-          this.permissions.add(perm);
-        }
+      if (mode == Status.Permission.IN_GAME) {
+        this.permissions.add(perm);
+      } else if (statusServer == Status.Server.SERVICE) {
+        this.permissions.add(perm);
+      } else if (this.isService()) {
+        this.permissions.add(perm);
+      } else if (mode == Status.Permission.ONLINE && (statusServer == Status.Server.ONLINE && statusPlayer == Status.User.ONLINE)) {
+        this.permissions.add(perm);
       }
     }
   }

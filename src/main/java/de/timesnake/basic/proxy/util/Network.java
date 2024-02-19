@@ -13,7 +13,7 @@ import de.timesnake.basic.proxy.util.chat.CommandManager;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.channel.proxy.channel.ProxyChannel;
+import de.timesnake.channel.proxy.main.ProxyChannel;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Tuple;

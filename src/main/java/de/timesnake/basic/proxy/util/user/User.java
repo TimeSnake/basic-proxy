@@ -102,7 +102,7 @@ public class User implements ChannelListener {
     this.databasePermissions = user.getDatabasePermissions();
     this.loadPermissions();
 
-    Network.getChannel().addListener(this, () -> Collections.singleton(this.getUniqueId()));
+    Network.getChannel().addListener(this, Collections.singleton(this.getUniqueId()));
   }
 
   public boolean isAirMode() {
@@ -285,7 +285,6 @@ public class User implements ChannelListener {
   public void setServer(String server) {
     this.dbUser.setServer(server);
     this.server = Network.getServer(server);
-    Network.getChannel().setUserServer(this.getUniqueId(), server);
   }
 
   @Nullable

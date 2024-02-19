@@ -42,7 +42,13 @@ public class SupportManager implements ChannelListener, CommandListener {
     Network.registerListener(this);
   }
 
-  @ChannelHandler(type = ListenerType.SUPPORT)
+  @ChannelHandler(type = {
+      ListenerType.SUPPORT_TICKET_LOCK,
+      ListenerType.SUPPORT_SUBMIT,
+      ListenerType.SUPPORT_REJECT,
+      ListenerType.SUPPORT_ACCEPT,
+      ListenerType.SUPPORT_CREATION,
+  })
   public void onSupportMessage(ChannelSupportMessage<?> msg) {
     if (msg.getMessageType().equals(MessageType.Support.TICKET_LOCK)) {
       String name = msg.getName();
@@ -97,7 +103,7 @@ public class SupportManager implements ChannelListener, CommandListener {
 
   @Override
   public void onCommand(Sender sender, PluginCommand cmd,
-      Arguments<Argument> args) {
+                        Arguments<Argument> args) {
     if (!sender.isPlayer(true)) {
       return;
     }

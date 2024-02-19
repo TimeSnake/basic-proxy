@@ -13,12 +13,14 @@ import de.timesnake.channel.util.ChannelConfig;
 import de.timesnake.channel.util.listener.ChannelHandler;
 import de.timesnake.channel.util.listener.ChannelListener;
 import de.timesnake.channel.util.listener.ListenerType;
-import de.timesnake.channel.util.message.ChannelListenerMessage;
 import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.server.DbServer;
-import de.timesnake.library.basic.util.*;
+import de.timesnake.library.basic.util.MultiKeyMap;
+import de.timesnake.library.basic.util.ServerType;
+import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
@@ -434,16 +436,17 @@ public class ServerManager implements ChannelListener {
     }
   }
 
-  @ChannelHandler(type = ListenerType.LISTENER_UNREGISTER)
-  public void onChannelRegisterMessage(ChannelListenerMessage<String> msg) {
-    if (msg.getMessageType().equals(MessageType.Listener.UNREGISTER_SERVER)) {
-      Server server = this.getServer(msg.getValue());
-      if (server != null) {
-        server.setStatus(Status.Server.OFFLINE, true);
-        Loggers.NETWORK.info("Updated status of server " + server.getName() + " to offline");
-      }
-    }
-  }
+  // TODO implement new detection
+  //@ChannelHandler(type = ListenerType.LISTENER_UNREGISTER)
+  //public void onChannelRegisterMessage(ChannelListenerMessage<String> msg) {
+  //  if (msg.getMessageType().equals(MessageType.Listener.UNREGISTER_SERVER)) {
+  //    Server server = this.getServer(msg.getValue());
+  //    if (server != null) {
+  //      server.setStatus(Status.Server.OFFLINE, true);
+  //      Loggers.NETWORK.info("Updated status of server " + server.getName() + " to offline");
+  //    }
+  //  }
+  //}
 
   public Map<String, Path> getTmpDirsByServerName() {
     return tmpDirsByServerName;

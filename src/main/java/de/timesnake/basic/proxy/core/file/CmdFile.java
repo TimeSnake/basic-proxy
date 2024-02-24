@@ -7,12 +7,15 @@ package de.timesnake.basic.proxy.core.file;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.file.ExFile;
-import de.timesnake.library.basic.util.Loggers;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class CmdFile extends ExFile {
+
+  private final Logger logger = LogManager.getLogger("network.start_commands");
 
   private List<String> startCommands;
 
@@ -34,7 +37,7 @@ public class CmdFile extends ExFile {
       int delay = 3;
       for (String cmd : this.startCommands) {
         BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
-          Loggers.NETWORK.info("Executing command: " + cmd);
+          this.logger.info("Executing command: {}", cmd);
           Network.runCommand(cmd);
         }).delay(delay, TimeUnit.SECONDS).schedule();
         delay += 3;

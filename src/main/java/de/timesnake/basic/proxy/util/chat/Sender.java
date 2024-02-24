@@ -9,7 +9,6 @@ import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.Plugin;
 import net.kyori.adventure.text.Component;
@@ -34,7 +33,7 @@ public class Sender extends de.timesnake.library.commands.Sender {
 
   @Override
   public void sendConsoleMessage(String message) {
-    Loggers.COMMAND.info(message);
+    this.logger.info(message);
   }
 
   public void sendMessage(Component component) {

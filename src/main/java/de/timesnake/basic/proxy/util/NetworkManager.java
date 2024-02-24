@@ -25,7 +25,6 @@ import de.timesnake.channel.core.Channel;
 import de.timesnake.channel.proxy.main.ProxyChannel;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.server.DbServer;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.Chat;
@@ -35,6 +34,8 @@ import de.timesnake.library.chat.TimeDownParser;
 import de.timesnake.library.network.*;
 import de.timesnake.library.network.NetworkServer.CopyType;
 import net.kyori.adventure.text.Component;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -50,6 +51,7 @@ public class NetworkManager {
 
   private static final NetworkManager instance = new NetworkManager();
 
+  private final Logger logger = LogManager.getLogger("network.manager");
 
   private final ConcurrentHashMap<UUID, User> users = new ConcurrentHashMap<>();
 
@@ -153,9 +155,9 @@ public class NetworkManager {
         false);
 
     if (res.getA().isSuccessful()) {
-      Loggers.NETWORK.info("Created lobby server");
+      this.logger.info("Created lobby server");
     } else {
-      Loggers.NETWORK.warning("Failed to start lobby server: " + ((ServerCreationResult.Fail) res.getA()).getReason());
+      this.logger.warn("Failed to start lobby server: {}", ((ServerCreationResult.Fail) res.getA()).getReason());
     }
   }
 

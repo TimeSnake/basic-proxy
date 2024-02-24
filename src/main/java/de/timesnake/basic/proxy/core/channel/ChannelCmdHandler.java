@@ -11,13 +11,16 @@ import de.timesnake.channel.util.listener.ChannelListener;
 import de.timesnake.channel.util.listener.ListenerType;
 import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
-import de.timesnake.library.basic.util.Loggers;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
 public class ChannelCmdHandler implements ChannelListener {
 
+  private final Logger logger = LogManager.getLogger("network.channel.command");
+  
   @ChannelHandler(type = {ListenerType.SERVER_COMMAND, ListenerType.SERVER_RESTART,
       ListenerType.SERVER_DESTROY,
       ListenerType.SERVER_KILL_DESTROY})
@@ -34,7 +37,7 @@ public class ChannelCmdHandler implements ChannelListener {
         Integer delaySec = (Integer) msg.getValue();
         Server server = Network.getServer(serverName);
         String name = server.getName();
-        Loggers.NETWORK.info("Scheduled restart of server " + name + " (" + delaySec + "s)");
+        this.logger.info("Scheduled restart of server {} ({}s)", name, delaySec);
         int maxPlayers = server.getMaxPlayers();
         Network.runTaskLater(() -> {
           try {
@@ -52,7 +55,7 @@ public class ChannelCmdHandler implements ChannelListener {
 
       Network.runTaskLater(() -> {
         if (!Network.deleteServer(serverName, true)) {
-          Loggers.NETWORK.warning("Failed to delete server '" + serverName + "'");
+          this.logger.warn("Failed to delete server '{}'", serverName);
         }
       }, Duration.ofSeconds(delaySec));
     } else if (type.equals(MessageType.Server.KILL_DESTROY)) {
@@ -64,10 +67,10 @@ public class ChannelCmdHandler implements ChannelListener {
       Network.runTaskAsync(() -> {
         try {
           if (!Network.killAndDeleteServer(serverName, pid).get()) {
-            Loggers.NETWORK.warning("Failed to kill and delete server '" + serverName + "'");
+            this.logger.warn("Failed to kill and delete server '{}'", serverName);
           }
         } catch (InterruptedException | ExecutionException e) {
-          Loggers.NETWORK.warning("Exception while killing and deleting server '" + serverName + "': " + e.getMessage());
+          this.logger.warn("Exception while killing and deleting server '{}'': {}", serverName, e.getMessage());
         }
       });
 

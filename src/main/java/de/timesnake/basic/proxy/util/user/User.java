@@ -25,7 +25,6 @@ import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.Code;
@@ -34,6 +33,8 @@ import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.permissions.ExPermission;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,6 +46,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 public class User implements ChannelListener {
+
+  private final Logger permissionLogger = LogManager.getLogger("user.permission");
 
   private final DbUser dbUser;
   private final Player player;
@@ -342,7 +345,7 @@ public class User implements ChannelListener {
 
       Network.runTaskLater(this::loadPermissions, Duration.ZERO);
 
-      Loggers.PERMISSIONS.info("Updated permissions for user '" + this.getName() + "' from database");
+      this.permissionLogger.info("Updated permissions for user '{}' from database", this.getName());
     });
   }
 

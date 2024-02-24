@@ -11,7 +11,6 @@ import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.BuildServer;
 import de.timesnake.basic.proxy.util.server.Server;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
@@ -112,8 +111,6 @@ public class MapBuildCmd implements CommandListener {
         sender.getUser().scheduledConnect(buildServer);
       }
     }
-
-    Loggers.WORLDS.info("Loaded world '" + worldName + "' on server '" + buildServer.getName() + "' by user '" + sender.getName() + "'");
   }
 
   @Override

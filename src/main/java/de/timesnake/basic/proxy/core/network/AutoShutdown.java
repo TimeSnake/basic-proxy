@@ -14,7 +14,6 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
 import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.ExTextColor;
@@ -24,6 +23,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +33,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class AutoShutdown implements CommandListener {
+
+  private final Logger logger = LogManager.getLogger("network.auto-shutdown");
 
   public static final int START_TIME = 15;
   private static final int PLAYER_TIME_0 = 5;
@@ -73,7 +76,7 @@ public class AutoShutdown implements CommandListener {
 
     if (enabled) {
       this.cancelable = false;
-      Loggers.NETWORK.info("AutoShutdown started");
+      this.logger.info("AutoShutdown started");
       task = BasicProxy.getServer().getScheduler()
           .buildTask(BasicProxy.getPlugin(), this::infoShutdown)
           .delay(time, TimeUnit.MINUTES).schedule();

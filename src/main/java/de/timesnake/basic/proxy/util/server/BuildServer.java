@@ -8,9 +8,9 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.channel.util.message.ChannelServerMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.server.DbBuildServer;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.WorldSyncResult;
+
 import java.nio.file.Path;
 
 public class BuildServer extends TaskServer {
@@ -33,7 +33,7 @@ public class BuildServer extends TaskServer {
     WorldSyncResult result = Network.getNetworkUtils().syncWorld(this.networkServer, worldName);
 
     if (!result.isSuccessful()) {
-      Loggers.NETWORK.warning(((WorldSyncResult.Fail) result).getReason());
+      this.logger.warn(((WorldSyncResult.Fail) result).getReason());
       return false;
     }
 

@@ -10,14 +10,13 @@ import de.timesnake.channel.util.message.ChannelGroupMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.permissions.ExPermission;
 
 public class PermGroup extends de.timesnake.library.permissions.PermGroup<User> {
 
   public PermGroup(DbPermGroup database) {
     super(database);
-    Loggers.GROUPS.info("Loaded perm-group '" + this.name + "'");
+    this.logger.info("Loaded perm-group '{}'", this.name);
   }
 
   @Override
@@ -38,9 +37,8 @@ public class PermGroup extends de.timesnake.library.permissions.PermGroup<User> 
           Network.getGroupManager().getPermGroup(group.getName()).getPermissions());
     }
 
-    Network.getChannel()
-        .sendMessage(new ChannelGroupMessage<>(this.name, MessageType.Group.PERMISSION));
-    Loggers.PERMISSIONS.info("Updated permissions for group '" + this.name + "' from database");
+    Network.getChannel().sendMessage(new ChannelGroupMessage<>(this.name, MessageType.Group.PERMISSION));
+    this.logger.info("Updated permissions for group '{}' from database", this.name);
 
     if (updateInheritances) {
       for (DbPermGroup g : this.database.getGroupsInherit()) {

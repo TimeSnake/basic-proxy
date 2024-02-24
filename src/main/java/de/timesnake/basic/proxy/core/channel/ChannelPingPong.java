@@ -9,12 +9,15 @@ import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.channel.proxy.main.ChannelTimeOutListener;
 import de.timesnake.channel.proxy.main.ProxyChannel;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.TimeUnit;
 
 public class ChannelPingPong implements ChannelTimeOutListener {
+
+  private final Logger logger = LogManager.getLogger("network.ping");
 
   private ScheduledTask task;
 
@@ -31,6 +34,6 @@ public class ChannelPingPong implements ChannelTimeOutListener {
   @Override
   public void onServerTimeOut(String name) {
     Network.getServer(name).setStatus(Status.Server.OFFLINE, true);
-    Loggers.NETWORK.warning(name + " timed out on channel ping");
+    this.logger.warn("{} timed out on channel ping", name);
   }
 }

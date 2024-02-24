@@ -11,16 +11,19 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.server.DbServer;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.UserSet;
 import de.timesnake.library.network.NetworkServer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Path;
 import java.time.Duration;
 
 public abstract class Server extends BukkitServer {
+
+  protected final Logger logger = LogManager.getLogger("network.server");
 
   protected DbServer database;
   protected int port;
@@ -87,14 +90,14 @@ public abstract class Server extends BukkitServer {
     if (this.status == Status.Server.LAUNCHING) {
       this.startTimeoutTask = Network.runTaskLater(() -> {
         if (status == Status.Server.LAUNCHING || status == Status.Server.OFFLINE) {
-          Loggers.NETWORK.warning("Failed to start server " + this.getName());
+          this.logger.warn("Failed to start server {}", this.getName());
           this.setStatus(Status.Server.OFFLINE, true);
           return;
         }
 
         this.startTimeoutTask = Network.runTaskLater(() -> {
           if (!status.isRunning()) {
-            Loggers.NETWORK.warning("Failed to start server " + this.getName());
+            this.logger.warn("Failed to start server {}", this.getName());
             this.setStatus(Status.Server.OFFLINE, true);
           }
         }, Duration.ofMinutes(3));
@@ -111,6 +114,7 @@ public abstract class Server extends BukkitServer {
   @Override
   public boolean start() {
     this.setStatus(Status.Server.LAUNCHING, true);
+
     return super.start();
   }
 

@@ -17,11 +17,12 @@ import de.timesnake.channel.util.message.ChannelUserMessage;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbPunishment;
 import de.timesnake.database.util.user.DbUser;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.PunishType;
 import de.timesnake.library.basic.util.Punishment;
 import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.ChatColor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +34,8 @@ import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
 public class PunishmentManager implements ChannelListener {
+
+  private final Logger logger = LogManager.getLogger("punish.manager");
 
   public PunishmentManager() {
     Network.getChannel().addListener(this);
@@ -49,7 +52,7 @@ public class PunishmentManager implements ChannelListener {
       return;
     }
 
-    Loggers.PUNISH.info("Received punish update: " + msg.getValue());
+    this.logger.info("Received punish update: {}", msg.getValue());
     this.punishPlayer(null, msg.getValue(), true);
   }
 
@@ -65,7 +68,7 @@ public class PunishmentManager implements ChannelListener {
       PunishType oldType = this.deleteExpiredPunishment(user);
 
       if (oldType != null) {
-        Loggers.PUNISH.info("Deleted expired punishment '" + oldType.getShortName() + "' of user '" + user.getName() + "'");
+        this.logger.info("Deleted expired punishment '{}' of user '{}'", oldType.getShortName(), user.getName());
       }
     }
 
@@ -106,15 +109,15 @@ public class PunishmentManager implements ChannelListener {
 
     PunishType type = user.getPunishment().getType();
     if (type == null) {
-      Loggers.PUNISH.info("Failed to unban '" + uuid.toString() + "', player is not banned");
+      this.logger.info("Failed to unban '{}', player is not banned", uuid.toString());
       return;
     }
 
     if (!type.equals(PunishType.BAN) && !type.equals(PunishType.TEMP_BAN)) {
-      Loggers.PUNISH.warning("Failed to unban '" + uuid.toString() + "', player is not banned");
+      this.logger.warn("Failed to unban '{}', player is not banned", uuid.toString());
     } else {
       user.getPunishment().delete();
-      Loggers.PUNISH.info("Unbanned player '" + uuid.toString() + "' by system");
+      this.logger.info("Unbanned player '{}' by system", uuid.toString());
 
       Network.broadcastTDMessage(Plugin.PUNISH, "§v" + user.getName() + "§w was unbanned");
     }

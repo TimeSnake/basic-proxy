@@ -33,6 +33,8 @@ import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.network.NetworkVariables;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -42,6 +44,8 @@ import java.util.UUID;
 import java.util.concurrent.*;
 
 public class UserManager {
+
+  private final Logger logger = LogManager.getLogger("network.users");
 
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -108,7 +112,7 @@ public class UserManager {
               .append(Component.text(" joined", ExTextColor.PUBLIC)));
     }
 
-    Loggers.NETWORK.info("Players online: " + Network.getUsers().size());
+    this.logger.info("Players online: {}", Network.getUsers().size());
     Network.getChannel().sendMessage(
         new ChannelServerMessage<>(Network.getName(), MessageType.Server.ONLINE_PLAYERS,
             Network.getUsers().size()));
@@ -120,7 +124,7 @@ public class UserManager {
     String name = e.getPlayer().getUsername();
     DbUser user = Database.getUsers().getUser(uuid);
 
-    Loggers.NETWORK.info("Player '" + name + "' ('" + uuid.toString() + "') joined");
+    this.logger.info("Player '{}' ('{}') joined", name, uuid.toString());
 
     if (user != null && user.exists()) {
 

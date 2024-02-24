@@ -7,7 +7,6 @@ package de.timesnake.basic.proxy.core.server;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.basic.proxy.util.server.Server;
-import de.timesnake.library.basic.util.Loggers;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.Code;
@@ -143,9 +142,6 @@ public class ServerCmd implements CommandListener {
     sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK)
         .append(text("Started server ", PERSONAL))
         .append(text(server.getName(), VALUE)));
-    if (!sender.isConsole(false)) {
-      Loggers.NETWORK.info("Started server '" + server.getName() + "'");
-    }
   }
 
   public void stopAllServers() {

@@ -11,11 +11,9 @@ import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.library.chat.Code;
-import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import net.kyori.adventure.text.Component;
 
 public class CoinsCmd implements CommandListener {
 
@@ -32,35 +30,19 @@ public class CoinsCmd implements CommandListener {
             switch (args.get(1).toLowerCase()) {
               case "add" -> {
                 user.addCoins(coins);
-                sender.sendPluginMessage(Component.text("Added ")
-                    .append(Component.text(coins, ExTextColor.VALUE))
-                    .append(Component.text(" timecoin(s) to ",
-                        ExTextColor.PERSONAL))
-                    .append(user.getChatNameComponent()));
+                sender.sendPluginTDMessage("§sAdded §v" + coins + "§s timecoin(s) to " + user.getChatName());
               }
               case "remove" -> {
                 user.removeCoins(coins);
-                sender.sendPluginMessage(Component.text("Removed ")
-                    .append(Component.text(coins, ExTextColor.VALUE))
-                    .append(Component.text(" timecoin(s) from ",
-                        ExTextColor.PERSONAL))
-                    .append(user.getChatNameComponent()));
+                sender.sendPluginTDMessage("§sRemoved §v" + coins + "§s timecoin(s) from " + user.getChatName());
               }
               case "set" -> {
                 user.setCoins(coins);
-                sender.sendPluginMessage(Component.text("Set balance to ")
-                    .append(Component.text(coins, ExTextColor.VALUE))
-                    .append(Component.text(" timecoin(s) for ",
-                        ExTextColor.PERSONAL))
-                    .append(user.getChatNameComponent()));
+                sender.sendPluginTDMessage("§Set balance to §v" + coins + "§s timecoin(s) of " + user.getChatName());
               }
               case "reset" -> {
                 user.setCoins(0);
-                sender.sendPluginMessage(Component.text("Set balance to ")
-                    .append(Component.text(coins, ExTextColor.VALUE))
-                    .append(Component.text(" timecoin(s) for ",
-                        ExTextColor.PERSONAL))
-                    .append(user.getChatNameComponent()));
+                sender.sendPluginTDMessage("§Set balance to §v0§s timecoins of " + user.getChatName());
               }
             }
           }

@@ -1,5 +1,5 @@
 main: de.timesnake.basic.proxy.core.main.BasicProxy
-version: 1.6.0
+version: 1.7.0
 name: basic-proxy
 author: timesnake
 softdepend: [ database-proxy ]
@@ -27,9 +27,17 @@ commands:
   unban:
   pardon:
 
-  support:
+
+  supportmanager:
+    aliases:
+      - sm
+      - tm
+      - ticketmanager
+
   ticket:
-  tickets:
+    aliases:
+      - report
+      - support
 
   supportmsg:
     aliases:

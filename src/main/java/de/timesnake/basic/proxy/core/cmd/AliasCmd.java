@@ -14,76 +14,59 @@ import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.chat.Code;
-import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import net.kyori.adventure.text.Component;
 
 public class AliasCmd implements CommandListener {
 
   private final Code perm = Plugin.NETWORK.createPermssionCode("alias");
 
   public static void setAlias(Sender sender, DbUser user, Argument type, Argument name) {
-    Component msg;
+    String msg;
     switch (type.getString()) {
       case "info" -> {
-        sender.sendPluginMessage(Component.text("Player: ", ExTextColor.PERSONAL)
-            .append(Component.text(user.getName(), ExTextColor.VALUE)));
-        sender.sendPluginMessage(Component.text("Prefix: ", ExTextColor.PERSONAL)
-            .append(Component.text(user.getPrefix(), ExTextColor.VALUE)));
-        sender.sendPluginMessage(Component.text("Suffix: ", ExTextColor.PERSONAL)
-            .append(Component.text(user.getSuffix(), ExTextColor.VALUE)));
-        sender.sendPluginMessage(Component.text("Nick: ", ExTextColor.PERSONAL)
-            .append(Component.text(user.getNick(), ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sPlayer: §v" + user.getName());
+        sender.sendPluginTDMessage("Prefix: §v" + user.getPrefix());
+        sender.sendPluginTDMessage("Suffix: §v" + user.getSuffix());
+        sender.sendPluginTDMessage("Nick: §v" + user.getNick());
       }
       case "prefix" -> {
         if (name == null) {
           user.setPrefix(null);
-          msg = Component.text("Reset prefix", ExTextColor.PERSONAL);
+          msg = "§sReset prefix";
         } else {
           user.setPrefix(name.getString());
-          msg = Component.text("Updated prefix to ", ExTextColor.PERSONAL)
-              .append(Component.text(name.getString(), ExTextColor.VALUE));
+          msg = "§sUpdated prefix to §v" + name.getString();
         }
-        sender.sendPluginMessage(msg.append(Component.text(" from ", ExTextColor.PERSONAL)
-            .append(Component.text(user.getName(), ExTextColor.VALUE))));
-        Network.getChannel().sendMessage(
-            new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
+        sender.sendPluginTDMessage(msg + "§s of §v" + user.getName());
+        Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
       }
       case "suffix" -> {
         if (name == null) {
           user.setSuffix(null);
-          msg = Component.text("Reset suffix", ExTextColor.PERSONAL);
+          msg = "§sReset suffix";
         } else {
           user.setSuffix(name.getString());
-          msg = Component.text("Updated suffix to ", ExTextColor.PERSONAL)
-              .append(Component.text(name.getString(), ExTextColor.VALUE));
+          msg = "§sUpdated suffix to §v" + name.getString();
         }
-        sender.sendPluginMessage(msg.append(Component.text(" from ", ExTextColor.PERSONAL)
-            .append(Component.text(user.getName(), ExTextColor.VALUE))));
-        Network.getChannel().sendMessage(
-            new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
+        sender.sendPluginTDMessage(msg + " §s of §v" + user.getName());
+        Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
       }
       case "nick" -> {
         if (name == null) {
           user.setNick(null);
-          msg = Component.text("Reset nick", ExTextColor.PERSONAL);
+          msg = "§sReset nick";
         } else {
           user.setNick(name.getString());
-          msg = Component.text("Updated nick to ", ExTextColor.PERSONAL)
-              .append(Component.text(name.getString(), ExTextColor.VALUE));
+          msg = "§sUpdated nick to §v" + name.getString();
         }
-        sender.sendPluginMessage(msg.append(Component.text(" from ", ExTextColor.PERSONAL)
-            .append(Component.text(user.getName(), ExTextColor.VALUE))));
-        Network.getChannel().sendMessage(
-            new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
+        sender.sendPluginTDMessage(msg + "§s from §v" + user.getName());
+        Network.getChannel().sendMessage(new ChannelUserMessage<>(user.getUniqueId(), MessageType.User.ALIAS));
       }
       default -> {
-        sender.sendTDMessageCommandHelp("Set alias for player",
-            "alias [player] " + "<prefix/suffix/nick> " +
-                "[value]");
-        sender.sendTDMessageCommandHelp("Get alias from player", "alias [player] info");
+        sender.sendTDMessageCommandHelp("Set alias for player", "alias <player> <prefix/suffix/nick> [value]");
+        sender.sendTDMessageCommandHelp("Get alias from player", "alias <player> info");
       }
     }
   }
@@ -100,8 +83,8 @@ public class AliasCmd implements CommandListener {
           AliasCmd.setAlias(sender, args.get(0).toDbUser(), args.get(1), null);
         }
       } else if (args.get(0).equalsIgnoreCase("help")) {
-        sender.sendTDMessageCommandHelp("Set alias for player", "alias [player] <prefix/suffix/nick> [value]");
-        sender.sendTDMessageCommandHelp("Get alias from player", "alias [player] info");
+        sender.sendTDMessageCommandHelp("Set alias for player", "alias <player> <prefix/suffix/nick> [value]");
+        sender.sendTDMessageCommandHelp("Get alias from player", "alias <player> info");
       } else if (sender.isPlayer(true)) {
         if (args.isLengthEquals(2, false)) {
           AliasCmd.setAlias(sender, sender.getDbUser(), args.get(0), args.get(1));

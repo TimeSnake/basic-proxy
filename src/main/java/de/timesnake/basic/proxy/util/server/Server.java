@@ -17,6 +17,7 @@ import de.timesnake.library.basic.util.UserSet;
 import de.timesnake.library.network.NetworkServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -69,7 +70,7 @@ public abstract class Server extends BukkitServer {
     this.maxPlayers = maxPlayers;
   }
 
-  public Status.Server getStatus() {
+  public @NotNull Status.Server getStatus() {
     return status;
   }
 

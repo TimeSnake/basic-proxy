@@ -14,15 +14,9 @@ import de.timesnake.database.util.group.DbPermGroup;
 import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.Code;
-import net.kyori.adventure.text.Component;
 
-import java.util.Arrays;
 import java.util.UUID;
-
-import static de.timesnake.library.chat.ExTextColor.*;
-import static net.kyori.adventure.text.Component.text;
 
 public class PermissionManager {
 
@@ -40,24 +34,17 @@ public class PermissionManager {
   public PermissionManager() {
     this.playerAddPerm = Plugin.PERMISSION.createPermssionCode("permission.player.add");
     this.playerRemovePerm = Plugin.PERMISSION.createPermssionCode("permission.player.remove");
-    this.playerGroupSetPerm = Plugin.PERMISSION.createPermssionCode(
-        "permission.player.group.set");
-    this.playerGroupRemovePerm = Plugin.PERMISSION.createPermssionCode(
-        "permission.player.group.remove");
+    this.playerGroupSetPerm = Plugin.PERMISSION.createPermssionCode("permission.player.group.set");
+    this.playerGroupRemovePerm = Plugin.PERMISSION.createPermssionCode("permission.player.group.remove");
     this.groupAddPerm = Plugin.PERMISSION.createPermssionCode("permission.group.add");
     this.groupRemovePerm = Plugin.PERMISSION.createPermssionCode("permission.group.remove");
     this.groupCreatePerm = Plugin.PERMISSION.createPermssionCode("permission.group.create");
     this.groupDeletePerm = Plugin.PERMISSION.createPermssionCode("permission.group.delete");
-    this.groupInheritanceSetPerm = Plugin.PERMISSION.createPermssionCode(
-        "permission.group.inheritance.set");
-    this.groupInheritanceRemovePerm = Plugin.PERMISSION.createPermssionCode(
-        "permission.inheritance.remove");
+    this.groupInheritanceSetPerm = Plugin.PERMISSION.createPermssionCode("permission.group.inheritance.set");
+    this.groupInheritanceRemovePerm = Plugin.PERMISSION.createPermssionCode("permission.inheritance.remove");
   }
 
-  public void addPlayerPermission(Sender sender, DbUser user, String permission,
-      Status.Permission mode,
-      String... servers) {
-
+  public void addPlayerPermission(Sender sender, DbUser user, String permission, Status.Permission mode) {
     if (!sender.hasPermission(this.playerAddPerm)) {
       return;
     }
@@ -78,7 +65,6 @@ public class PermissionManager {
   }
 
   public void removePlayerPermission(Sender sender, DbUser user, String permission) {
-
     if (!sender.hasPermission(this.playerRemovePerm)) {
       return;
     }
@@ -100,80 +86,52 @@ public class PermissionManager {
   }
 
   public void setPlayerGroup(Sender sender, DbUser user, String groupName) {
-    if (!sender.hasPermission(this.playerGroupSetPerm)) {
-      return;
-    }
-
-    if (!sender.hasGroupRankLower(user)) {
-      return;
-    }
-
-    Component message = text("Updated group from ", PERSONAL)
-        .append(text(user.getName(), VALUE))
-        .append(text(" to ", PERSONAL))
-        .append(text(groupName.toLowerCase(), VALUE));
+    sender.hasPermissionElseExit(this.playerGroupSetPerm);
 
     UUID uuid = user.getUniqueId();
+    sender.hasGroupRankLowerElseExit(uuid, true);
+
+    int groupRank = Database.getGroups().getPermGroup(groupName).getRank();
 
     if (user.getPermGroup() != null) {
-      if (!user.getPermGroup().getName().equalsIgnoreCase(groupName)
-          && sender.hasGroupRankLower(Database.getGroups().getPermGroup(groupName))) {
+      if (!user.getPermGroup().getName().equals(groupName)
+          && sender.hasGroupRankLower(groupRank, false)) {
         if (Network.isUserOnline(uuid)) {
-          user.setPermGroup(groupName.toLowerCase(),
-              () -> Network.getUser(uuid).updateGroup());
+          user.setPermGroup(groupName, () -> Network.getUser(uuid).updateGroup());
         } else {
-          user.setPermGroup(groupName.toLowerCase());
+          user.setPermGroup(groupName);
         }
-
-        sender.sendPluginMessage(message);
-
+        sender.sendPluginTDMessage("§sUpdated group of player §v" + user.getName() + "§s to §v" + groupName);
       } else {
-        sender.sendPluginMessage(text(user.getName(), VALUE)
-            .append(text(" is already in ", WARNING))
-            .append(text(groupName.toLowerCase(), VALUE))
-            .append(text(" group", WARNING)));
+        sender.sendPluginTDMessage("§v" + user.getName() + "§w is already in group §v" + groupName);
       }
-    } else if (sender.hasGroupRankLower(Database.getGroups().getPermGroup(groupName))) {
+    } else if (sender.hasGroupRankLower(groupRank, false)) {
       if (Network.isUserOnline(uuid)) {
-        user.setPermGroup(groupName.toLowerCase(),
-            () -> Network.getUser(uuid).updateGroup());
+        user.setPermGroup(groupName, () -> Network.getUser(uuid).updateGroup());
       } else {
-        user.setPermGroup(groupName.toLowerCase());
+        user.setPermGroup(groupName);
       }
-      sender.sendPluginMessage(message);
-
+      sender.sendPluginTDMessage("§sUpdated group of player §v" + user.getName() + "§s to §v" + groupName);
     }
 
   }
 
   public void removePlayerGroup(Sender sender, DbUser user) {
-
-    if (!sender.hasPermission(this.playerGroupRemovePerm)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.playerGroupRemovePerm);
 
     if (user.getPermGroup() == null) {
-      sender.sendPluginMessage(text("Player ", WARNING)
-          .append(text(user.getName(), VALUE))
-          .append(text(" hasn't a group", WARNING)));
+      sender.sendPluginTDMessage("§wPlayer §v" + user.getName() + "§w has no group");
       return;
     }
 
-    if (!sender.hasGroupRankLower(user)) {
-      return;
-    }
+    sender.hasGroupRankLowerElseExit(user.getUniqueId(), true);
 
     user.removePermGroup(() -> Network.getUser(user.getUniqueId()).updateGroup());
-    sender.sendPluginMessage(text("Removed group from ", PERSONAL)
-        .append(text(user.getName(), VALUE)));
-
-    UUID uuid = user.getUniqueId();
+    sender.sendPluginTDMessage("§sCleared group of player §v" + user.getName());
   }
 
   public void addGroupPermission(Sender sender, String groupName, String permission, Status.Permission mode) {
-    if (!sender.hasPermission(this.groupAddPerm)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.groupAddPerm);
 
     DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
 
@@ -187,9 +145,7 @@ public class PermissionManager {
       return;
     }
 
-    if (!sender.hasGroupRankLower(group)) {
-      return;
-    }
+    sender.hasGroupRankLowerElseExit(group.getRank(), true);
 
     group.addPermission(permission, mode, () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
     this.sendMessageAddedPermission(sender, groupName, permission, mode);
@@ -197,9 +153,7 @@ public class PermissionManager {
   }
 
   public void removeGroupPermission(Sender sender, String groupName, String permission) {
-    if (!sender.hasPermission(this.groupRemovePerm)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.groupRemovePerm);
 
     DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
 
@@ -212,58 +166,43 @@ public class PermissionManager {
       return;
     }
 
-    if (!sender.hasGroupRankLower(group)) {
-      return;
-    }
+    sender.hasGroupRankLowerElseExit(group.getRank(), true);
 
-    group.removePermission(permission,
-        () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
+    group.removePermission(permission, () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
     this.sendMessageRemovedPermission(sender, groupName, permission);
 
   }
 
   public void createGroup(Sender sender, String groupName, int rank) {
-    if (!sender.hasPermission(this.groupCreatePerm)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.groupCreatePerm);
 
     DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
     if (Database.getGroups().containsPermGroup(groupName)) {
-      sender.sendPluginMessage(text("Group ", WARNING)
-          .append(text(group.getName(), VALUE))
-          .append(text(" already exists", WARNING)));
+      sender.sendPluginTDMessage("§wGroup §v" + group.getName() + "§w already exists");
     }
 
-    if (!sender.hasGroupRankLower(rank)) {
-      return;
-    }
+    sender.hasGroupRankLowerElseExit(rank, true);
 
     if (!(rank > 0)) {
-      sender.sendPluginMessage(text("Invalid rank (rank: >0) ", WARNING)
-          .append(Chat.getMessageCode("H", 110, Plugin.PERMISSION)));
+      sender.sendPluginTDMessage("§wInvalid rank (rank: >0)");
+      return;
     }
 
     Database.getGroups().addPermGroup(groupName.toLowerCase(), rank);
 
-    sender.sendPluginMessage(text("Group ", PERSONAL)
-        .append(text(groupName.toLowerCase(), VALUE))
-        .append(text(" created", PERSONAL)));
-    sender.sendPluginMessage(text("Restart all servers to load the new group", WARNING));
+    sender.sendPluginTDMessage("§sCreated group §v" + groupName.toLowerCase());
+    sender.sendPluginTDMessage("§wRestart all servers to load the new group");
   }
 
   public void deleteGroup(Sender sender, String groupName) {
-    if (!sender.hasPermission(this.groupDeletePerm)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.groupDeletePerm);
 
     DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
     if (!Database.getGroups().containsPermGroup(groupName)) {
       this.sendMessagePermGroupNotExists(sender, groupName);
     }
 
-    if (!sender.hasGroupRankLower(group)) {
-      return;
-    }
+    sender.hasGroupRankLowerElseExit(group.getRank(), true);
 
     for (DbPermission perm : group.getPermissions()) {
       group.removePermission(perm.getPermission());
@@ -276,18 +215,12 @@ public class PermissionManager {
     }
 
     Database.getGroups().removePermGroup(group.getName());
-    sender.sendPluginMessage(text("Group ", PERSONAL)
-        .append(text(group.getName(), VALUE))
-        .append(text(" deleted", PERSONAL)));
-    Network.getChannel()
-        .sendMessage(new ChannelGroupMessage<>(groupName, MessageType.Group.PERMISSION));
-
+    Network.getChannel().sendMessage(new ChannelGroupMessage<>(groupName, MessageType.Group.PERMISSION));
+    sender.sendPluginTDMessage("§sDeleted group §v" + group.getName());
   }
 
   public void setGroupInheritance(Sender sender, String groupName, String inheritGroupName) {
-    if (!sender.hasPermission(this.groupInheritanceSetPerm)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.groupInheritanceSetPerm);
 
     DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
     if (!Database.getGroups().containsPermGroup(groupName)) {
@@ -295,30 +228,22 @@ public class PermissionManager {
       return;
     }
 
-    if (!sender.hasGroupRankLower(group)) {
-      return;
-    }
+    sender.hasGroupRankLowerElseExit(group.getRank(), true);
 
-    DbPermGroup inheritGroup = Database.getGroups()
-        .getPermGroup(inheritGroupName.toLowerCase());
-    if (!(Database.getGroups().containsPermGroup(inheritGroupName) && sender.hasGroupRankLower(
-        inheritGroup))) {
+    DbPermGroup inheritGroup = Database.getGroups().getPermGroup(inheritGroupName.toLowerCase());
+    if (!(Database.getGroups().containsPermGroup(inheritGroupName)
+          && sender.hasGroupRankLower(inheritGroup.getRank(), true))) {
       return;
     }
 
     group.setInheritance(inheritGroup.getName(),
         () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
-    sender.sendPluginMessage(text("Added Inheritance ", PERSONAL)
-        .append(text(inheritGroup.getName(), VALUE))
-        .append(text(" to ", PERSONAL))
-        .append(text(group.getName(), VALUE)));
+    sender.sendPluginTDMessage("§sUpdated inheritance of group §v" + inheritGroup.getName() + "§s to §v" + group.getName());
 
   }
 
   public void removeGroupInheritance(Sender sender, String groupName) {
-    if (!sender.hasPermission(this.groupInheritanceRemovePerm)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.groupInheritanceRemovePerm);
 
     DbPermGroup group = Database.getGroups().getPermGroup(groupName.toLowerCase());
     if (Database.getGroups().containsPermGroup(groupName)) {
@@ -326,53 +251,30 @@ public class PermissionManager {
       return;
     }
 
-    if (!sender.hasGroupRankLower(group)) {
-      return;
-    }
+    sender.hasGroupRankLowerElseExit(group.getRank(), true);
 
-    group.removeInheritance(
-        () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
-    sender.sendPluginMessage(text("Removed inheritance from ", PERSONAL)
-        .append(text(group.getName(), VALUE)));
+    group.removeInheritance(() -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
+    sender.sendPluginTDMessage("§sRemoved inheritance from §v" + group.getName());
   }
 
   private void sendMessagePermGroupNotExists(Sender sender, String groupName) {
-    sender.sendPluginMessage(text("Group ", WARNING)
-        .append(text(groupName, VALUE))
-        .append(text(" does not exist", WARNING)));
-    sender.sendTDMessageCommandHelp("Create a group", "perms group <name> create");
+    sender.sendPluginTDMessage("§wGroup §v" + groupName + "§w does not exist");
   }
 
   private void sendMessageHasAlreadyPermission(Sender sender, String name, String permission) {
-    sender.sendPluginMessage(text(name, VALUE)
-        .append(text(" has already permission ", WARNING))
-        .append(text(permission, VALUE)));
+    sender.sendPluginTDMessage("§v" + name + "§w has already permission §v" + permission);
   }
 
-  private void sendMessageAddedPermission(Sender sender, String name, String permission,
-      Status.Permission mode,
-      String... servers) {
-    sender.sendPluginMessage(text("Added permission ", PERSONAL)
-        .append(text(permission, VALUE))
-        .append(text(" to ", PERSONAL))
-        .append(text(name, VALUE))
-        .append(text(" with mode ", PERSONAL))
-        .append(text(mode.getShortName(), VALUE))
-        .append(text(" on server(s): ", PERSONAL))
-        .append(Chat.listToComponent(Arrays.stream(servers).toList(), VALUE, PERSONAL)));
+  private void sendMessageAddedPermission(Sender sender, String name, String permission, Status.Permission mode) {
+    sender.sendPluginTDMessage("§sAdded permission §v" + permission + "§s to §v" + name + "§s with mode §v" + mode.getShortName());
   }
 
   private void sendMessageRemovedPermission(Sender sender, String name, String permission) {
-    sender.sendPluginMessage(text("Removed permission ", PERSONAL)
-        .append(text(permission, VALUE))
-        .append(text(" from ", PERSONAL))
-        .append(text(name, VALUE)));
+    sender.sendPluginTDMessage("§sRemoved permission §v" + permission + "§s from §v" + name);
   }
 
   private void sendMessageHasNotPermission(Sender sender, String name, String permission) {
-    sender.sendPluginMessage(text(name, VALUE)
-        .append(text(" has not permission ", WARNING))
-        .append(text(permission, VALUE)));
+    sender.sendPluginTDMessage("§v" + name + "§w has not permission §v" + permission);
   }
 
 }

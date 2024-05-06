@@ -24,6 +24,8 @@ import de.timesnake.basic.proxy.core.permission.PermissionTestCmd;
 import de.timesnake.basic.proxy.core.punishment.KickAllCmd;
 import de.timesnake.basic.proxy.core.punishment.PunishCmd;
 import de.timesnake.basic.proxy.core.server.*;
+import de.timesnake.basic.proxy.core.support.SupportManagementCmd;
+import de.timesnake.basic.proxy.core.support.TicketCmd;
 import de.timesnake.basic.proxy.core.user.ChatManager;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
@@ -42,13 +44,10 @@ import java.util.logging.Logger;
 @com.velocitypowered.api.plugin.Plugin(
     id = "basic-proxy",
     name = "BasicProxy",
-    version = "1.3",
+    version = "1.7.0",
     url = "https://git.timesnake.de/timesnake/minecraft/basic-proxy",
     authors = {"timesnake"},
-    dependencies = {
-        @Dependency(id = "database-proxy"),
-        @Dependency(id = "channel-proxy")
-    })
+    dependencies = {@Dependency(id = "database-proxy"), @Dependency(id = "channel-proxy")})
 public class BasicProxy {
 
   public static BasicProxy getPlugin() {
@@ -93,27 +92,21 @@ public class BasicProxy {
   public void onProxyInitialization(ProxyInitializeEvent event) {
     NetworkManager.getInstance().onEnable();
 
-    Network.getCommandManager().addCommand(this, "permission", List.of("perm", "perms"),
-        new PermissionCmd(), Plugin.PERMISSION);
+    Network.getCommandManager().addCommand(this, "permission", List.of("perm", "perms"), new PermissionCmd(),
+        Plugin.PERMISSION);
 
     Network.getCommandManager().addCommand(this, "alias", new AliasCmd(), Plugin.ALIAS);
 
     Network.getCommandManager().addCommand(this, "work", new ServiceWorkCmd(), Plugin.NETWORK);
-    Network.getCommandManager().addCommand(this, "ban", List.of("netban"),
+    Network.getCommandManager().addCommand(this, "ban", List.of("netban"), new PunishCmd(), Plugin.PUNISH);
+    Network.getCommandManager().addCommand(this, "tempban", List.of("nettempban", "tmpban", "nettmpmban"),
         new PunishCmd(), Plugin.PUNISH);
-    Network.getCommandManager().addCommand(this, "tempban",
-        List.of("nettempban", "tmpban", "nettmpmban"), new PunishCmd(), Plugin.PUNISH);
-    Network.getCommandManager().addCommand(this, "unban", List.of("netunban", "pardon"),
-        new PunishCmd(), Plugin.PUNISH);
-    Network.getCommandManager().addCommand(this, "mute", List.of("netmute"),
-        new PunishCmd(), Plugin.PUNISH);
-    Network.getCommandManager().addCommand(this, "unmute", List.of("netunmute"),
-        new PunishCmd(), Plugin.PUNISH);
-    Network.getCommandManager().addCommand(this, "kick", List.of("netkick"),
-        new PunishCmd(), Plugin.PUNISH);
-
-    Network.getCommandManager().addCommand(this, "jail", List.of("netjail"),
-        new PunishCmd(), Plugin.PUNISH);
+    Network.getCommandManager().addCommand(this, "unban", List.of("netunban", "pardon"), new PunishCmd(),
+        Plugin.PUNISH);
+    Network.getCommandManager().addCommand(this, "mute", List.of("netmute"), new PunishCmd(), Plugin.PUNISH);
+    Network.getCommandManager().addCommand(this, "unmute", List.of("netunmute"), new PunishCmd(), Plugin.PUNISH);
+    Network.getCommandManager().addCommand(this, "kick", List.of("netkick"), new PunishCmd(), Plugin.PUNISH);
+    Network.getCommandManager().addCommand(this, "jail", List.of("netjail"), new PunishCmd(), Plugin.PUNISH);
 
     Network.getCommandManager().addCommand(this, "start", new StartCmd(), Plugin.NETWORK);
     Network.getCommandManager().addCommand(this, "cmd", new ServerCmd(), Plugin.NETWORK);
@@ -126,35 +119,38 @@ public class BasicProxy {
 
     Network.getCommandManager().addCommand(this, "permcheck", new PermissionTestCmd(), Plugin.NETWORK);
 
-    Network.getCommandManager().addCommand(this, "air", List.of("airmode", "am"),
-        new AirModeCmd(), Plugin.NETWORK);
+    Network.getCommandManager().addCommand(this, "air", List.of("airmode", "am"), new AirModeCmd(), Plugin.NETWORK);
 
-    Network.getCommandManager().addCommand(this, "rule", List.of("rules", "regeln", "regel"),
-        new RuleCmd(), Plugin.NETWORK);
+    Network.getCommandManager().addCommand(this, "rule", List.of("rules", "regeln", "regel"), new RuleCmd(),
+        Plugin.NETWORK);
 
-    Network.getCommandManager().addCommand(this, "pid", new PidCmd(), Plugin.SYSTEM);
+    Network.getCommandManager().addCommand(this, "pid", new PidCmd(), Plugin.SERVER);
 
     Network.getCommandManager().addCommand(this, "kickall", new KickAllCmd(), Plugin.NETWORK);
 
-    Network.getCommandManager().addCommand(this, "dtmp", List.of("delete_tmp"),
-        new DeleteTmpServerCmd(), Plugin.NETWORK);
-    Network.getCommandManager().addCommand(this, "cleanup_servers", new CleanupServersCmd(), Plugin.SYSTEM);
+    Network.getCommandManager().addCommand(this, "dtmp", List.of("delete_tmp"), new DeleteTmpServerCmd(),
+        Plugin.NETWORK);
+    Network.getCommandManager().addCommand(this, "cleanup_servers", new CleanupServersCmd(), Plugin.NETWORK);
 
-    Network.getCommandManager().addCommand(this, "dg", List.of("displaygroup", "dgroup"),
-        new DisplayGroupCmd(), Plugin.NETWORK);
+    Network.getCommandManager().addCommand(this, "dg", List.of("displaygroup", "dgroup"), new DisplayGroupCmd(),
+        Plugin.NETWORK);
 
     Network.getCommandManager().addCommand(this, "build", new MapBuildCmd(), Plugin.NETWORK);
 
     Network.getCommandManager().addCommand(this, "network", new NetworkCmd(), Plugin.NETWORK);
 
-    Network.getCommandManager().addCommand(this, "logger", List.of("log"),
-        new LoggerCmd(), Plugin.SYSTEM);
+    Network.getCommandManager().addCommand(this, "logger", List.of("log"), new LoggerCmd(), Plugin.SERVER);
 
     Network.getCommandManager().addCommand(this, "uuid", new UuidCmd(), Plugin.NETWORK);
 
-    Network.getCommandManager().addCommand(this, "code", new CodeCmd(), Plugin.SYSTEM);
+    Network.getCommandManager().addCommand(this, "code", new CodeCmd(), Plugin.SERVER);
 
     Network.getCommandManager().addCommand(this, "game", new GameCmd(), Plugin.NETWORK);
+
+    Network.getCommandManager().addCommand(this, "supportmanager", List.of("sm", "tm", "ticketmanager"),
+        new SupportManagementCmd(), Plugin.SUPPORT);
+    Network.getCommandManager().addCommand(this, "ticket", List.of("report", "support"), new TicketCmd(),
+        Plugin.SUPPORT);
 
     EventManager em = server.getEventManager();
 

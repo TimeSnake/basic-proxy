@@ -186,8 +186,8 @@ public class UserManager {
       }
     });
 
-    UserSet.LISTS.forEach(l -> l.remove(Network.getUser(p)));
-    UserMap.MAPS.forEach(l -> l.remove(Network.getUser(p)));
+    UserSet.SETS.forEach(l -> l.removeAuto(Network.getUser(p)));
+    UserMap.MAPS.forEach(l -> l.removeAuto(Network.getUser(p)));
 
     Network.removeUser(p);
     Network.getChannel().sendMessage(

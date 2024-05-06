@@ -72,7 +72,8 @@ public class UuidCmd implements CommandListener {
 
   @Override
   public Completion getTabCompletion() {
-    return new Completion(this.perm);
+    return new Completion(this.perm)
+        .addArgument(Completion.ofPlayerNames());
   }
 
   @Override

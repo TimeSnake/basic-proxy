@@ -130,7 +130,7 @@ public class PunishmentManager implements ChannelListener {
       return;
     }
 
-    if (sender != null && !sender.hasGroupRankLower(user)) {
+    if (sender != null && !sender.hasGroupRankLower(user.getUniqueId(), true)) {
       return;
     }
 
@@ -156,7 +156,7 @@ public class PunishmentManager implements ChannelListener {
   }
 
   public void banPlayer(@Nullable Sender sender, DbUser user, Punishment punishment) {
-    if (sender != null && !sender.hasGroupRankLower(user)) {
+    if (sender != null && !sender.hasGroupRankLower(user.getUniqueId(), true)) {
       return;
     }
 
@@ -191,7 +191,7 @@ public class PunishmentManager implements ChannelListener {
   }
 
   public void tempBanPlayer(@Nullable Sender sender, DbUser user, Punishment punishment) {
-    if (sender != null && !sender.hasGroupRankLower(user)) {
+    if (sender != null && !sender.hasGroupRankLower(user.getUniqueId(), true)) {
       return;
     }
 
@@ -249,7 +249,7 @@ public class PunishmentManager implements ChannelListener {
   }
 
   public void kickPlayer(Sender sender, User user, String reason) {
-    if (!sender.hasGroupRankLower(user.getUniqueId())) {
+    if (!sender.hasGroupRankLower(user.getUniqueId(), true)) {
       return;
     }
 
@@ -259,7 +259,7 @@ public class PunishmentManager implements ChannelListener {
   }
 
   public void mutePlayer(@Nullable Sender sender, DbUser user, Punishment punishment) {
-    if (sender != null && !sender.hasGroupRankLower(user)) {
+    if (sender != null && !sender.hasGroupRankLower(user.getUniqueId(), true)) {
       return;
     }
 
@@ -282,7 +282,7 @@ public class PunishmentManager implements ChannelListener {
   }
 
   public void tempMutePlayer(@Nullable Sender sender, DbUser user, Punishment punishment) {
-    if (sender != null && !sender.hasGroupRankLower(user)) {
+    if (sender != null && !sender.hasGroupRankLower(user.getUniqueId(), true)) {
       return;
     }
 
@@ -308,7 +308,7 @@ public class PunishmentManager implements ChannelListener {
   }
 
   public void unmutePlayer(@Nullable Sender sender, DbUser user) {
-    if (sender != null && !sender.hasGroupRankLower(user)) {
+    if (sender != null && !sender.hasGroupRankLower(user.getUniqueId(), true)) {
       return;
     }
 
@@ -329,7 +329,7 @@ public class PunishmentManager implements ChannelListener {
   }
 
   public void jailPlayer(@Nullable Sender sender, DbUser dbUser, Punishment punishment) {
-    if (sender != null && !sender.hasGroupRankLower(dbUser)) {
+    if (sender != null && !sender.hasGroupRankLower(dbUser.getUniqueId(), true)) {
       return;
     }
 

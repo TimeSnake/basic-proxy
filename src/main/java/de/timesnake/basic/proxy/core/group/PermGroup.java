@@ -33,8 +33,7 @@ public class PermGroup extends de.timesnake.library.permissions.PermGroup<User> 
 
     DbPermGroup group = this.database.getInheritance();
     if (group != null) {
-      this.permissions.addAll(
-          Network.getGroupManager().getPermGroup(group.getName()).getPermissions());
+      this.permissions.addAll(Network.getGroupManager().getPermGroup(group.getName()).getPermissions());
     }
 
     Network.getChannel().sendMessage(new ChannelGroupMessage<>(this.name, MessageType.Group.PERMISSION));

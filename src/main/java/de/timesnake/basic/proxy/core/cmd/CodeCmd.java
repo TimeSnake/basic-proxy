@@ -6,60 +6,46 @@ package de.timesnake.basic.proxy.core.cmd;
 
 import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.library.chat.Code;
-import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.extended.ExArguments;
-import net.kyori.adventure.text.Component;
 
 public class CodeCmd implements ExCommandListener {
 
-  private final Code perm = Plugin.SYSTEM.createPermssionCode("system.code");
+  private final Code perm = Plugin.NETWORK.createPermssionCode("system.code");
 
   @Override
-  public void onCommand(Sender sender, PluginCommand cmd,
-      ExArguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, ExArguments<Argument> args) {
     sender.hasPermissionElseExit(this.perm);
     args.assertElseExit(a -> a.isLengthEquals(1, true));
 
-    Argument codeArg = args.get(0);
-
-    codeArg.assertElseExit(a -> a.isInt(true));
-
-    Code code = Code.getCodeById().get(codeArg.toInt());
+    Code code = Code.getCodeById().get(args.get(0).toIntOrExit(true));
 
     if (code == null) {
-      sender.sendPluginMessage(Component.text("No valid code", ExTextColor.WARNING));
+      sender.sendPluginTDMessage("§wNo valid code");
       return;
     }
 
-    Component message = Component.text("Type: ", ExTextColor.PERSONAL)
-        .append(Component.text(code.getType().getSymbol(), ExTextColor.VALUE))
-        .append(Component.text(" Plugin: ", ExTextColor.PERSONAL))
-        .append(Component.text(code.getPlugin().getCode(), ExTextColor.VALUE));
+    String message = "§sType: §v" + code.getType().getSymbol() + "§s, plugin: §v" + code.getPlugin().getCode();
 
     if (code.getCommand() != null) {
-      message = message.append(Component.text(" Cmd: ", ExTextColor.PERSONAL))
-          .append(Component.text(code.getCommand(), ExTextColor.VALUE));
+      message += "§s, cmd: §v" + code.getCommand();
     }
 
     if (code.getPermission() != null) {
-      message = message.append(Component.text(" Perm: ", ExTextColor.PERSONAL))
-          .append(Component.text(code.getPermission(), ExTextColor.VALUE));
+      message += "§s, perm: §v" + code.getPermission();
     }
 
     if (code.getDescription() != null) {
-      message = message.append(Component.text(" Desc: ", ExTextColor.PERSONAL))
-          .append(Component.text(code.getDescription(), ExTextColor.VALUE));
+      message += "§s, desc: §v" + code.getDescription();
     }
 
     if (args.containsFlag('v')) {
       if (code.getReference() != null) {
-        message = message.append(Component.text(" Ref: ", ExTextColor.PERSONAL))
-            .append(Component.text(code.getReference().getName(), ExTextColor.VALUE));
+        message += "§s, ref: §v" + code.getReference().getName();
       }
     }
 
-    sender.sendPluginMessage(message);
+    sender.sendPluginTDMessage(message);
   }
 
   @Override

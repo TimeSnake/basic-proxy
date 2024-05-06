@@ -259,14 +259,11 @@ public class User implements ChannelListener {
   }
 
   @Deprecated
-  public void sendPluginMessage(Plugin plugin,
-                                String message) {
-    this.getPlayer().sendMessage(
-        Chat.getSenderPlugin(plugin).append(Network.getTimeDownParser().parse2Component(message)));
+  public void sendPluginMessage(Plugin plugin, String message) {
+    this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin).append(Network.getTimeDownParser().parse2Component(message)));
   }
 
-  public void sendPluginMessage(Plugin plugin,
-                                Component message) {
+  public void sendPluginMessage(Plugin plugin, Component message) {
     this.getPlayer().sendMessage(Chat.getSenderPlugin(plugin).append(message));
   }
 

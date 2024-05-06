@@ -4,140 +4,77 @@
 
 package de.timesnake.basic.proxy.core.support;
 
-import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.event.connection.DisconnectEvent;
-import com.velocitypowered.api.scheduler.ScheduledTask;
-import de.timesnake.basic.proxy.core.main.BasicProxy;
-import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.channel.util.listener.ChannelHandler;
-import de.timesnake.channel.util.listener.ChannelListener;
-import de.timesnake.channel.util.listener.ListenerType;
-import de.timesnake.channel.util.message.ChannelSupportMessage;
-import de.timesnake.channel.util.message.MessageType;
-import de.timesnake.library.basic.util.Tuple;
-import de.timesnake.library.chat.Code;
-import de.timesnake.library.chat.ExTextColor;
-import de.timesnake.library.commands.PluginCommand;
-import de.timesnake.library.commands.simple.Arguments;
-import net.kyori.adventure.text.Component;
+import de.timesnake.database.util.Database;
+import de.timesnake.database.util.support.DbTicket;
+import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.basic.util.UserSet;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
-public class SupportManager implements ChannelListener, CommandListener {
+public class SupportManager {
 
-  private final HashMap<Integer, Tuple<String, ScheduledTask>> lockedTicketsById = new HashMap<>();
+  public static String formatDateTime(LocalDateTime dateTime) {
+    return DateTimeFormatter.ofPattern("dd.MM.yy HH:mm:ss").format(dateTime.atZone(ZoneId.systemDefault()));
+  }
 
-  private final Set<UUID> ticketListeners = new HashSet<>();
+  private final HashMap<Integer, DbTicket> cachedTicketById = new HashMap<>();
 
-  private final Code msgPerm = Plugin.SUPPORT.createPermssionCode("support.message");
+  private final UserSet<UUID> ticketListeners = new UserSet<>();
 
   public SupportManager() {
-    Network.getCommandManager().addCommand(BasicProxy.getPlugin(),
-        "supportmsg", List.of("supportmessage", "supportmessages", "supportmsgs", "smsg"),
-        this, Plugin.SUPPORT);
-    Network.getChannel().addListener(this);
-    Network.registerListener(this);
+    this.refreshTickets();
   }
 
-  @ChannelHandler(type = {
-      ListenerType.SUPPORT_TICKET_LOCK,
-      ListenerType.SUPPORT_SUBMIT,
-      ListenerType.SUPPORT_REJECT,
-      ListenerType.SUPPORT_ACCEPT,
-      ListenerType.SUPPORT_CREATION,
-  })
-  public void onSupportMessage(ChannelSupportMessage<?> msg) {
-    if (msg.getMessageType().equals(MessageType.Support.TICKET_LOCK)) {
-      String name = msg.getName();
-      Integer id = (Integer) msg.getValue();
-      Tuple<String, ScheduledTask> value = this.lockedTicketsById.get(id);
-      if (value != null && !value.getA().equals(name)) {
-        Network.getChannel().sendMessage(
-            new ChannelSupportMessage<>(name, MessageType.Support.REJECT, id));
-      } else {
-        ScheduledTask task = BasicProxy.getServer().getScheduler()
-            .buildTask(BasicProxy.getPlugin(),
-                () -> this.lockedTicketsById.remove(id)).delay(3, TimeUnit.MINUTES)
-            .schedule();
-
-        this.lockedTicketsById.put(id, new Tuple<>(name, task));
-      }
-    } else if (msg.getMessageType().equals(MessageType.Support.SUBMIT)) {
-      String name = msg.getName();
-      Integer id = (Integer) msg.getValue();
-
-      Tuple<String, ScheduledTask> tuple = this.lockedTicketsById.get(id);
-
-      if (tuple == null || tuple.getA() == null || !tuple.getA().equals(name)) {
-        Network.getChannel().sendMessage(
-            new ChannelSupportMessage<>(name, MessageType.Support.REJECT, id));
-        return;
-      }
-
-      Network.getChannel()
-          .sendMessage(new ChannelSupportMessage<>(name, MessageType.Support.ACCEPT, id));
-
-      ScheduledTask task = this.lockedTicketsById.remove(id).getB();
-
-      if (task != null) {
-        task.cancel();
-      }
-    } else if (msg.getMessageType().equals(MessageType.Support.CREATION)) {
-      Integer id = (Integer) msg.getValue();
-
-      for (UUID uuid : this.ticketListeners) {
-        User user = Network.getUser(uuid);
-
-        if (user != null) {
-          user.sendPluginMessage(Plugin.SUPPORT,
-              Component.text("New ticket: ", ExTextColor.WARNING)
-                  .append(Component.text("ID " + id, ExTextColor.VALUE)));
-        }
-      }
+  public void refreshTickets() {
+    for (DbTicket ticket : Database.getSupport().getTickets()) {
+      this.cachedTicketById.put(ticket.getId(), ticket.toLocal());
     }
-
   }
 
-  @Override
-  public void onCommand(Sender sender, PluginCommand cmd,
-                        Arguments<Argument> args) {
-    if (!sender.isPlayer(true)) {
-      return;
-    }
-
-    User user = sender.getUser();
-
-    if (!sender.hasPermission(this.msgPerm)) {
-      return;
-    }
-
-    if (this.ticketListeners.contains(user.getUniqueId())) {
-      this.ticketListeners.remove(user.getUniqueId());
-      sender.sendPluginMessage(
-          Component.text("Disabled support messages", ExTextColor.PERSONAL));
+  public boolean toggleTicketListener(UUID uuid) {
+    if (this.ticketListeners.contains(uuid)) {
+      this.ticketListeners.remove(uuid);
+      return false;
     } else {
-      this.ticketListeners.add(user.getUniqueId());
-      sender.sendPluginMessage(
-          Component.text("Enabled support messages", ExTextColor.PERSONAL));
+      this.ticketListeners.add(uuid);
+      return true;
     }
-
   }
 
-  @Override
-  public Completion getTabCompletion() {
-    return new Completion(this.msgPerm);
+  public DbTicket getTicketById(int id) {
+    return this.cachedTicketById.get(id);
   }
 
-  @Override
-  public String getPermission() {
-    return this.msgPerm.getPermission();
+  public Collection<DbTicket> getTickets() {
+    return this.cachedTicketById.values();
   }
 
-  @Subscribe
-  public void onPlayerDisconnect(DisconnectEvent e) {
-    this.ticketListeners.remove(e.getPlayer().getUniqueId());
+  public List<DbTicket> getNewestTickets(int size) {
+    return this.cachedTicketById.values().stream()
+        .sorted(Comparator.comparing(DbTicket::getDate))
+        .limit(size)
+        .toList();
+  }
+
+  public List<DbTicket> getNewestTickets(Status status, int size) {
+    return this.cachedTicketById.values().stream()
+        .filter(t -> t.getStatus().equals(status))
+        .sorted(Comparator.comparing(DbTicket::getDate))
+        .limit(size)
+        .toList();
+  }
+
+  public int createTicket(User user, String message) {
+    DbTicket ticket = Database.getSupport().addTicket(user.getUniqueId().toString(), user.getName(), message).toLocal();
+    this.cachedTicketById.put(ticket.getId(), ticket);
+    return ticket.getId();
+  }
+
+  public void notifyTicketUpdate(Integer id) {
+
   }
 }

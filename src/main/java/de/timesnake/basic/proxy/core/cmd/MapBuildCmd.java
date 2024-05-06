@@ -15,19 +15,15 @@ import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.Code;
-import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.ServerCreationResult;
-import net.kyori.adventure.text.Component;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import static de.timesnake.library.chat.ExTextColor.WARNING;
 
 public class MapBuildCmd implements CommandListener {
 
@@ -69,12 +65,12 @@ public class MapBuildCmd implements CommandListener {
     if (!worldLoaded) {
       if (buildServer == null) {
         int port = Network.nextEmptyPort();
-        Tuple<ServerCreationResult, Optional<Server>> result =
-            Network.createTmpServer(new NetworkServer("build" + (port % 1000), port, ServerType.BUILD).setPlayerTrackingRange(128));
+        Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(
+            new NetworkServer("build" + (port % 1000), port, ServerType.BUILD).setPlayerTrackingRange(128));
 
         if (!result.getA().isSuccessful()) {
-          sender.sendPluginMessage(Component.text("Error while creating a" + " build server! Please contact an " +
-              "administrator (" + ((ServerCreationResult.Fail) result.getA()).getReason() + ")", WARNING));
+          sender.sendPluginTDMessage("§wError while creating a build server! Please contact an administrator ("
+                                     + ((ServerCreationResult.Fail) result.getA()).getReason() + ")");
           return;
         }
 
@@ -89,8 +85,7 @@ public class MapBuildCmd implements CommandListener {
       boolean worldResult = buildServer.loadWorld(worldName);
 
       if (!worldResult) {
-        sender.sendPluginMessage(Component.text("Error while loading" + " the world! Please contact an administrator"
-            , WARNING));
+        sender.sendPluginTDMessage("§wError while loading the world! Please contact an administrator");
         return;
       }
     }
@@ -101,13 +96,10 @@ public class MapBuildCmd implements CommandListener {
       sender.getUser().addJoinCommand(buildServer.getName(), "mw tp " + worldName);
 
       if (buildServer.getStatus().equals(Status.Server.ONLINE) || buildServer.getStatus().equals(Status.Server.SERVICE)) {
-        sender.sendPluginMessage(Component.text("Loaded world ", ExTextColor.PERSONAL)
-            .append(Component.text(worldName, ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sLoaded world §v" + worldName);
         sender.getUser().connect(buildServer.getBungeeInfo());
       } else {
-        sender.sendPluginMessage(Component.text("Loading world ", ExTextColor.PERSONAL)
-            .append(Component.text(worldName, ExTextColor.VALUE))
-            .append(Component.text(". You will be moved in a few moments.", ExTextColor.PERSONAL)));
+        sender.sendPluginTDMessage("§sLoading world §v" + worldName + "§s. You will be moved in a few moments.");
         sender.getUser().scheduledConnect(buildServer);
       }
     }

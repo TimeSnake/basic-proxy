@@ -21,9 +21,7 @@ public class KickAllCmd implements CommandListener {
 
   @Override
   public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
-    if (!sender.hasPermission(this.perm)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.perm);
 
     for (User user : Network.getUsers()) {
       Network.getPunishmentManager().kickPlayer(sender, user, "Network reset");

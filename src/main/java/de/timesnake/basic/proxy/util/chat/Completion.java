@@ -66,4 +66,12 @@ public class Completion extends de.timesnake.library.commands.Completion<Complet
     super(permission, values);
   }
 
+  public Completion(Code permission, String value) {
+    this(permission, List.of(value));
+  }
+
+  public Completion(Code permission, String... values) {
+    this(permission, List.of(values));
+  }
+
 }

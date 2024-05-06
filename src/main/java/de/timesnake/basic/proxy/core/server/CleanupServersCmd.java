@@ -11,35 +11,25 @@ import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.library.chat.Code;
-import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import net.kyori.adventure.text.Component;
 
 public class CleanupServersCmd implements CommandListener {
 
-  private final Code perm = Plugin.SYSTEM.createPermssionCode("network.cleanup_servers");
+  private final Code perm = Plugin.NETWORK.createPermssionCode("network.cleanup_servers");
 
   @Override
   public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
-    if (!sender.hasPermission(this.perm)) {
-      return;
-    }
-
-    if (!args.isLengthEquals(0, true)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.perm);
+    args.isLengthEqualsElseExit(0, true);
 
     for (Server server : Network.getServers()) {
       boolean result = Network.deleteServer(server.getName(), false);
       if (result) {
-        sender.sendPluginMessage(Component.text("Deleted server ", ExTextColor.PERSONAL)
-            .append(Component.text(server.getName(), ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sDeleted server §v" + server.getName());
       } else {
-        sender.sendPluginMessage(
-            Component.text("Can not delete server ", ExTextColor.WARNING)
-                .append(Component.text(server.getName(), ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sCan not delete server §v" + server.getName());
       }
     }
   }

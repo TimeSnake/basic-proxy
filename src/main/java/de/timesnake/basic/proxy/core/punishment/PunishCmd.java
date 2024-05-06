@@ -75,8 +75,7 @@ public class PunishCmd implements CommandListener {
         sender.hasPermissionElseExit(this.tempbanPerm);
 
         if (!args.isLengthHigherEquals(3, true)) {
-          sender.sendTDMessageCommandHelp("Temp-ban a player", "tempban <player> " +
-              "<durationInSec> <reason>");
+          sender.sendTDMessageCommandHelp("Temp-ban a player", "tempban <player> <durationInSec> <reason>");
           return;
         }
 
@@ -108,8 +107,7 @@ public class PunishCmd implements CommandListener {
         sender.hasPermissionElseExit(this.jailPerm);
 
         if (!args.isLengthHigherEquals(3, true)) {
-          sender.sendTDMessageCommandHelp("Jail a player",
-              "jail <player> <durationInSec> <reason>");
+          sender.sendTDMessageCommandHelp("Jail a player", "jail <player> <durationInSec> <reason>");
           return;
         }
 

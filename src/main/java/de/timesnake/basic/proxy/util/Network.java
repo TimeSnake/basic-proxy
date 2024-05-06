@@ -9,6 +9,7 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.permission.PermissionManager;
 import de.timesnake.basic.proxy.core.punishment.PunishmentManager;
 import de.timesnake.basic.proxy.core.server.ServerCmd;
+import de.timesnake.basic.proxy.core.support.SupportManager;
 import de.timesnake.basic.proxy.util.chat.CommandManager;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.PreUser;
@@ -295,6 +296,10 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
 
   public static PunishmentManager getPunishmentManager() {
     return network.getPunishmentManager();
+  }
+
+  public static SupportManager getSupportManager() {
+    return network.getSupportManager();
   }
 
   private static final NetworkManager network = NetworkManager.getInstance();

@@ -10,11 +10,9 @@ import de.timesnake.basic.proxy.util.chat.CommandListener;
 import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.library.chat.Code;
-import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import net.kyori.adventure.text.Component;
 
 public class DeleteTmpServerCmd implements CommandListener {
 
@@ -22,24 +20,16 @@ public class DeleteTmpServerCmd implements CommandListener {
 
   @Override
   public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
-    if (!sender.hasPermission(this.perm)) {
-      return;
-    }
-
-    if (!args.isLengthEquals(1, true)) {
-      return;
-    }
+    sender.hasPermissionElseExit(this.perm);
+    args.isLengthEqualsElseExit(1, true);
 
     String serverName = args.getString(0);
-
     boolean result = Network.deleteServer(serverName, false);
 
     if (result) {
-      sender.sendPluginMessage(Component.text("Deleted server ", ExTextColor.PERSONAL)
-          .append(Component.text(serverName, ExTextColor.VALUE)));
+      sender.sendPluginTDMessage("§sDeleted server §v" + serverName);
     } else {
-      sender.sendPluginMessage(Component.text("Can not delete server ", ExTextColor.WARNING)
-          .append(Component.text(serverName, ExTextColor.VALUE)));
+      sender.sendPluginTDMessage("§sCan not delete server §v" + serverName);
     }
   }
 

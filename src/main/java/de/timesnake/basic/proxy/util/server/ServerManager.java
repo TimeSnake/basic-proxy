@@ -57,23 +57,10 @@ public class ServerManager implements ChannelListener {
     return servers.values();
   }
 
-  @Deprecated
-  public Collection<Integer> getNotOfflineServerPorts() {
-    Collection<Integer> ports = new HashSet<>();
-    for (Server server : this.getServers()) {
-      if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
-          && !server.getStatus().equals(Status.Server.LAUNCHING)) {
-        ports.add(server.getPort());
-      }
-    }
-    return ports;
-  }
-
   public Collection<String> getNotOfflineServerNames() {
     Collection<String> names = new HashSet<>();
     for (Server server : this.getServers()) {
-      if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)
-          && !server.getStatus().equals(Status.Server.LAUNCHING)) {
+      if (!server.getStatus().equals(Status.Server.OFFLINE) && !server.getStatus().equals(Status.Server.LAUNCHING)) {
         names.add(server.getName());
       }
     }

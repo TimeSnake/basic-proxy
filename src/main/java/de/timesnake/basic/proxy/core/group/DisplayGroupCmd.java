@@ -11,11 +11,9 @@ import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.chat.Code;
-import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import net.kyori.adventure.text.Component;
 
 import java.util.UUID;
 
@@ -24,8 +22,7 @@ public class DisplayGroupCmd implements CommandListener {
   private final Code perm = Plugin.NETWORK.createPermssionCode("chat.display_group");
 
   @Override
-  public void onCommand(Sender sender, PluginCommand cmd,
-      Arguments<Argument> args) {
+  public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
     if (!sender.hasPermission(this.perm)) {
       return;
     }
@@ -46,9 +43,7 @@ public class DisplayGroupCmd implements CommandListener {
     DisplayGroup group = Network.getGroupManager().getDisplayGroup(groupName);
 
     if (group == null) {
-      sender.sendPluginMessage(Component.text("Display group ", ExTextColor.WARNING)
-          .append(Component.text(groupName, ExTextColor.VALUE))
-          .append(Component.text(" not exists", ExTextColor.WARNING)));
+      sender.sendPluginTDMessage("§wDisplay group §v" + groupName + "§w not exists");
       return;
     }
 
@@ -60,33 +55,21 @@ public class DisplayGroupCmd implements CommandListener {
     switch (action) {
       case "add" -> {
         if (user.getDisplayGroupNames().contains(groupName)) {
-          sender.sendPluginMessage(Component.text(userName).color(ExTextColor.VALUE)
-              .append(Component.text(" is already member of display group ")
-                  .color(ExTextColor.WARNING))
-              .append(Component.text(groupName).color(ExTextColor.VALUE)));
+          sender.sendPluginTDMessage("§v" + userName + "§w is already member of display group §v" + groupName);
           return;
         }
 
         user.addDisplayGroup(groupName);
-        sender.sendPluginMessage(Component.text("Added ").color(ExTextColor.PERSONAL)
-            .append(Component.text(userName).color(ExTextColor.VALUE))
-            .append(Component.text(" to display group ").color(ExTextColor.PERSONAL))
-            .append(Component.text(groupName).color(ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sAdded §v" + userName + "§s to display group §v" + groupName);
       }
       case "remove" -> {
         if (!user.getDisplayGroupNames().contains(groupName)) {
-          sender.sendPluginMessage(Component.text(user.getName()).color(ExTextColor.VALUE)
-              .append(Component.text(" is not a member of display group ")
-                  .color(ExTextColor.WARNING))
-              .append(Component.text(groupName).color(ExTextColor.VALUE)));
+          sender.sendPluginTDMessage("§v" + userName + "§w is not a member of display group §v" + groupName);
           return;
         }
 
         user.removeDisplayGroup(groupName);
-        sender.sendPluginMessage(Component.text("Removed ").color(ExTextColor.PERSONAL)
-            .append(Component.text(userName).color(ExTextColor.VALUE))
-            .append(Component.text(" from display group ").color(ExTextColor.PERSONAL))
-            .append(Component.text(groupName).color(ExTextColor.VALUE)));
+        sender.sendPluginTDMessage("§sRemoved §v" + userName + "§s from display group §v" + groupName);
       }
       default -> {
         return;

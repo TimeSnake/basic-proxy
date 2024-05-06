@@ -5,13 +5,10 @@
 package de.timesnake.basic.proxy.util.chat;
 
 import com.velocitypowered.api.command.SimpleCommand;
-import de.timesnake.basic.proxy.core.group.DisplayGroup;
-import de.timesnake.basic.proxy.core.group.PermGroup;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.User;
-import de.timesnake.database.util.Database;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.CommandHandler;
 import de.timesnake.library.commands.PluginCommand;
@@ -21,7 +18,6 @@ import de.timesnake.library.commands.simple.Arguments;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CommandManager extends CommandHandler<Sender, Argument, Arguments<Argument>, ExArguments<Argument>> {
 
@@ -56,29 +52,6 @@ public class CommandManager extends CommandHandler<Sender, Argument, Arguments<A
       names.add(server.getName());
     }
     return names;
-  }
-
-  @Deprecated
-  public List<String> getGroupNames() {
-    return this.getPermGroupNames();
-  }
-
-  @Deprecated
-  public List<String> getPermGroupNames() {
-    return Network.getGroupManager().getPermGroups().values().stream().map(PermGroup::getName)
-        .collect(Collectors.toList());
-  }
-
-  @Deprecated
-  public List<String> getDisplayGroupNames() {
-    return Network.getGroupManager().getDisplayGroups().values().stream()
-        .map(DisplayGroup::getName)
-        .collect(Collectors.toList());
-  }
-
-  @Deprecated
-  public List<String> getGameNames() {
-    return new ArrayList<>(Database.getGames().getGamesName());
   }
 
   @Override

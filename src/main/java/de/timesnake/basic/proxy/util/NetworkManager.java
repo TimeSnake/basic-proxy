@@ -344,6 +344,10 @@ public class NetworkManager {
     return this.groupManager;
   }
 
+  public SupportManager getSupportManager() {
+    return supportManager;
+  }
+
   // server manager
 
   public int getOnlineLobbys() {

@@ -143,7 +143,7 @@ public class BasicProxy {
 
     Network.getCommandManager().addCommand(this, "uuid", new UuidCmd(), Plugin.NETWORK);
 
-    Network.getCommandManager().addCommand(this, "code", new CodeCmd(), Plugin.SERVER);
+    Network.getCommandManager().addCommand(this, "proxycode", new CodeCmd(), Plugin.SERVER);
 
     Network.getCommandManager().addCommand(this, "game", new GameCmd(), Plugin.NETWORK);
 

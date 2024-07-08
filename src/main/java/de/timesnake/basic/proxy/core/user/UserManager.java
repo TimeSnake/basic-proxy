@@ -233,14 +233,15 @@ public class UserManager {
   }
 
   private void sendJoinMessages(Player player, User user) {
-    user.sendPluginMessage(Plugin.NETWORK,
-        Component.text("You accepted the network rules!", ExTextColor.WARNING));
+    if (Network.getVariables().getValue(NetworkVariables.RULES_LINK) != null) {
+      user.sendPluginMessage(Plugin.NETWORK,
+          Component.text("You accepted the network rules!", ExTextColor.WARNING));
+    }
 
     if (Network.getVariables().getValue(NetworkVariables.PRIVACY_POLICY_LINK) != null) {
       if (user.agreedPrivacyPolicy()) {
         user.sendPluginMessage(Plugin.NETWORK,
-            Component.text("You accepted our privacy policy!",
-                ExTextColor.WARNING));
+            Component.text("You accepted our privacy policy!", ExTextColor.WARNING));
         user.sendPluginMessage(Plugin.NETWORK, Component.text("Type ", ExTextColor.WARNING)
             .append(Component.text("/pp deny", ExTextColor.VALUE))
             .append(Component.text(" to deny our privacy policy", ExTextColor.WARNING)));
@@ -315,11 +316,11 @@ public class UserManager {
 
   public void checkDatabase(Player p, DbUser dbUser) {
     if (!Database.getUsers().containsUser(p.getUniqueId())) {
-      Database.getUsers()
-          .addUser(p.getUniqueId(), p.getUsername(),
-              Network.getGroupManager().getGuestPermGroup().getName(),
-              null);
-      this.sendAcceptedRules(p);
+      Database.getUsers().addUser(p.getUniqueId(), p.getUsername(),
+          Network.getGroupManager().getGuestPermGroup().getName(), null);
+      if (Network.getVariables().getValue(NetworkVariables.RULES_LINK) != null) {
+        this.sendAcceptedRules(p);
+      }
     } else {
       dbUser.setName(p.getUsername());
       dbUser.setStatus(Status.User.ONLINE);
@@ -358,8 +359,7 @@ public class UserManager {
       return appendContactComponent(component);
     } else if (type.equals(PunishType.TEMP_BAN)) {
       LocalDateTime dateSystem = LocalDateTime.now();
-      LocalDateTime date = punishment.getDate()
-          .plusSeconds(punishment.getDuration().toSeconds());
+      LocalDateTime date = punishment.getDate().plusSeconds(punishment.getDuration().toSeconds());
       DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
       String dateString = df.format(date);
       if (date.isBefore(dateSystem)) {

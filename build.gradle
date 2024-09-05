@@ -8,7 +8,7 @@ plugins {
 
 
 group = "de.timesnake"
-version = '1.8.1'
+version = '2.0.0'
 var projectId = 19
 
 repositories {
@@ -28,17 +28,17 @@ repositories {
 }
 
 dependencies {
-  compileOnly "de.timesnake:database-proxy:2.+"
-  compileOnly "de.timesnake:database-api:2.+"
+  compileOnly "de.timesnake:database-proxy:3.+"
+  compileOnly "de.timesnake:database-api:3.+"
 
-  compileOnly "de.timesnake:channel-proxy:4.+"
-  compileOnly "de.timesnake:channel-api:4.+"
+  compileOnly "de.timesnake:channel-proxy:5.+"
+  compileOnly "de.timesnake:channel-api:5.+"
 
-  implementation "de.timesnake:library-network:1.+"
-  implementation "de.timesnake:library-commands:1.+"
-  implementation "de.timesnake:library-permissions:1.+"
-  implementation "de.timesnake:library-basic:1.+"
-  implementation "de.timesnake:library-chat:1.+"
+  implementation "de.timesnake:library-network:2.+"
+  implementation "de.timesnake:library-commands:2.+"
+  implementation "de.timesnake:library-permissions:2.+"
+  implementation "de.timesnake:library-basic:2.+"
+  implementation "de.timesnake:library-chat:2.+"
 
   compileOnly 'org.apache.logging.log4j:log4j-api:2.22.1'
   compileOnly 'org.apache.logging.log4j:log4j-core:2.22.1'
@@ -99,10 +99,16 @@ publishing {
   }
 }
 
-tasks.withType(JavaCompile).configureEach {
-  options.encoding = 'UTF-8'
+tasks {
+  compileJava {
+    options.encoding = "UTF-8"
+    options.release = 21
+  }
 }
 
 java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
   withSourcesJar()
 }

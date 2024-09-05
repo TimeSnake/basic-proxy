@@ -53,17 +53,17 @@ dependencies {
 configurations.configureEach {
   resolutionStrategy.dependencySubstitution {
     if (project.parent != null) {
-      substitute module("de.timesnake:database-proxy") using project(":database-proxy")
-      substitute module("de.timesnake:database-api") using project(":database-api")
+      substitute module("de.timesnake:database-proxy") using project(":database:database-proxy")
+      substitute module("de.timesnake:database-api") using project(":database:database-api")
 
-      substitute module("de.timesnake:channel-proxy") using project(":channel-proxy")
-      substitute module("de.timesnake:channel-api") using project(":channel-api")
+      substitute module("de.timesnake:channel-proxy") using project(":channel:channel-proxy")
+      substitute module("de.timesnake:channel-api") using project(":channel:channel-api")
 
-      substitute module("de.timesnake:library-network") using project(":library-network")
-      substitute module("de.timesnake:library-commands") using project(":library-commands")
-      substitute module("de.timesnake:library-permissions") using project(":library-permissions")
-      substitute module("de.timesnake:library-basic") using project(":library-basic")
-      substitute module("de.timesnake:library-chat") using project(":library-chat")
+      substitute module("de.timesnake:library-network") using project(":libraries:library-network")
+      substitute module("de.timesnake:library-commands") using project(":libraries:library-commands")
+      substitute module("de.timesnake:library-permissions") using project(":libraries:library-permissions")
+      substitute module("de.timesnake:library-basic") using project(":libraries:library-basic")
+      substitute module("de.timesnake:library-chat") using project(":libraries:library-chat")
     }
   }
 }

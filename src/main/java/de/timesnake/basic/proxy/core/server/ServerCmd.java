@@ -131,22 +131,24 @@ public class ServerCmd implements CommandListener {
   }
 
   public void handleServerCmd(Sender sender, Server server) {
-    boolean isStart = server.start();
-    if (!isStart) {
-      sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK)
-          .append(text("Error while starting server ", WARNING))
-          .append(text(server.getName(), VALUE)));
-      return;
-    }
+    Network.runTaskAsync(() -> {
+      boolean isStart = server.start();
+      if (!isStart) {
+        sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK)
+            .append(text("Error while starting server ", WARNING))
+            .append(text(server.getName(), VALUE)));
+        return;
+      }
 
-    sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK)
-        .append(text("Started server ", PERSONAL))
-        .append(text(server.getName(), VALUE)));
+      sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK)
+          .append(text("Started server ", PERSONAL))
+          .append(text(server.getName(), VALUE)));
+    });
   }
 
   public void stopAllServers() {
     for (Server server : Network.getServers()) {
-      if (server.getStatus() != null && !server.getStatus().equals(Status.Server.OFFLINE)) {
+      if (!server.getStatus().equals(Status.Server.OFFLINE)) {
         server.stop();
       }
     }

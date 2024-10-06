@@ -71,6 +71,7 @@ public class NetworkManager {
   private SupportManager supportManager;
   private String velocitySecret;
   private boolean tmuxEnabled;
+  private boolean serverDebugging;
   private Path networkPath;
   private NetworkUtils networkUtils;
   private PunishmentManager punishmentManager;
@@ -105,6 +106,7 @@ public class NetworkManager {
 
     this.velocitySecret = config.getVelocitySecret();
     this.tmuxEnabled = config.isTmuxEnabled();
+    this.serverDebugging = config.isServerDebuggingEnabled() != null ? config.isServerDebuggingEnabled() : false;
 
     if (!Database.getGroups().containsPermGroup(Network.GUEST_PERM_GROUP_NAME)) {
       Database.getGroups()
@@ -330,6 +332,14 @@ public class NetworkManager {
 
   public boolean isTmuxEnabled() {
     return tmuxEnabled;
+  }
+
+  public boolean isServerDebuggingEnabled() {
+    return serverDebugging;
+  }
+
+  public void setServerDebugging(boolean serverDebugging) {
+    this.serverDebugging = serverDebugging;
   }
 
   public NetworkUtils getNetworkUtils() {

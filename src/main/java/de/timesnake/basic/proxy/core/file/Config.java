@@ -29,6 +29,10 @@ public class Config extends ExFile {
     return config.getBoolean("network.tmux");
   }
 
+  public Boolean isServerDebuggingEnabled() {
+    return config.getBoolean("network.debug");
+  }
+
   public Integer getMaxPlayersLobby() {
     return super.getLong("max_players.lobby").intValue();
   }

@@ -31,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 public class Network implements de.timesnake.library.basic.util.server.Server {
 
   public static final int PORT_BASE = 25100;
+  public static final int DEBUGGING_PORT_OFFSET = 2000;
   public static final String TMP_SERVER_SUFFIX = "_tmp";
   public static final String TMUX_SESSION_NAME = "mcts";
   public static final String GUEST_PERM_GROUP_NAME = "guest";
@@ -264,6 +265,14 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
 
   public static boolean isTmuxEnabled() {
     return network.isTmuxEnabled();
+  }
+
+  public static boolean isServerDebuggingEnabled() {
+    return network.isServerDebuggingEnabled();
+  }
+
+  public static void setServerDebugging(boolean enabled) {
+    network.setServerDebugging(enabled);
   }
 
   public static NetworkUtils getNetworkUtils() {

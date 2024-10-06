@@ -152,6 +152,8 @@ public class BasicProxy {
     Network.getCommandManager().addCommand(this, "ticket", List.of("report", "support"), new TicketCmd(),
         Plugin.SUPPORT);
 
+    Network.getCommandManager().addCommand(this, "serverdebug", new ServerDebugCmd(), Plugin.NETWORK);
+
     EventManager em = server.getEventManager();
 
     em.register(this, new MotdManager());

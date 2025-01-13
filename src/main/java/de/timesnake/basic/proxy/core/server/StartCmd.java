@@ -144,21 +144,13 @@ public class StartCmd implements CommandListener {
       return;
     }
 
-    boolean netherEnd = ((DbNonTmpGame) game).isNetherAndEndAllowed();
-    Integer viewDistance = ((DbNonTmpGame) game).getViewDistance();
-
     int port = Network.nextEmptyPort();
     NetworkServer networkServer = new NetworkServer(user.getUniqueId().hashCode() + "_" + serverName, port,
         ServerType.GAME)
         .setFolderName(serverName)
         .setTask(((DbNonTmpGame) game).getName())
         .setMaxPlayers(20)
-        .allowNether(netherEnd)
-        .allowEnd(netherEnd);
-
-    if (viewDistance != null) {
-      networkServer.setViewDistance(viewDistance).setSimulationDistance(viewDistance);
-    }
+        .applyServerOptions(game.getServerOptions());
 
     sender.sendPluginTDMessage("§sLoading server §v" + serverName);
     Tuple<ServerCreationResult, Optional<Server>> result = Network.loadPlayerServer(user.getUniqueId(), networkServer);
@@ -208,18 +200,11 @@ public class StartCmd implements CommandListener {
       return;
     }
 
-    boolean netherEnd = ((DbNonTmpGame) game).isNetherAndEndAllowed();
-    Integer viewDistance = ((DbNonTmpGame) game).getViewDistance();
-
     int port = Network.nextEmptyPort();
     NetworkServer networkServer = new NetworkServer(serverName, port, ServerType.GAME)
         .setTask(((DbNonTmpGame) game).getName())
         .setMaxPlayers(20)
-        .allowNether(netherEnd).allowEnd(netherEnd);
-
-    if (viewDistance != null) {
-      networkServer.setViewDistance(viewDistance).setSimulationDistance(viewDistance);
-    }
+        .applyServerOptions(game.getServerOptions());
 
     sender.sendPluginTDMessage("§sLoading server §v" + serverName);
     Tuple<ServerCreationResult, Optional<Server>> result = Network.loadPublicPlayerServer(networkServer);
@@ -280,8 +265,6 @@ public class StartCmd implements CommandListener {
     }
 
     boolean oldPvP = args.getArgumentByString("oldpvp") != null || args.getArgumentByString("1.8pvp") != null;
-    boolean netherEnd = game.isNetherAndEndAllowed();
-    Integer viewDistance = game.getViewDistance();
 
     sender.sendPluginTDMessage("§sCreating server...");
 
@@ -290,20 +273,8 @@ public class StartCmd implements CommandListener {
       NetworkServer networkServer = new NetworkServer((port % 1000) + gameName + Network.TMP_SERVER_SUFFIX, port,
           ServerType.GAME)
           .setTask(gameName)
-          .allowEnd(netherEnd).allowNether(netherEnd)
-          .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE));
-
-      if (viewDistance != null) {
-        networkServer.setViewDistance(viewDistance).setSimulationDistance(viewDistance);
-      }
-
-      if (game.getInfo().getPlayerTrackingRange() != null) {
-        networkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());
-      }
-
-      if (game.getInfo().getMaxHealth() != null) {
-        networkServer.setMaxHealth(game.getInfo().getMaxHealth());
-      }
+          .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE))
+          .applyServerOptions(game.getServerOptions());
 
       Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(networkServer);
       if (!result.getA().isSuccessful()) {
@@ -319,8 +290,8 @@ public class StartCmd implements CommandListener {
 
       sender.sendPluginTDMessage("§sStarted game §v" + gameName);
       sender.sendPluginTDMessage("§sGame server: §v" + server.getName());
-      sender.sendPluginTDMessage("Max players: §v" + gameMaxPlayers);
-      sender.sendPluginTDMessage("Old PvP: §v" + oldPvP);
+      sender.sendPluginTDMessage("§sMax players: §v" + gameMaxPlayers);
+      sender.sendPluginTDMessage("$sOld PvP: §v" + oldPvP);
 
       Network.getBukkitCmdHandler().handleServerCmd(sender, server);
     });
@@ -426,10 +397,6 @@ public class StartCmd implements CommandListener {
 
     boolean teamMerging = argMaxPerTeam != null && args.getArgumentByString("merge") != null;
 
-    if (gameMergeTeams == null) {
-      gameMergeTeams = Availability.FORBIDDEN;
-    }
-
     if (gameMergeTeams.equals(Availability.FORBIDDEN) && teamMerging) {
       sender.sendPluginMessage(text("Game ", WARNING)
           .append(text(gameName, VALUE))
@@ -478,15 +445,8 @@ public class StartCmd implements CommandListener {
           (tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
           tempGamePort, ServerType.TEMP_GAME).setTask(
               gameName)
-          .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE));
-
-      if (game.getInfo().getPlayerTrackingRange() != null) {
-        gameNetworkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());
-      }
-
-      if (game.getInfo().getMaxHealth() != null) {
-        gameNetworkServer.setMaxHealth(game.getInfo().getMaxHealth());
-      }
+          .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE))
+          .applyServerOptions(game.getServerOptions());
 
       Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.createTmpServer(
           gameNetworkServer);

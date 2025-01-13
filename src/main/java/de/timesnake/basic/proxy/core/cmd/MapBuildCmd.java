@@ -66,7 +66,8 @@ public class MapBuildCmd implements CommandListener {
       if (buildServer == null) {
         int port = Network.nextEmptyPort();
         Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(
-            new NetworkServer("build" + (port % 1000), port, ServerType.BUILD).setPlayerTrackingRange(128));
+            new NetworkServer("build" + (port % 1000), port, ServerType.BUILD)
+                .configProperty("world-settings.default.entity-tracking-range.players", "128"));
 
         if (!result.getA().isSuccessful()) {
           sender.sendPluginTDMessage("§wError while creating a build server! Please contact an administrator ("

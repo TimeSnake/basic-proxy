@@ -132,7 +132,7 @@ public class GameCmd extends IncCommandListener {
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
       } else if (teams.size() == 1) {
-        context.addOption(TEAM_AMOUNT, teams.get(0));
+        context.addOption(TEAM_AMOUNT, teams.getFirst());
         context.addOption(PLAYERS_PER_TEAM, null);
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
@@ -208,18 +208,10 @@ public class GameCmd extends IncCommandListener {
         int tempGamePort = Network.nextEmptyPort();
 
         NetworkServer gameNetworkServer = new NetworkServer((tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
-            tempGamePort, ServerType.TEMP_GAME).setTask(gameName);
-
-        gameNetworkServer.options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE));
-
-        if (game.getInfo().getPlayerTrackingRange() != null) {
-          gameNetworkServer.setPlayerTrackingRange(
-              game.getInfo().getPlayerTrackingRange());
-        }
-
-        if (game.getInfo().getMaxHealth() != null) {
-          gameNetworkServer.setMaxHealth(game.getInfo().getMaxHealth());
-        }
+            tempGamePort, ServerType.TEMP_GAME)
+            .setTask(gameName)
+            .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE))
+            .applyServerOptions(game.getServerOptions());
 
         Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.createTmpServer(gameNetworkServer);
         if (!tempServerResult.getA().isSuccessful()) {
@@ -263,8 +255,6 @@ public class GameCmd extends IncCommandListener {
       });
     } else if (context.getOption(GAME) instanceof DbNonTmpGame game) {
       String gameName = game.getName();
-      boolean netherEnd = game.isNetherAndEndAllowed();
-      Integer viewDistance = game.getViewDistance();
       Boolean mapsEnabled = context.getOption(MAPS);
       Integer maxPlayers = context.getOption(MAX_PLAYERS);
       Boolean oldPvP = context.getOption(OLD_PVP);
@@ -276,22 +266,9 @@ public class GameCmd extends IncCommandListener {
         NetworkServer networkServer = new NetworkServer((port % 1000) + gameName +
             Network.TMP_SERVER_SUFFIX, port, ServerType.GAME)
             .setTask(gameName)
-            .allowEnd(netherEnd)
-            .allowNether(netherEnd)
             .options(o -> o.setWorldCopyType(
-                mapsEnabled ? CopyType.COPY : CopyType.NONE));
-
-        if (viewDistance != null) {
-          networkServer.setViewDistance(viewDistance).setSimulationDistance(viewDistance);
-        }
-
-        if (game.getInfo().getPlayerTrackingRange() != null) {
-          networkServer.setPlayerTrackingRange(game.getInfo().getPlayerTrackingRange());
-        }
-
-        if (game.getInfo().getMaxHealth() != null) {
-          networkServer.setMaxHealth(game.getInfo().getMaxHealth());
-        }
+                mapsEnabled ? CopyType.COPY : CopyType.NONE))
+            .applyServerOptions(game.getServerOptions());
 
         Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(
             networkServer);

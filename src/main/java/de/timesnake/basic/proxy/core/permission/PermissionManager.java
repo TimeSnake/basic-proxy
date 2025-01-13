@@ -91,7 +91,7 @@ public class PermissionManager {
     UUID uuid = user.getUniqueId();
     sender.hasGroupRankLowerElseExit(uuid, true);
 
-    int groupRank = Database.getGroups().getPermGroup(groupName).getRank();
+    int groupRank = Database.getGroups().getPermGroup(groupName).getPriority();
 
     if (user.getPermGroup() != null) {
       if (!user.getPermGroup().getName().equals(groupName)
@@ -145,7 +145,7 @@ public class PermissionManager {
       return;
     }
 
-    sender.hasGroupRankLowerElseExit(group.getRank(), true);
+    sender.hasGroupRankLowerElseExit(group.getPriority(), true);
 
     group.addPermission(permission, mode, () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
     this.sendMessageAddedPermission(sender, groupName, permission, mode);
@@ -166,7 +166,7 @@ public class PermissionManager {
       return;
     }
 
-    sender.hasGroupRankLowerElseExit(group.getRank(), true);
+    sender.hasGroupRankLowerElseExit(group.getPriority(), true);
 
     group.removePermission(permission, () -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
     this.sendMessageRemovedPermission(sender, groupName, permission);
@@ -202,7 +202,7 @@ public class PermissionManager {
       this.sendMessagePermGroupNotExists(sender, groupName);
     }
 
-    sender.hasGroupRankLowerElseExit(group.getRank(), true);
+    sender.hasGroupRankLowerElseExit(group.getPriority(), true);
 
     for (DbPermission perm : group.getPermissions()) {
       group.removePermission(perm.getPermission());
@@ -228,11 +228,11 @@ public class PermissionManager {
       return;
     }
 
-    sender.hasGroupRankLowerElseExit(group.getRank(), true);
+    sender.hasGroupRankLowerElseExit(group.getPriority(), true);
 
     DbPermGroup inheritGroup = Database.getGroups().getPermGroup(inheritGroupName.toLowerCase());
     if (!(Database.getGroups().containsPermGroup(inheritGroupName)
-          && sender.hasGroupRankLower(inheritGroup.getRank(), true))) {
+          && sender.hasGroupRankLower(inheritGroup.getPriority(), true))) {
       return;
     }
 
@@ -251,7 +251,7 @@ public class PermissionManager {
       return;
     }
 
-    sender.hasGroupRankLowerElseExit(group.getRank(), true);
+    sender.hasGroupRankLowerElseExit(group.getPriority(), true);
 
     group.removeInheritance(() -> Network.getGroupManager().getPermGroup(groupName).updatePermissions());
     sender.sendPluginTDMessage("§sRemoved inheritance from §v" + group.getName());

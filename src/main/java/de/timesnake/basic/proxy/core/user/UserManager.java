@@ -391,7 +391,6 @@ public class UserManager {
     String supportEmail = Network.getVariables().getValue(NetworkVariables.SUPPORT_EMAIL);
     if (supportEmail != null) {
       component = component
-
           .append(Component.newline())
           .append(Component.text("or contact us by email: ", ExTextColor.PERSONAL))
           .append(Component.text(supportEmail, ExTextColor.VALUE));

@@ -1,5 +1,5 @@
 main: de.timesnake.basic.proxy.core.main.BasicProxy
-version: 1.8.0
+version: ${version}
 name: basic-proxy
 author: timesnake
 softdepend: [ database-proxy ]

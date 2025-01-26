@@ -28,12 +28,12 @@ public class ChannelPingPong implements ChannelTimeOutListener {
     task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
       ProxyChannel.getInstance().checkServerPong();
       ProxyChannel.getInstance().ping(Network.getNotOfflineServerNames());
-    }).repeat(15, TimeUnit.SECONDS).schedule();
+    }).repeat(10, TimeUnit.SECONDS).schedule();
   }
 
   @Override
   public void onServerTimeOut(String name) {
     Network.getServer(name).setStatus(Status.Server.OFFLINE, true);
-    this.logger.warn("{} timed out on channel ping", name);
+    this.logger.warn("{} timed out on channel ping, updating status to offline", name);
   }
 }

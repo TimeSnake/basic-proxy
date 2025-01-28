@@ -24,9 +24,10 @@ import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkServer.CopyType;
 import de.timesnake.library.network.ServerCreationResult;
-import de.timesnake.library.network.ServerCreationResult.Fail;
 import de.timesnake.library.network.ServerInitResult;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -35,11 +36,17 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class ServerManager implements ChannelListener {
 
+  private final Logger logger = LogManager.getLogger("server-manager");
+
   private final MultiKeyMap<String, Integer, Server> servers = new MultiKeyMap<>();
   private final Map<String, Path> tmpDirsByServerName = new HashMap<>();
+
+  private final Set<Integer> serverIds = new HashSet<>();
 
   private final ChannelConfig channelConfig;
 
@@ -101,68 +108,124 @@ public class ServerManager implements ChannelListener {
 
   }
 
-  public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-                                                                       boolean registerServer) {
+  public ServerSetupResult createTmpServer(ServerType type) {
+    return this.createTmpServer(type, s -> {
+    });
+  }
 
+  public ServerSetupResult createTmpServer(ServerType type, Consumer<NetworkServer> optionsApplier) {
+    return this.createTmpServer(type, optionsApplier, true);
+  }
+
+  public ServerSetupResult createTmpServer(ServerType type, Consumer<NetworkServer> optionsApplier,
+                                           boolean registerServer) {
+    int id = this.nextServerId();
+    return this.createTmpServer(type.getTag() + id, type, optionsApplier, registerServer);
+  }
+
+  public ServerSetupResult createTmpServer(ServerType type, Consumer<NetworkServer> optionsApplier,
+                                           int port, boolean registerServer) {
+    int id = this.nextServerId();
+    return this.createTmpServer(type.getTag() + id, type, optionsApplier, port, registerServer);
+  }
+
+  private ServerSetupResult createTmpServer(String name, ServerType type, Consumer<NetworkServer> optionsApplier) {
+    return this.createTmpServer(name, type, optionsApplier, true);
+  }
+
+  private ServerSetupResult createTmpServer(String name, ServerType type, Consumer<NetworkServer> optionsApplier,
+                                            boolean registerServer) {
+    NetworkServer server = new NetworkServer(name, type);
+    optionsApplier.accept(server);
+    return this.createTmpServer(server, this::nextEmptyPort, registerServer);
+  }
+
+  private ServerSetupResult createTmpServer(String name, ServerType type, Consumer<NetworkServer> optionsApplier,
+                                            int port, boolean registerServer) {
+    NetworkServer server = new NetworkServer(name, type);
+    optionsApplier.accept(server);
+    return this.createTmpServer(server, () -> port, registerServer);
+  }
+
+  public Tuple<ServerSetupResult, ServerSetupResult> createTmpTwinServers(ServerType type1,
+                                                                          Consumer<NetworkServer> optionsApplier1,
+                                                                          ServerType type2,
+                                                                          Consumer<NetworkServer> optionsApplier2) {
+    int id1 = this.nextServerId();
+    int id2 = this.nextServerId();
+    return new Tuple<>(
+        this.createTmpServer(type1.getTag() + id1 + "_" + type2.getTag() + id2, type1, optionsApplier1),
+        this.createTmpServer(type2.getTag() + id2 + "_" + type1.getTag() + id1, type2, optionsApplier2));
+  }
+
+
+  private ServerSetupResult createTmpServer(NetworkServer networkServer, Supplier<Integer> portSupplier,
+                                            boolean registerServer) {
     ServerCreationResult result;
-    Optional<Server> serverOpt = Optional.empty();
+    Server server;
 
     try {
       this.serverCreationLock.lock();
 
-      if (Network.getServer(server.getName()) != null) {
-        return new Tuple<>(new Fail("server already exists"), Optional.empty());
+      if (this.getServer(networkServer.getName()) != null) {
+        return new ServerSetupResult.Fail(null, networkServer, "server already exists");
       }
 
-      this.applyDefaults(server);
+      networkServer.setPort(portSupplier.get());
+      this.applyDefaults(networkServer);
 
-      if (server.getType().equals(ServerType.LOBBY)) {
-        result = Network.getNetworkUtils().createServer(server
+      if (networkServer.getType().equals(ServerType.LOBBY)) {
+        result = Network.getNetworkUtils().createServer(networkServer
             .options(o -> o
                 .setWorldCopyType(CopyType.SYNC)
                 .setSyncPlayerData(false)
                 .setSyncLogs(true)));
 
-      } else if (server.getType().equals(ServerType.BUILD)) {
-        result = Network.getNetworkUtils().createServer(server
+      } else if (networkServer.getType().equals(ServerType.BUILD)) {
+        result = Network.getNetworkUtils().createServer(networkServer
             .options(o -> o
                 .setWorldCopyType(CopyType.NONE)
                 .setSyncPlayerData(true)
                 .setSyncLogs(true)));
 
-      } else if (server.getType().equals(ServerType.LOUNGE)) {
-        result = Network.getNetworkUtils().createServer(server
+      } else if (networkServer.getType().equals(ServerType.LOUNGE)) {
+        result = Network.getNetworkUtils().createServer(networkServer
             .options(o -> o
                 .setWorldCopyType(CopyType.COPY)
                 .setSyncPlayerData(false)
                 .setSyncLogs(true)));
 
-      } else if (server.getType().equals(ServerType.TEMP_GAME)) {
-        result = Network.getNetworkUtils().createServer(server
+      } else if (networkServer.getType().equals(ServerType.TEMP_GAME)) {
+        result = Network.getNetworkUtils().createServer(networkServer
             .options(o -> o
                 // copy type determined by map option
                 .setSyncPlayerData(false)
                 .setSyncLogs(true)));
 
-      } else if (server.getType().equals(ServerType.GAME)) {
-        result = Network.getNetworkUtils().createServer(server
+      } else if (networkServer.getType().equals(ServerType.GAME)) {
+        result = Network.getNetworkUtils().createServer(networkServer
             .options(o -> o
                 .setWorldCopyType(CopyType.COPY)
                 .setSyncPlayerData(false)
                 .setSyncLogs(true)));
       } else {
-        return new Tuple<>(new Fail("unsupported server type"), Optional.empty());
+        return new ServerSetupResult.Fail(null, networkServer, "unknown server type");
       }
 
       if (result.isSuccessful()) {
-        Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-        serverOpt = Optional.ofNullable(this.addServer(server, serverPath, registerServer));
+        Path serverPath = ((ServerCreationResult.Success) result).getServerPath();
+        try {
+          server = this.addServer(networkServer, serverPath, registerServer);
+          return new ServerSetupResult.Success((ServerCreationResult.Success) result, networkServer, server);
+        } catch (IllegalArgumentException e) {
+          return new ServerSetupResult.Fail(result, networkServer, e.getMessage());
+        }
+      } else {
+        return new ServerSetupResult.Fail(result, networkServer, "server creation failed");
       }
     } finally {
       this.serverCreationLock.unlock();
     }
-
-    return new Tuple<>(result, serverOpt);
   }
 
   public ServerInitResult initNewPublicPlayerServer(ServerType type, String task, String name) {
@@ -171,7 +234,7 @@ public class ServerManager implements ChannelListener {
     ServerInitResult result;
 
     try {
-      if (Network.getServer(name) != null) {
+      if (this.getServer(name) != null) {
         return new ServerInitResult.Fail("server already exists");
       }
       result = Network.getNetworkUtils().initNewPublicPlayerServer(type, task, name);
@@ -187,7 +250,7 @@ public class ServerManager implements ChannelListener {
     ServerInitResult result;
 
     try {
-      if (Network.getServer(name) != null) {
+      if (this.getServer(name) != null) {
         return new ServerInitResult.Fail("server already exists");
       }
       result = Network.getNetworkUtils().initNewPlayerServer(uuid, type, task, name);
@@ -197,72 +260,75 @@ public class ServerManager implements ChannelListener {
     return result;
   }
 
-  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid, NetworkServer server) {
+  public ServerSetupResult loadPlayerServer(String categoryName, UUID uuid, String serverName,
+                                            Consumer<NetworkServer> optionsApplier) {
     this.serverCreationLock.lock();
 
-    ServerCreationResult result;
-    Optional<Server> serverOpt = Optional.empty();
-
     try {
-      if (Network.getServer(server.getName()) != null) {
-        return new Tuple<>(new Fail("server already exists"), Optional.empty());
+      String serverId = categoryName + "_" + uuid.hashCode() + "-" + serverName;
+
+      if (this.getServer(serverId) != null) {
+        return new ServerSetupResult.Fail(null, null, "server already exists");
       }
 
-      this.applyDefaults(server);
+      int port = this.nextEmptyPort();
+      NetworkServer networkServer = new NetworkServer(serverId, ServerType.GAME)
+          .setPort(port)
+          .setFolderName(serverName)
+          .setTask(categoryName)
+          .setMaxPlayers(20);
 
-      result = Network.getNetworkUtils().createPlayerServer(uuid, server);
+      optionsApplier.accept(networkServer);
+      this.applyDefaults(networkServer);
+
+      ServerCreationResult result = Network.getNetworkUtils().createPlayerServer(uuid, networkServer);
 
       if (result.isSuccessful()) {
-        Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-        serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
+        Server server = this.addServer(networkServer, ((ServerCreationResult.Success) result).getServerPath(), true);
+        return new ServerSetupResult.Success((ServerCreationResult.Success) result, networkServer, server);
+      } else {
+        return new ServerSetupResult.Fail(result, networkServer, "server creation failed");
       }
     } finally {
       this.serverCreationLock.unlock();
     }
-    return new Tuple<>(result, serverOpt);
   }
 
-  public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(NetworkServer server) {
+  public ServerSetupResult loadPublicPlayerServer(String categoryName, String serverName,
+                                                  Consumer<NetworkServer> optionsApplier) {
     this.serverCreationLock.lock();
 
-    ServerCreationResult result;
-    Optional<Server> serverOpt = Optional.empty();
-
     try {
-      if (Network.getServer(server.getName()) != null) {
-        return new Tuple<>(new Fail("server already exists"), Optional.empty());
+      String serverId = categoryName + "_" + serverName;
+      if (this.getServer(serverId) != null) {
+        return new ServerSetupResult.Fail(null, null, "server already exists");
       }
 
-      this.applyDefaults(server);
+      int port = this.nextEmptyPort();
+      NetworkServer networkServer = new NetworkServer(serverId, ServerType.GAME)
+          .setPort(port)
+          .setFolderName(serverName)
+          .setTask(categoryName)
+          .setMaxPlayers(20);
 
-      result = Network.getNetworkUtils().createPublicPlayerServer(server);
+      optionsApplier.accept(networkServer);
+      this.applyDefaults(networkServer);
+
+      ServerCreationResult result = Network.getNetworkUtils().createPublicPlayerServer(networkServer);
 
       if (result.isSuccessful()) {
-        Path serverPath = ((ServerCreationResult.Successful) result).getServerPath();
-        serverOpt = Optional.ofNullable(this.addServer(server, serverPath, true));
+        Server server = this.addServer(networkServer, ((ServerCreationResult.Success) result).getServerPath(), true);
+        return new ServerSetupResult.Success((ServerCreationResult.Success) result, networkServer, server);
+      } else {
+        return new ServerSetupResult.Fail(result, networkServer, "server creation failed");
       }
     } finally {
       this.serverCreationLock.unlock();
     }
-    return new Tuple<>(result, serverOpt);
-  }
-
-  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerGameServer(UUID uuid, NetworkServer server) {
-    Tuple<ServerCreationResult, Optional<Server>> result = this.loadPlayerServer(uuid, server);
-
-    if (result.getA().isSuccessful()) {
-      ((NonTmpGameServer) result.getB().get()).setOwnerUuid(uuid);
-    }
-
-    return result;
-  }
-
-  public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerGameServer(NetworkServer server) {
-    return this.loadPublicPlayerServer(server);
   }
 
   private Server addServer(NetworkServer server, Path serverPath, boolean registerServer) {
-    Server newServer = null;
+    Server newServer;
     if (ServerType.LOBBY.equals(server.getType())) {
       newServer = this.addLobby(server.getPort(), server.getName(), serverPath, server);
     } else if (ServerType.LOUNGE.equals(server.getType())) {
@@ -273,6 +339,8 @@ public class ServerManager implements ChannelListener {
       newServer = this.addBuild(server.getPort(), server.getName(), server.getTask(), serverPath, server);
     } else if (ServerType.TEMP_GAME.equals(server.getType())) {
       newServer = this.addTempGame(server.getPort(), server.getName(), server.getTask(), serverPath, server);
+    } else {
+      throw new IllegalArgumentException("invalid server type: " + server.getType());
     }
 
     if (registerServer) {
@@ -308,7 +376,7 @@ public class ServerManager implements ChannelListener {
       return false;
     }
 
-    BasicProxy.getLogger().info("Deleted tmp server " + name);
+    this.logger.info("Deleted tmp server {}", name);
 
     return true;
   }
@@ -333,12 +401,12 @@ public class ServerManager implements ChannelListener {
         return false;
       }
 
-      BasicProxy.getLogger().info("Killed server " + name);
+      this.logger.info("Killed server {}", name);
       return this.deleteServer(name, true);
     });
   }
 
-  public int nextEmptyPort() {
+  private int nextEmptyPort() {
     int port = Network.PORT_BASE;
     while (this.servers.containsKey2(port)) {
       port++;
@@ -346,10 +414,20 @@ public class ServerManager implements ChannelListener {
     return port;
   }
 
+  public int nextServerId() {
+    int id = this.serverIds.size();
+    while (this.serverIds.contains(id)) {
+      id++;
+    }
+    this.serverIds.add(id);
+    return id;
+  }
+
   public LobbyServer addLobby(int port, String name, Path folderPath,
                               NetworkServer networkServer) {
     Database.getServers().addLobby(name, port, Status.Server.OFFLINE, folderPath);
-    LobbyServer server = new LobbyServer(Database.getServers().getServer(ServerType.LOBBY, port), folderPath, networkServer);
+    LobbyServer server = new LobbyServer(Database.getServers().getServer(ServerType.LOBBY, port), folderPath,
+        networkServer);
     servers.put(name, port, server);
     return server;
   }
@@ -358,7 +436,8 @@ public class ServerManager implements ChannelListener {
   public GameServer addGame(int port, String name, String task, Path folderPath,
                             NetworkServer networkServer) {
     Database.getServers().addGame(name, port, task, Status.Server.OFFLINE, folderPath);
-    GameServer server = new NonTmpGameServer(Database.getServers().getServer(ServerType.GAME, port), folderPath, networkServer);
+    GameServer server = new NonTmpGameServer(Database.getServers().getServer(ServerType.GAME, port), folderPath,
+        networkServer);
     servers.put(name, port, server);
     return server;
   }
@@ -367,7 +446,8 @@ public class ServerManager implements ChannelListener {
   public LoungeServer addLounge(int port, String name, Path folderPath,
                                 NetworkServer networkServer) {
     Database.getServers().addLounge(name, port, Status.Server.OFFLINE, folderPath);
-    LoungeServer server = new LoungeServer(Database.getServers().getServer(ServerType.LOUNGE, port), folderPath, networkServer);
+    LoungeServer server = new LoungeServer(Database.getServers().getServer(ServerType.LOUNGE, port), folderPath,
+        networkServer);
     servers.put(name, port, server);
     return server;
   }
@@ -376,7 +456,8 @@ public class ServerManager implements ChannelListener {
   public TmpGameServer addTempGame(int port, String name, String task, Path folderPath,
                                    NetworkServer networkServer) {
     Database.getServers().addTempGame(name, port, task, Status.Server.OFFLINE, folderPath);
-    TmpGameServer server = new TmpGameServer(Database.getServers().getServer(ServerType.TEMP_GAME, port), folderPath, networkServer);
+    TmpGameServer server = new TmpGameServer(Database.getServers().getServer(ServerType.TEMP_GAME, port), folderPath,
+        networkServer);
     servers.put(name, port, server);
     return server;
   }
@@ -385,7 +466,8 @@ public class ServerManager implements ChannelListener {
   public BuildServer addBuild(int port, String name, String task, Path folderPath,
                               NetworkServer networkServer) {
     Database.getServers().addBuild(name, port, task, Status.Server.OFFLINE, folderPath);
-    BuildServer server = new BuildServer(Database.getServers().getServer(ServerType.BUILD, port), folderPath, networkServer);
+    BuildServer server = new BuildServer(Database.getServers().getServer(ServerType.BUILD, port), folderPath,
+        networkServer);
     servers.put(name, port, server);
     return server;
   }

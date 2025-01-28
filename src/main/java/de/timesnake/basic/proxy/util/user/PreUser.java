@@ -21,13 +21,11 @@ import java.util.*;
 public class PreUser {
 
   private final UUID uuid;
-
   private final String name;
 
   private final DbUser dbUser;
 
   private final boolean service;
-
   private final boolean airMode;
 
   private final LocalDateTime privacyPolicyDateTime;

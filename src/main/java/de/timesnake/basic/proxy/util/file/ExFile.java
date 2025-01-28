@@ -6,14 +6,12 @@ package de.timesnake.basic.proxy.util.file;
 
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
+@Deprecated
 public class ExFile {
 
   public static void deleteFile(File file) {

@@ -12,20 +12,23 @@ import de.timesnake.basic.proxy.core.server.ServerCmd;
 import de.timesnake.basic.proxy.core.support.SupportManager;
 import de.timesnake.basic.proxy.util.chat.CommandManager;
 import de.timesnake.basic.proxy.util.server.Server;
+import de.timesnake.basic.proxy.util.server.ServerManager;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.proxy.main.ProxyChannel;
 import de.timesnake.database.util.server.DbServer;
-import de.timesnake.library.basic.util.ServerType;
-import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.chat.TimeDownParser;
-import de.timesnake.library.network.*;
+import de.timesnake.library.network.NetworkUtils;
+import de.timesnake.library.network.NetworkVariables;
 import net.kyori.adventure.text.Component;
 
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class Network implements de.timesnake.library.basic.util.server.Server {
@@ -94,49 +97,8 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     return network.getUsers();
   }
 
-  public static Collection<Server> getServers() {
-    return network.getServers();
-  }
-
-  public static Collection<String> getNotOfflineServerNames() {
-    return network.getNotOfflineServerNames();
-  }
-
-  public static Server getServer(Integer port) {
-    return network.getServer(port);
-  }
-
-  public static Server getServer(String name) {
-    return network.getServer(name);
-  }
-
-  public static Server getServer(DbServer server) {
-    return network.getServer(server);
-  }
-
-  public static void updateServerTaskAll() {
-    network.updateServerTaskAll();
-  }
-
-  public static void updateServerTask(int port) {
-    network.getServer(port);
-  }
-
-  public static Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server) {
-    return network.createTmpServer(server);
-  }
-
-  public static Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server,
-                                                                              boolean registerServer) {
-    return network.createTmpServer(server, registerServer);
-  }
-
   public static void sendUserToServer(User user, String server) {
     network.sendUserToServer(user, server);
-  }
-
-  public static void sendUserToServer(User user, Integer port) {
-    network.sendUserToServer(user, port);
   }
 
   public static void removeUser(Player p) {
@@ -149,6 +111,18 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
 
   public static User addUser(Player p, PreUser user) {
     return network.addUser(p, user);
+  }
+
+  public static Collection<Server> getServers() {
+    return network.getServers();
+  }
+
+  public static Server getServer(String name) {
+    return network.getServer(name);
+  }
+
+  public static Server getServer(DbServer server) {
+    return network.getServer(server);
   }
 
   public static boolean isWork() {
@@ -239,14 +213,6 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     return network.runTaskAsync(task);
   }
 
-  public static int getOnlineLobbys() {
-    return network.getOnlineLobbys();
-  }
-
-  public static int nextEmptyPort() {
-    return network.nextEmptyPort();
-  }
-
   public static String getVelocitySecret() {
     return network.getVelocitySecret();
   }
@@ -279,22 +245,6 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
     return network.getNetworkUtils();
   }
 
-  public static ServerInitResult createPublicPlayerServer(ServerType type, String task, String name) {
-    return network.createPublicPlayerServer(type, task, name);
-  }
-
-  public static ServerInitResult createPlayerServer(UUID uuid, ServerType type, String task, String name) {
-    return network.createPlayerServer(uuid, type, task, name);
-  }
-
-  public static Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid, NetworkServer server) {
-    return network.loadPlayerServer(uuid, server);
-  }
-
-  public static Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(NetworkServer server) {
-    return network.loadPublicPlayerServer(server);
-  }
-
   public static CompletableFuture<Boolean> killAndDeleteServer(String serverName, Long pid) {
     return network.killAndDeleteServer(serverName, pid);
   }
@@ -312,4 +262,8 @@ public class Network implements de.timesnake.library.basic.util.server.Server {
   }
 
   private static final NetworkManager network = NetworkManager.getInstance();
+
+  public static ServerManager getServerManager() {
+    return network.getServerManager();
+  }
 }

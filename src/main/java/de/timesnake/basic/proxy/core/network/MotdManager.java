@@ -40,7 +40,7 @@ public class MotdManager {
               "                                         §cService-Work"))
           .build());
     } else {
-      if (Network.getOnlineLobbys() > 0) {
+      if (Network.getServerManager().getOnlineLobbys() > 0) {
         e.setPing(e.getPing().asBuilder()
             .version(new ServerPing.Version(e.getPing().getVersion().getProtocol(),
                 ChatColor.BLUE + VERSION))

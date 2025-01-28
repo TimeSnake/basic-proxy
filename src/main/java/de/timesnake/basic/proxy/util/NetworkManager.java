@@ -19,6 +19,7 @@ import de.timesnake.basic.proxy.core.user.UserManager;
 import de.timesnake.basic.proxy.util.chat.CommandManager;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.server.ServerManager;
+import de.timesnake.basic.proxy.util.server.ServerSetupResult;
 import de.timesnake.basic.proxy.util.user.PreUser;
 import de.timesnake.basic.proxy.util.user.User;
 import de.timesnake.channel.core.Channel;
@@ -26,13 +27,12 @@ import de.timesnake.channel.proxy.main.ProxyChannel;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.ServerType;
-import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.chat.TimeDownParser;
-import de.timesnake.library.network.*;
-import de.timesnake.library.network.NetworkServer.CopyType;
+import de.timesnake.library.network.NetworkUtils;
+import de.timesnake.library.network.NetworkVariables;
 import net.kyori.adventure.text.Component;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -132,8 +132,8 @@ public class NetworkManager {
 
     this.punishmentManager = new PunishmentManager();
 
-    maxPlayersLobby = config.getMaxPlayersLobby();
-    maxPlayersBuild = config.getMaxPlayersBuild();
+    this.maxPlayersLobby = config.getMaxPlayersLobby();
+    this.maxPlayersBuild = config.getMaxPlayersBuild();
 
     this.serverManager = new ServerManager();
 
@@ -150,16 +150,13 @@ public class NetworkManager {
 
     this.networkUtils = new NetworkUtils(this.networkPath);
 
-    Tuple<ServerCreationResult, Optional<Server>> res = this.createTmpServer(
-        new NetworkServer("lobby0", 25001, ServerType.LOBBY)
-            .setMaxPlayers(50)
-            .options(o -> o.setWorldCopyType(CopyType.SYNC)),
+    ServerSetupResult res = this.serverManager.createTmpServer(ServerType.LOBBY, s -> s.setMaxPlayers(50), 25001,
         false);
 
-    if (res.getA().isSuccessful()) {
+    if (res.isSuccessful()) {
       this.logger.info("Created lobby server");
     } else {
-      this.logger.warn("Failed to start lobby server: {}", ((ServerCreationResult.Fail) res.getA()).getReason());
+      this.logger.warn("Failed to create lobby server: {}", ((ServerSetupResult.Fail) res).getReason());
     }
   }
 
@@ -220,10 +217,6 @@ public class NetworkManager {
 
   public void sendUserToServer(User user, String server) {
     user.connect(BasicProxy.getServer().getServer(server).get());
-  }
-
-  public void sendUserToServer(User user, Integer port) {
-    user.connect(BasicProxy.getServer().getServer(this.getServer(port).getName()).get());
   }
 
   public void removeUser(Player p) {
@@ -358,22 +351,8 @@ public class NetworkManager {
     return supportManager;
   }
 
-  // server manager
-
-  public int getOnlineLobbys() {
-    return getServerManager().getOnlineLobbys();
-  }
-
   public Collection<Server> getServers() {
     return getServerManager().getServers();
-  }
-
-  public Collection<String> getNotOfflineServerNames() {
-    return getServerManager().getNotOfflineServerNames();
-  }
-
-  public Server getServer(Integer port) {
-    return getServerManager().getServer(port);
   }
 
   public Server getServer(String name) {
@@ -384,58 +363,12 @@ public class NetworkManager {
     return getServerManager().getServer(server);
   }
 
-  public void updateServerTaskAll() {
-    getServerManager().updateServerTaskAll();
-  }
-
-  public void updateServerTask(int port) {
-    getServerManager().updateServerTask(port);
-  }
-
-  public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server, boolean registerServer) {
-    return getServerManager().createTmpServer(server, registerServer);
-  }
-
-  public Tuple<ServerCreationResult, Optional<Server>> createTmpServer(NetworkServer server) {
-    return this.createTmpServer(server, true);
-  }
-
-  public ServerInitResult createPublicPlayerServer(ServerType type, String task, String name) {
-    return getServerManager().initNewPublicPlayerServer(type, task, name);
-  }
-
-  public ServerInitResult createPlayerServer(UUID uuid, ServerType type, String task, String name) {
-    return getServerManager().initNewPlayerServer(uuid, type, task, name);
-  }
-
-  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerServer(UUID uuid, NetworkServer server) {
-    return getServerManager().loadPlayerServer(uuid, server);
-  }
-
-  public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerServer(
-      NetworkServer server) {
-    return getServerManager().loadPublicPlayerServer(server);
-  }
-
-  public Tuple<ServerCreationResult, Optional<Server>> loadPlayerGameServer(UUID uuid, NetworkServer server) {
-    return getServerManager().loadPlayerGameServer(uuid, server);
-  }
-
-  public Tuple<ServerCreationResult, Optional<Server>> loadPublicPlayerGameServer(
-      NetworkServer server) {
-    return getServerManager().loadPublicPlayerGameServer(server);
-  }
-
   public boolean deleteServer(String name, boolean force) {
     return getServerManager().deleteServer(name, force);
   }
 
   public CompletableFuture<Boolean> killAndDeleteServer(String name, Long pid) {
     return getServerManager().killAndDeleteServer(name, pid);
-  }
-
-  public int nextEmptyPort() {
-    return getServerManager().nextEmptyPort();
   }
 
   public Map<String, Path> getTmpDirsByServerName() {

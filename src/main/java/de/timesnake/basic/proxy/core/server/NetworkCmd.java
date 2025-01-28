@@ -63,7 +63,8 @@ public class NetworkCmd implements CommandListener {
       return;
     }
 
-    ServerInitResult result = Network.createPublicPlayerServer(ServerType.GAME, ((DbNonTmpGame) game).getName(),
+    ServerInitResult result = Network.getServerManager().initNewPublicPlayerServer(ServerType.GAME,
+        ((DbNonTmpGame) game).getName(),
         serverName);
 
     if (!result.isSuccessful()) {
@@ -109,7 +110,7 @@ public class NetworkCmd implements CommandListener {
       return;
     }
 
-    ServerInitResult result = Network.createPlayerServer(user.getUniqueId(), ServerType.GAME,
+    ServerInitResult result = Network.getServerManager().initNewPlayerServer(user.getUniqueId(), ServerType.GAME,
         ((DbNonTmpGame) game).getName(), user.getUniqueId().hashCode() + serverName);
 
     if (!result.isSuccessful()) {

@@ -11,19 +11,16 @@ import de.timesnake.basic.proxy.util.chat.Completion;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.BuildServer;
 import de.timesnake.basic.proxy.util.server.Server;
+import de.timesnake.basic.proxy.util.server.ServerSetupResult;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.network.NetworkServer;
-import de.timesnake.library.network.ServerCreationResult;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public class MapBuildCmd implements CommandListener {
 
@@ -64,23 +61,20 @@ public class MapBuildCmd implements CommandListener {
 
     if (!worldLoaded) {
       if (buildServer == null) {
-        int port = Network.nextEmptyPort();
-        Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(
-            new NetworkServer("build" + (port % 1000), port, ServerType.BUILD)
-                .configProperty("world-settings.default.entity-tracking-range.players", "128"));
+        ServerSetupResult result = Network.getServerManager().createTmpServer(ServerType.BUILD,
+            s -> s.configProperty("world-settings.default.entity-tracking-range.players", "128"));
 
-        if (!result.getA().isSuccessful()) {
+        if (!result.isSuccessful()) {
           sender.sendPluginTDMessage("§wError while creating a build server! Please contact an administrator ("
-                                     + ((ServerCreationResult.Fail) result.getA()).getReason() + ")");
+                                     + ((ServerSetupResult.Fail) result).getReason() + ")");
           return;
         }
 
-        buildServer = ((BuildServer) result.getB().get());
-
+        buildServer = (BuildServer) ((ServerSetupResult.Success) result).getServer();
       }
 
       if (buildServer.getStatus() == Status.Server.OFFLINE) {
-        Network.getBukkitCmdHandler().handleServerCmd(sender, buildServer);
+        Network.getBukkitCmdHandler().startServer(sender, buildServer);
       }
 
       boolean worldResult = buildServer.loadWorld(worldName);

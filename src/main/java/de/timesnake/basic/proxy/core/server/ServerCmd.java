@@ -8,13 +8,9 @@ import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.*;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.Code;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-
-import static de.timesnake.library.chat.ExTextColor.*;
-import static net.kyori.adventure.text.Component.text;
 
 public class ServerCmd implements CommandListener {
 
@@ -43,13 +39,9 @@ public class ServerCmd implements CommandListener {
         }
       } else if (args.get(1).equalsIgnoreCase("stop")) {
         this.stopAllServers();
-        sender.sendPluginMessage(text("All servers stopped", PERSONAL));
+        sender.sendPluginTDMessage("§sAll servers stopped");
       } else {
-        sender.sendPluginMessage(text("Only commands ", WARNING)
-            .append(text("start ", VALUE))
-            .append(text("and ", WARNING))
-            .append(text("stop ", VALUE))
-            .append(text(" are allowed on the all servers command", WARNING)));
+        sender.sendPluginTDMessage("§wOnly commands §vstart §wand §vstop §w are allowed");
       }
 
     } else if (args.get(0).isServerName(true)) {
@@ -67,27 +59,20 @@ public class ServerCmd implements CommandListener {
       Server server = args.get(0).toServer();
       String bukkitCmd = args.toMessage(1);
       server.execute(bukkitCmd);
-      sender.sendPluginMessage(text("Executed command on server ", PERSONAL)
-          .append(text(server.getName(), VALUE))
-          .append(text(": ", PERSONAL))
-          .append(text(bukkitCmd, VALUE)));
+      sender.sendPluginTDMessage("§sExecuted command on server §v" + server.getName() + "§s: §v" + bukkitCmd);
     }
   }
 
   public void startServer(Sender sender, Arguments<Argument> args) {
     if (Network.getServer(args.get(1).toLowerCase()) == null) {
-      sender.sendPluginMessage(text("Server ", WARNING)
-          .append(text(args.get(1).toLowerCase(), VALUE))
-          .append(text(" doesn't exist!", WARNING)));
+      sender.sendPluginTDMessage("§wServer §v" + args.get(1).toLowerCase() + "§w doesn't exist!");
       return;
     }
 
     Server server = Network.getServer(args.get(1).toLowerCase());
 
     if (server.getStatus().equals(Status.Server.OFFLINE)) {
-      sender.sendPluginMessage(text("Server ", WARNING)
-          .append(text(args.get(1).toLowerCase(), VALUE))
-          .append(text(" is already online!", WARNING)));
+      sender.sendPluginTDMessage("§wServer §v" + args.get(1).toLowerCase() + "§w is already online!");
       return;
     }
 
@@ -95,54 +80,18 @@ public class ServerCmd implements CommandListener {
       server.setMaxPlayers(args.get(3).toInt());
     }
 
-    this.handleServerCmd(sender, server);
+    this.startServer(sender, server);
   }
 
-  public void handleServiceCommand(Sender sender, Arguments<Argument> args) {
-    if (args.isLengthEquals(1, true)) {
-      Server server = Network.getServer(args.get(0).getString());
-      handleService(sender, args, server);
-    } else {
-      if (sender.isConsole(false)) {
-        sender.sendMessageTooFewArguments();
-        return;
-      }
-
-      Server server = sender.getUser().getServer();
-      handleService(sender, args, server);
-    }
-  }
-
-  private void handleService(Sender sender, Arguments<Argument> args, Server server) {
-    if (server == null) {
-      sender.sendMessageServerNameNotExist(args.get(0).getString());
-      return;
-    }
-
-    if (server.getStatus().equals(Status.Server.SERVICE)) {
-      sender.sendPluginMessage(text("Changed status of server ", PERSONAL)
-          .append(text(server.getName(), VALUE))
-          .append(text(" to service", PERSONAL)));
-    } else {
-      sender.sendPluginMessage(text("Changed status of server ", PERSONAL)
-          .append(text(server.getName(), VALUE))
-          .append(text(" to online", PERSONAL)));
-    }
-  }
-
-  public void handleServerCmd(Sender sender, Server server) {
+  public void startServer(Sender sender, Server server) {
     Network.runTaskAsync(() -> {
       boolean isStart = server.start();
       if (!isStart) {
-        sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK)
-            .append(text("Error while starting server ", WARNING))
-            .append(text(server.getName(), VALUE)));
+        sender.sendPluginTDMessage("§wError while starting server §v" + server.getName());
         return;
       }
 
-      sender.sendMessage(Chat.getSenderPlugin(Plugin.NETWORK)
-          .append(text("Started server ", PERSONAL))
-          .append(text(server.getName(), VALUE)));
+      sender.sendPluginTDMessage("§sStarted server §v" + server.getName());
     });
   }
 

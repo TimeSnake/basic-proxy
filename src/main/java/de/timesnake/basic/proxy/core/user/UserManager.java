@@ -158,7 +158,7 @@ public class UserManager {
       }
     }
 
-    if (Network.getOnlineLobbys() == 0) {
+    if (Network.getServerManager().getOnlineLobbys() == 0) {
       e.setResult(ResultedEvent.ComponentResult.denied(
           Component.text("§6Server is starting, please wait.")));
       return;
@@ -216,8 +216,7 @@ public class UserManager {
     ServerInfo serverInfo = server.getServerInfo();
     user.setServer(serverInfo.getName());
 
-    Server s = Network.getServer(
-        serverInfo.getAddress().getPort());
+    Server s = Network.getServer(serverInfo.getName());
 
     if (s.getType().equals(ServerType.LOBBY)) {
       user.setLobby(serverInfo.getName());
@@ -335,7 +334,7 @@ public class UserManager {
         Component.text("You accepted the Network-Rules", ExTextColor.WARNING),
         Component.text("For more infos use ", ExTextColor.PERSONAL)
             .append(Component.text("/rules", ExTextColor.VALUE)),
-        Title.Times.of(Duration.ZERO, Duration.ofSeconds(10), Duration.ofMillis(500)));
+        Title.Times.times(Duration.ZERO, Duration.ofSeconds(10), Duration.ofMillis(500)));
     p.showTitle(title);
   }
 

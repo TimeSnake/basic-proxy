@@ -27,7 +27,7 @@ public class ChannelPingPong implements ChannelTimeOutListener {
     }
     task = BasicProxy.getServer().getScheduler().buildTask(BasicProxy.getPlugin(), () -> {
       ProxyChannel.getInstance().checkServerPong();
-      ProxyChannel.getInstance().ping(Network.getNotOfflineServerNames());
+      ProxyChannel.getInstance().ping(Network.getServerManager().getNotOfflineServerNames());
     }).repeat(10, TimeUnit.SECONDS).schedule();
   }
 

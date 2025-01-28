@@ -9,6 +9,8 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import de.timesnake.basic.proxy.core.main.BasicProxy;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.user.User;
+import de.timesnake.channel.util.message.ChannelServerMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.server.DbServer;
 import de.timesnake.library.basic.util.ServerType;
@@ -19,15 +21,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
-public abstract class Server extends BukkitServer {
+public abstract class Server {
 
   protected final Logger logger = LogManager.getLogger("network.server");
 
-  protected DbServer database;
+  protected final String name;
   protected int port;
+  protected final Path folderPath;
+
+  protected DbServer database;
   protected ServerType type;
   protected Status.Server status;
   protected Integer maxPlayers;
@@ -38,7 +47,8 @@ public abstract class Server extends BukkitServer {
   protected ScheduledTask startTimeoutTask;
 
   protected Server(DbServer database, Path folderPath, NetworkServer networkServer) {
-    super(database.getName(), folderPath);
+    this.name = database.getName();
+    this.folderPath = folderPath;
     this.database = database;
     this.port = database.getPort();
     this.type = Database.getServers().getServerType(this.port);
@@ -47,16 +57,36 @@ public abstract class Server extends BukkitServer {
     this.networkServer = networkServer;
   }
 
+  private String getStartScriptCommand() {
+    return this.folderPath.toAbsolutePath() + "/start.sh -t " + this.getServerTask() +
+           (Network.isServerDebuggingEnabled() ? " --debugging " +
+                                                 (Network.DEBUGGING_PORT_OFFSET + this.getPort()) : "");
+  }
+
+  public void stop() {
+    this.execute("stop");
+  }
+
+  public void execute(String cmd) {
+    Network.getChannel().sendMessage(new ChannelServerMessage<>(this.getName(), MessageType.Server.COMMAND, cmd));
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public Path getFolderPath() {
+    return this.folderPath;
+  }
+
   public DbServer getDatabase() {
     return this.database;
   }
 
-  @Override
   public Integer getPort() {
     return port;
   }
 
-  @Override
   public String getServerTask() {
     return this.type.getShortName();
   }
@@ -112,11 +142,33 @@ public abstract class Server extends BukkitServer {
     return this.database.getOnlinePlayers();
   }
 
-  @Override
   public boolean start() {
     this.setStatus(Status.Server.LAUNCHING, true);
 
-    return super.start();
+    List<String> command = new ArrayList<>();
+
+    if (Network.isTmuxEnabled()) {
+      command.add("/bin/sh");
+      command.add("-c");
+      command.add("tmux new-window -n " + this.name + " -t " + Network.TMUX_SESSION_NAME + ": " + this.getStartScriptCommand());
+    } else {
+      command.add("konsole");
+      command.add("--separate");
+      command.add("--workdir " + this.folderPath.toAbsolutePath());
+      command.add(" -e " + this.getStartScriptCommand());
+    }
+
+    try {
+      Process process = new ProcessBuilder().command(command).redirectErrorStream(true).start();
+      Scanner sc = new Scanner(process.getErrorStream());
+      while (sc.hasNextLine()) {
+        this.logger.warn(sc.nextLine());
+      }
+      return true;
+    } catch (IOException e) {
+      this.logger.warn("Failed to start server {}: {}", this.name, e.getMessage());
+      return false;
+    }
   }
 
   public void updateStatus() {

@@ -599,8 +599,7 @@ public class User implements ChannelListener {
   }
 
   @ChannelHandler(type = {ListenerType.USER_SERVICE, ListenerType.USER_PERMISSION,
-      ListenerType.USER_SWITCH_NAME,
-      ListenerType.USER_SWITCH_PORT, ListenerType.USER_PROXY_COMMAND}, filtered = true)
+      ListenerType.USER_SWITCH_NAME, ListenerType.USER_PROXY_COMMAND}, filtered = true)
   public void onUserMessage(ChannelUserMessage<?> msg) {
     MessageType<?> type = msg.getMessageType();
     if (type.equals(MessageType.User.SERVICE)) {
@@ -609,8 +608,6 @@ public class User implements ChannelListener {
       this.updatePermissions(false);
     } else if (type.equals(MessageType.User.SWITCH_NAME)) {
       Network.sendUserToServer(this, (String) msg.getValue());
-    } else if (type.equals(MessageType.User.SWITCH_PORT)) {
-      Network.sendUserToServer(this, (Integer) msg.getValue());
     } else if (type.equals(MessageType.User.PROXY_COMMAND)) {
       BasicProxy.getServer().getCommandManager()
           .executeAsync(this.getPlayer(), ((String) msg.getValue()));

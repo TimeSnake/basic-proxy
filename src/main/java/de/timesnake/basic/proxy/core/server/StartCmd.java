@@ -25,15 +25,12 @@ import de.timesnake.library.chat.Code;
 import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.simple.Arguments;
-import de.timesnake.library.network.NetworkServer;
 import de.timesnake.library.network.NetworkServer.CopyType;
-import de.timesnake.library.network.ServerCreationResult;
-import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static de.timesnake.library.chat.ExTextColor.*;
 import static net.kyori.adventure.text.Component.text;
@@ -102,7 +99,14 @@ public class StartCmd implements CommandListener {
     }
     if (maxPlayers != null) {
       server.setMaxPlayers(maxPlayers);
-      Network.getBukkitCmdHandler().handleServerCmd(sender, server);
+      Network.runTaskAsync(() -> {
+        boolean isStart = server.start();
+        if (!isStart) {
+          sender.sendPluginTDMessage("§wError while starting server §v" + server.getName());
+          return;
+        }
+        sender.sendPluginTDMessage("§sStarted server §v" + server.getName());
+      });
     } else {
       sender.sendPluginTDMessage("§wNo default max-players value found");
     }
@@ -144,37 +148,38 @@ public class StartCmd implements CommandListener {
       return;
     }
 
-    int port = Network.nextEmptyPort();
-    NetworkServer networkServer = new NetworkServer(user.getUniqueId().hashCode() + "_" + serverName, port,
-        ServerType.GAME)
-        .setFolderName(serverName)
-        .setTask(((DbNonTmpGame) game).getName())
-        .setMaxPlayers(20)
-        .applyServerOptions(game.getServerOptions());
+    DbGame finalGame = game;
 
-    sender.sendPluginTDMessage("§sLoading server §v" + serverName);
-    Tuple<ServerCreationResult, Optional<Server>> result = Network.loadPlayerServer(user.getUniqueId(), networkServer);
+    Network.runTaskAsync(() -> {
+      sender.sendPluginTDMessage("§sLoading server §v" + serverName);
+      ServerSetupResult result = Network.getServerManager().loadPlayerServer(((DbNonTmpGame) finalGame).getName(),
+          user.getUniqueId(), serverName, s -> s.applyServerOptions(finalGame.getServerOptions()));
 
-    if (!result.getA().isSuccessful()) {
-      sender.sendPluginTDMessage("§wError while loading server (" +
-                                 ((ServerCreationResult.Fail) result.getA()).getReason() + ")");
-      return;
-    }
+      if (!result.isSuccessful()) {
+        sender.sendPluginTDMessage("§wError while loading server (" +
+                                   ((ServerSetupResult.Fail) result).getReason() + ")");
+        return;
+      }
 
-    sender.sendPluginTDMessage("§sLoaded server §v" + serverName + "§s, you will be moved in a few moments");
+      sender.sendPluginTDMessage("§sLoaded server §v" + serverName + "§s, you will be moved in a few moments");
 
-    NonTmpGameServer server = (NonTmpGameServer) result.getB().get();
-    server.setMaxPlayers(((DbNonTmpGame) game).getMaxPlayers());
-    server.setOwnerUuid(user.getUniqueId());
+      NonTmpGameServer server = (NonTmpGameServer) ((ServerSetupResult.Success) result).getServer();
+      server.setMaxPlayers(((DbNonTmpGame) finalGame).getMaxPlayers());
+      server.setOwnerUuid(user.getUniqueId());
 
-    Network.getBukkitCmdHandler().handleServerCmd(sender, server);
-    server.addWaitingUser(user);
+      boolean isStart = server.start();
+      if (!isStart) {
+        sender.sendPluginTDMessage("§wError while starting server §v" + server.getName());
+        return;
+      }
+      sender.sendPluginTDMessage("§sStarted server §v" + server.getName());
+      server.addWaitingUser(user);
+    });
   }
 
   private void handleStartPublicGameServer(Sender sender, Arguments<Argument> args) {
     String gameType = args.get(1).toLowerCase();
 
-    // check game
     DbGame game = Database.getGames().getGame(gameType);
     if (game == null || !game.exists()) {
       sender.sendMessageGameNotExist(gameType);
@@ -184,7 +189,7 @@ public class StartCmd implements CommandListener {
     game = game.toLocal();
 
     if (!(game instanceof DbNonTmpGame)) {
-      sender.sendPluginMessage(Component.text("Unsupported game type", WARNING));
+      sender.sendPluginTDMessage("§wUnsupported game type");
       return;
     }
 
@@ -200,31 +205,34 @@ public class StartCmd implements CommandListener {
       return;
     }
 
-    int port = Network.nextEmptyPort();
-    NetworkServer networkServer = new NetworkServer(serverName, port, ServerType.GAME)
-        .setTask(((DbNonTmpGame) game).getName())
-        .setMaxPlayers(20)
-        .applyServerOptions(game.getServerOptions());
+    DbGame finalGame = game;
 
-    sender.sendPluginTDMessage("§sLoading server §v" + serverName);
-    Tuple<ServerCreationResult, Optional<Server>> result = Network.loadPublicPlayerServer(networkServer);
+    Network.runTaskAsync(() -> {
+      sender.sendPluginTDMessage("§sLoading server §v" + serverName);
+      ServerSetupResult result = Network.getServerManager().loadPublicPlayerServer(((DbNonTmpGame) finalGame).getName(),
+          serverName, s -> s.applyServerOptions(finalGame.getServerOptions()));
 
-    if (!result.getA().isSuccessful()) {
-      sender.sendPluginTDMessage("§wError while loading server (" +
-                                 ((ServerCreationResult.Fail) result.getA()).getReason() + ")");
-      return;
-    }
+      if (!result.isSuccessful()) {
+        sender.sendPluginTDMessage("§wError while loading server (" +
+                                   ((ServerSetupResult.Fail) result).getReason() + ")");
+        return;
+      }
 
-    sender.sendPluginTDMessage("§sLoaded server §v" + serverName + "§s, you will be moved in a few moments");
+      sender.sendPluginTDMessage("§sLoaded server §v" + serverName + "§s, you will be moved in a few moments");
 
-    NonTmpGameServer server = (NonTmpGameServer) result.getB().get();
-    server.setMaxPlayers(((DbNonTmpGame) game).getMaxPlayers());
+      NonTmpGameServer server = (NonTmpGameServer) ((ServerSetupResult.Success) result).getServer();
+      server.setMaxPlayers(((DbNonTmpGame) finalGame).getMaxPlayers());
 
-    Network.getBukkitCmdHandler().handleServerCmd(sender, server);
-
-    if (sender.isPlayer(false)) {
-      server.addWaitingUser(sender.getUser());
-    }
+      boolean isStart = server.start();
+      if (!isStart) {
+        sender.sendPluginTDMessage("§wError while starting server §v" + server.getName());
+        return;
+      }
+      sender.sendPluginTDMessage("§sStarted server §v" + server.getName());
+      if (sender.isPlayer(false)) {
+        server.addWaitingUser(sender.getUser());
+      }
+    });
   }
 
   private void handleStartGame(Sender sender, Arguments<Argument> args) {
@@ -253,7 +261,7 @@ public class StartCmd implements CommandListener {
     }
 
     String gameName = game.getName();
-    Integer gameMaxPlayers = game.getMaxPlayers();
+    Integer maxPlayers = game.getMaxPlayers();
 
     Availability gameMapAvailability = game.getMapAvailability();
 
@@ -266,34 +274,47 @@ public class StartCmd implements CommandListener {
 
     boolean oldPvP = args.getArgumentByString("oldpvp") != null || args.getArgumentByString("1.8pvp") != null;
 
-    sender.sendPluginTDMessage("§sCreating server...");
-
     Network.runTaskAsync(() -> {
-      int port = Network.nextEmptyPort();
-      NetworkServer networkServer = new NetworkServer((port % 1000) + gameName + Network.TMP_SERVER_SUFFIX, port,
-          ServerType.GAME)
-          .setTask(gameName)
-          .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE))
-          .applyServerOptions(game.getServerOptions());
+      sender.sendPluginTDMessage("§sCreating server...");
 
-      Tuple<ServerCreationResult, Optional<Server>> result = Network.createTmpServer(networkServer);
-      if (!result.getA().isSuccessful()) {
-        sender.sendPluginTDMessage("§wError while creating a game server! Please contact an administrator ("
-                                   + ((ServerCreationResult.Fail) result.getA()).getReason() + ")");
+      ServerSetupResult result = Network.getServerManager().createTmpServer(ServerType.GAME, s -> s.setTask(gameName)
+          .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE))
+          .applyServerOptions(game.getServerOptions()));
+
+      if (!result.isSuccessful()) {
+        sender.sendPluginTDMessage("§wError while creating a" + " game server! " +
+                                   "Please contact an administrator ("
+                                   + ((ServerSetupResult.Fail) result).getReason() + ")");
         return;
       }
 
-      NonTmpGameServer server = (NonTmpGameServer) result.getB().get();
+      NonTmpGameServer server = (NonTmpGameServer) ((ServerSetupResult.Success) result).getServer();
 
       server.setTaskSynchronized(gameName);
-      server.setMaxPlayers(gameMaxPlayers);
+      server.setMaxPlayers(maxPlayers);
 
-      sender.sendPluginTDMessage("§sStarted game §v" + gameName);
-      sender.sendPluginTDMessage("§sGame server: §v" + server.getName());
-      sender.sendPluginTDMessage("§sMax players: §v" + gameMaxPlayers);
-      sender.sendPluginTDMessage("$sOld PvP: §v" + oldPvP);
+      if (sender.isPlayer(false)) {
+        sender.sendPluginMessage(Network.getTimeDownParser().parse2Component("§sStarted game §v" + gameName)
+            .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT,
+                Network.getTimeDownParser().parse2Component(
+                    "§sStarted game §v" + gameName + "\n" +
+                    "§sGame server: §v" + server.getName() + "\n" +
+                    "§sMax players: §v" + maxPlayers + "\n" +
+                    "§sOld PvP: §v" + oldPvP + "\n"
+                ))));
+      } else {
+        sender.sendPluginTDMessage("§sStarted game §v" + gameName);
+        sender.sendPluginTDMessage("§sGame server: §v" + server.getName());
+        sender.sendPluginTDMessage("§sMax players: §v" + maxPlayers);
+        sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
+      }
 
-      Network.getBukkitCmdHandler().handleServerCmd(sender, server);
+      boolean isStart = server.start();
+      if (!isStart) {
+        sender.sendPluginTDMessage("§wError while starting server §v" + server.getName());
+        return;
+      }
+      sender.sendPluginTDMessage("§sStarted server §v" + server.getName());
     });
   }
 
@@ -421,45 +442,35 @@ public class StartCmd implements CommandListener {
     Integer finalPlayersPerTeam = playersPerTeam;
 
     Network.runTaskAsync(() -> {
-      sender.sendPluginMessage(text("Creating server...", PERSONAL));
-      int loungePort = Network.nextEmptyPort();
-      NetworkServer loungeNetworkServer = new NetworkServer((loungePort % 1000) +
-          ServerType.LOUNGE.getShortName() + Network.TMP_SERVER_SUFFIX, loungePort,
-          ServerType.LOUNGE)
-          .options(o -> o.setWorldCopyType(CopyType.COPY));
+      sender.sendPluginTDMessage("§sCreating server...");
 
-      Tuple<ServerCreationResult, Optional<Server>> loungeResult =
-          Network.createTmpServer(loungeNetworkServer);
+      Tuple<ServerSetupResult, ServerSetupResult> servers = Network.getServerManager()
+          .createTmpTwinServers(ServerType.LOUNGE, s -> {
+              },
+              ServerType.TEMP_GAME, s -> s.setTask(gameName)
+                  .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE))
+                  .applyServerOptions(game.getServerOptions()));
 
-      if (!loungeResult.getA().isSuccessful()) {
-        sender.sendPluginMessage(text("Error while creating a" + " lounge server! " +
-                "Please contact an administrator ("
-                + ((ServerCreationResult.Fail) loungeResult.getA()).getReason() + ")",
-            WARNING));
+      ServerSetupResult loungeServerResult = servers.getA();
+      ServerSetupResult gameServerResult = servers.getB();
+
+      if (!loungeServerResult.isSuccessful()) {
+        sender.sendPluginTDMessage("§wError while creating a lounge server! " +
+                                   "Please contact an administrator " +
+                                   "(" + ((ServerSetupResult.Fail) loungeServerResult).getReason() + ")");
         return;
       }
 
-      int tempGamePort = Network.nextEmptyPort();
-
-      NetworkServer gameNetworkServer = new NetworkServer(
-          (tempGamePort % 1000) + gameName + Network.TMP_SERVER_SUFFIX,
-          tempGamePort, ServerType.TEMP_GAME).setTask(
-              gameName)
-          .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE))
-          .applyServerOptions(game.getServerOptions());
-
-      Tuple<ServerCreationResult, Optional<Server>> tempServerResult = Network.createTmpServer(
-          gameNetworkServer);
-      if (!tempServerResult.getA().isSuccessful()) {
-        sender.sendPluginMessage(text("Error while creating a" + " " + gameName
-                + " server! Please contact an administrator (" +
-                ((ServerCreationResult.Fail) tempServerResult.getA()).getReason() + ")",
-            WARNING));
+      if (!gameServerResult.isSuccessful()) {
+        sender.sendPluginTDMessage("§wError while creating a " + gameName
+                                   + " server! Please contact an administrator (" +
+                                   ((ServerSetupResult.Fail) gameServerResult).getReason()
+                                   + ")");
         return;
       }
 
-      LoungeServer loungeServer = (LoungeServer) loungeResult.getB().get();
-      TmpGameServer tmpGameServer = ((TmpGameServer) tempServerResult.getB().get());
+      LoungeServer loungeServer = (LoungeServer) ((ServerSetupResult.Success) loungeServerResult).getServer();
+      TmpGameServer tmpGameServer = (TmpGameServer) ((ServerSetupResult.Success) gameServerResult).getServer();
 
       loungeServer.setTaskSynchronized(gameName);
       loungeServer.setMaxPlayers(finalMaxServerPlayers);
@@ -467,7 +478,7 @@ public class StartCmd implements CommandListener {
       tmpGameServer.setTaskSynchronized(gameName);
       tmpGameServer.setMapsEnabled(mapsEnabled);
       tmpGameServer.setKitsEnabled(kitsEnabled);
-      tmpGameServer.setMaxPlayers(finalMaxServerPlayers);
+      tmpGameServer.setMaxPlayers(finalPlayersPerTeam);
       tmpGameServer.setTeamAmount(finalTeamAmount);
       tmpGameServer.setMapsEnabled(mapsEnabled);
       tmpGameServer.setTeamMerging(teamMerging);
@@ -475,19 +486,40 @@ public class StartCmd implements CommandListener {
       tmpGameServer.setPvP(oldPvP);
       tmpGameServer.setTwinServer((DbLoungeServer) loungeServer.getDatabase());
 
-      sender.sendPluginTDMessage("§sStarted game §v" + gameName);
-      sender.sendPluginTDMessage("§sGame server: §v" + tmpGameServer.getName());
-      sender.sendPluginTDMessage("§sLounge server: §v" + loungeServer.getName());
-      sender.sendPluginTDMessage("§sMax players: §v" + finalMaxServerPlayers);
-      sender.sendPluginTDMessage("§sMaps: §v" + mapsEnabled);
-      sender.sendPluginTDMessage("§sKits: §v" + kitsEnabled);
-      sender.sendPluginTDMessage("§sTeam amount: §v" + finalTeamAmount);
-      sender.sendPluginTDMessage("§sTeam merging: §v" + teamMerging);
-      sender.sendPluginTDMessage("§sTeam size: §v" + finalPlayersPerTeam);
-      sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
+      if (sender.isPlayer(false)) {
+        sender.sendPluginMessage(Network.getTimeDownParser().parse2Component("§sStarted game §v" + gameName)
+            .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT,
+                Network.getTimeDownParser().parse2Component(
+                    "§sGame server: §v" + tmpGameServer.getName() + "\n" +
+                    "§sLounge server: §v" + loungeServer.getName() + "\n" +
+                    "§sMax players: §v" + finalMaxServerPlayers + "\n" +
+                    "§sMaps: §v" + mapsEnabled + "\n" +
+                    "§sKits: §v" + kitsEnabled + "\n" +
+                    "§sTeam amount: §v" + finalTeamAmount + "\n" +
+                    "§sTeam merging: §v" + teamMerging + "\n" +
+                    "§sPlayer per Team: §v" + finalPlayersPerTeam + "\n" +
+                    "§sOld PvP: §v" + oldPvP
+                ))));
+      } else {
+        sender.sendPluginTDMessage("§sStarted game §v" + gameName);
+        sender.sendPluginTDMessage("§sGame server: §v" + tmpGameServer.getName());
+        sender.sendPluginTDMessage("§sLounge server: §v" + loungeServer.getName());
+        sender.sendPluginTDMessage("§sMax players: §v" + finalMaxServerPlayers);
+        sender.sendPluginTDMessage("§sMaps: §v" + mapsEnabled);
+        sender.sendPluginTDMessage("§sKits: §v" + kitsEnabled);
+        sender.sendPluginTDMessage("§sTeam amount: §v" + finalTeamAmount);
+        sender.sendPluginTDMessage("§sTeam merging: §v" + teamMerging);
+        sender.sendPluginTDMessage("§sPlayer per Team: §v" + finalPlayersPerTeam);
+        sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
+      }
 
-      Network.getBukkitCmdHandler().handleServerCmd(sender, loungeServer);
+      boolean isStart = loungeServer.start();
+      if (!isStart) {
+        sender.sendPluginTDMessage("§wError while starting server §v" + loungeServer.getName());
+        return;
+      }
 
+      sender.sendPluginTDMessage("§sStarted server §v" + loungeServer.getName());
     });
   }
 

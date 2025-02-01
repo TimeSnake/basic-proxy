@@ -53,7 +53,7 @@ public class NetworkCmd implements CommandListener {
       return;
     }
 
-    Collection<String> serverNames = Network.getNetworkUtils().getPublicPlayerServerNames(ServerType.GAME,
+    Collection<String> serverNames = Network.getNetworkUtils().getPublicSaveNames(ServerType.GAME,
         nonTmpGame.getName());
 
     String serverName = args.get(2).toLowerCase();
@@ -63,7 +63,7 @@ public class NetworkCmd implements CommandListener {
       return;
     }
 
-    ServerInitResult result = Network.getServerManager().initNewPublicPlayerServer(ServerType.GAME,
+    ServerInitResult result = Network.getServerManager().createPublicSave(ServerType.GAME,
         ((DbNonTmpGame) game).getName(),
         serverName);
 
@@ -100,7 +100,7 @@ public class NetworkCmd implements CommandListener {
 
     DbUser user = playerArg.toDbUser();
 
-    Collection<String> serverNames = Network.getNetworkUtils().getOwnerServerNames(user.getUniqueId(), ServerType.GAME,
+    Collection<String> serverNames = Network.getNetworkUtils().getPrivateSaveNames(user.getUniqueId(), ServerType.GAME,
         ((DbNonTmpGame) game).getName());
 
     String serverName = args.get(2).toLowerCase();
@@ -110,7 +110,7 @@ public class NetworkCmd implements CommandListener {
       return;
     }
 
-    ServerInitResult result = Network.getServerManager().initNewPlayerServer(user.getUniqueId(), ServerType.GAME,
+    ServerInitResult result = Network.getServerManager().createPrivateSave(user.getUniqueId(), ServerType.GAME,
         ((DbNonTmpGame) game).getName(), user.getUniqueId().hashCode() + serverName);
 
     if (!result.isSuccessful()) {

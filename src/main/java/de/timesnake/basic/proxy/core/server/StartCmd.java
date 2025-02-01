@@ -138,7 +138,7 @@ public class StartCmd implements CommandListener {
 
     args.isLengthEqualsElseExit(3, true);
 
-    Collection<String> serverNames = Network.getNetworkUtils().getOwnerServerNames(user.getUniqueId(),
+    Collection<String> serverNames = Network.getNetworkUtils().getPrivateSaveNames(user.getUniqueId(),
             ServerType.GAME, ((DbNonTmpGame) game).getName());
 
     String serverName = args.getString(2);
@@ -152,7 +152,8 @@ public class StartCmd implements CommandListener {
 
     Network.runTaskAsync(() -> {
       sender.sendPluginTDMessage("§sLoading server §v" + serverName);
-      ServerSetupResult result = Network.getServerManager().loadPlayerServer(((DbNonTmpGame) finalGame).getName(),
+      ServerSetupResult result =
+          Network.getServerManager().loadPrivateSaveToServer(((DbNonTmpGame) finalGame).getName(),
           user.getUniqueId(), serverName, s -> s.applyServerOptions(finalGame.getServerOptions()));
 
       if (!result.isSuccessful()) {
@@ -196,7 +197,7 @@ public class StartCmd implements CommandListener {
     args.isLengthEqualsElseExit(3, true);
 
     Collection<String> serverNames = Network.getNetworkUtils()
-        .getPublicPlayerServerNames(ServerType.GAME, ((DbNonTmpGame) game).getName());
+        .getPublicSaveNames(ServerType.GAME, ((DbNonTmpGame) game).getName());
 
     String serverName = args.getString(2);
 
@@ -209,7 +210,7 @@ public class StartCmd implements CommandListener {
 
     Network.runTaskAsync(() -> {
       sender.sendPluginTDMessage("§sLoading server §v" + serverName);
-      ServerSetupResult result = Network.getServerManager().loadPublicPlayerServer(((DbNonTmpGame) finalGame).getName(),
+      ServerSetupResult result = Network.getServerManager().loadPublicSaveToServer(((DbNonTmpGame) finalGame).getName(),
           serverName, s -> s.applyServerOptions(finalGame.getServerOptions()));
 
       if (!result.isSuccessful()) {
@@ -445,7 +446,7 @@ public class StartCmd implements CommandListener {
       sender.sendPluginTDMessage("§sCreating server...");
 
       Tuple<ServerSetupResult, ServerSetupResult> servers = Network.getServerManager()
-          .createTmpTwinServers(ServerType.LOUNGE, s -> {
+          .createTmpTwinServers(gameName, ServerType.LOUNGE, s -> {
               },
               ServerType.TEMP_GAME, s -> s.setTask(gameName)
                   .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE))
@@ -534,7 +535,7 @@ public class StartCmd implements CommandListener {
         .addArgument(new Completion("public_game")
             .addArgument((sender, cmd, args) -> Database.getGames().containsGame(args.getString(1)),
                 new Completion((sender, cmd, args) -> Database.getGames().containsGame(args.getString(1)) ?
-                    Network.getNetworkUtils().getPublicPlayerServerNames(ServerType.GAME, args.getString(1)) : List.of())));
+                    Network.getNetworkUtils().getPublicSaveNames(ServerType.GAME, args.getString(1)) : List.of())));
   }
 
   @Override

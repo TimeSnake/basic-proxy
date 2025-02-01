@@ -120,42 +120,43 @@ public class ServerManager implements ChannelListener {
   public ServerSetupResult createTmpServer(ServerType type, Consumer<NetworkServer> optionsApplier,
                                            boolean registerServer) {
     int id = this.nextServerId();
-    return this.createTmpServer(type.getTag() + id, type, optionsApplier, registerServer);
+    return this.createTmpServer(String.valueOf(id), type, optionsApplier, registerServer);
   }
 
   public ServerSetupResult createTmpServer(ServerType type, Consumer<NetworkServer> optionsApplier,
                                            int port, boolean registerServer) {
     int id = this.nextServerId();
-    return this.createTmpServer(type.getTag() + id, type, optionsApplier, port, registerServer);
+    return this.createTmpServer(String.valueOf(id), type, optionsApplier, port, registerServer);
   }
 
-  private ServerSetupResult createTmpServer(String name, ServerType type, Consumer<NetworkServer> optionsApplier) {
-    return this.createTmpServer(name, type, optionsApplier, true);
+  private ServerSetupResult createTmpServer(String id, ServerType type, Consumer<NetworkServer> optionsApplier) {
+    return this.createTmpServer(id, type, optionsApplier, true);
   }
 
-  private ServerSetupResult createTmpServer(String name, ServerType type, Consumer<NetworkServer> optionsApplier,
+  private ServerSetupResult createTmpServer(String id, ServerType type, Consumer<NetworkServer> optionsApplier,
                                             boolean registerServer) {
-    NetworkServer server = new NetworkServer(name, type);
+    NetworkServer server = NetworkServer.createTmpServer(type, id);
     optionsApplier.accept(server);
     return this.createTmpServer(server, this::nextEmptyPort, registerServer);
   }
 
   private ServerSetupResult createTmpServer(String name, ServerType type, Consumer<NetworkServer> optionsApplier,
                                             int port, boolean registerServer) {
-    NetworkServer server = new NetworkServer(name, type);
+    NetworkServer server = NetworkServer.createTmpServer(type, name);
     optionsApplier.accept(server);
     return this.createTmpServer(server, () -> port, registerServer);
   }
 
-  public Tuple<ServerSetupResult, ServerSetupResult> createTmpTwinServers(ServerType type1,
+  public Tuple<ServerSetupResult, ServerSetupResult> createTmpTwinServers(String category, ServerType type1,
                                                                           Consumer<NetworkServer> optionsApplier1,
                                                                           ServerType type2,
                                                                           Consumer<NetworkServer> optionsApplier2) {
     int id1 = this.nextServerId();
     int id2 = this.nextServerId();
-    return new Tuple<>(
-        this.createTmpServer(type1.getTag() + id1 + "_" + type2.getTag() + id2, type1, optionsApplier1),
-        this.createTmpServer(type2.getTag() + id2 + "_" + type1.getTag() + id1, type2, optionsApplier2));
+    return NetworkServer.createTmpTwinServer(category, type1, String.valueOf(id1), type2, String.valueOf(id2))
+        .apply(optionsApplier1, optionsApplier2)
+        .map(s -> this.createTmpServer(s, this::nextEmptyPort, true),
+            s -> this.createTmpServer(s, this::nextEmptyPort, true));
   }
 
 
@@ -228,7 +229,7 @@ public class ServerManager implements ChannelListener {
     }
   }
 
-  public ServerInitResult initNewPublicPlayerServer(ServerType type, String task, String name) {
+  public ServerInitResult createPublicSave(ServerType type, String task, String name) {
     this.serverCreationLock.lock();
 
     ServerInitResult result;
@@ -237,14 +238,14 @@ public class ServerManager implements ChannelListener {
       if (this.getServer(name) != null) {
         return new ServerInitResult.Fail("server already exists");
       }
-      result = Network.getNetworkUtils().initNewPublicPlayerServer(type, task, name);
+      result = Network.getNetworkUtils().createPublicSave(type, task, name);
     } finally {
       this.serverCreationLock.unlock();
     }
     return result;
   }
 
-  public ServerInitResult initNewPlayerServer(UUID uuid, ServerType type, String task, String name) {
+  public ServerInitResult createPrivateSave(UUID uuid, ServerType type, String task, String name) {
     this.serverCreationLock.lock();
 
     ServerInitResult result;
@@ -253,27 +254,26 @@ public class ServerManager implements ChannelListener {
       if (this.getServer(name) != null) {
         return new ServerInitResult.Fail("server already exists");
       }
-      result = Network.getNetworkUtils().initNewPlayerServer(uuid, type, task, name);
+      result = Network.getNetworkUtils().createPrivateSave(uuid, type, task, name);
     } finally {
       this.serverCreationLock.unlock();
     }
     return result;
   }
 
-  public ServerSetupResult loadPlayerServer(String categoryName, UUID uuid, String serverName,
-                                            Consumer<NetworkServer> optionsApplier) {
+  public ServerSetupResult loadPublicSaveToServer(String categoryName, String serverName,
+                                                  Consumer<NetworkServer> optionsApplier) {
     this.serverCreationLock.lock();
 
     try {
-      String serverId = categoryName + "_" + uuid.hashCode() + "-" + serverName;
+      NetworkServer networkServer = NetworkServer.createPublicSaveServer(ServerType.GAME, categoryName, serverName);
 
-      if (this.getServer(serverId) != null) {
+      if (this.getServer(networkServer.getName()) != null) {
         return new ServerSetupResult.Fail(null, null, "server already exists");
       }
 
-      int port = this.nextEmptyPort();
-      NetworkServer networkServer = new NetworkServer(serverId, ServerType.GAME)
-          .setPort(port)
+      networkServer
+          .setPort(this.nextEmptyPort())
           .setFolderName(serverName)
           .setTask(categoryName)
           .setMaxPlayers(20);
@@ -281,7 +281,7 @@ public class ServerManager implements ChannelListener {
       optionsApplier.accept(networkServer);
       this.applyDefaults(networkServer);
 
-      ServerCreationResult result = Network.getNetworkUtils().createPlayerServer(uuid, networkServer);
+      ServerCreationResult result = Network.getNetworkUtils().loadPublicSave(networkServer);
 
       if (result.isSuccessful()) {
         Server server = this.addServer(networkServer, ((ServerCreationResult.Success) result).getServerPath(), true);
@@ -294,19 +294,20 @@ public class ServerManager implements ChannelListener {
     }
   }
 
-  public ServerSetupResult loadPublicPlayerServer(String categoryName, String serverName,
-                                                  Consumer<NetworkServer> optionsApplier) {
+  public ServerSetupResult loadPrivateSaveToServer(String categoryName, UUID uuid, String serverName,
+                                                   Consumer<NetworkServer> optionsApplier) {
     this.serverCreationLock.lock();
 
     try {
-      String serverId = categoryName + "_" + serverName;
-      if (this.getServer(serverId) != null) {
+      NetworkServer networkServer = NetworkServer.createPrivateSaveServer(ServerType.GAME, categoryName, uuid,
+          serverName);
+
+      if (this.getServer(networkServer.getName()) != null) {
         return new ServerSetupResult.Fail(null, null, "server already exists");
       }
 
-      int port = this.nextEmptyPort();
-      NetworkServer networkServer = new NetworkServer(serverId, ServerType.GAME)
-          .setPort(port)
+      networkServer
+          .setPort(this.nextEmptyPort())
           .setFolderName(serverName)
           .setTask(categoryName)
           .setMaxPlayers(20);
@@ -314,7 +315,7 @@ public class ServerManager implements ChannelListener {
       optionsApplier.accept(networkServer);
       this.applyDefaults(networkServer);
 
-      ServerCreationResult result = Network.getNetworkUtils().createPublicPlayerServer(networkServer);
+      ServerCreationResult result = Network.getNetworkUtils().loadPrivateSave(uuid, networkServer);
 
       if (result.isSuccessful()) {
         Server server = this.addServer(networkServer, ((ServerCreationResult.Success) result).getServerPath(), true);

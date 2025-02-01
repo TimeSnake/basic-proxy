@@ -193,7 +193,7 @@ public class GameCmd extends IncCommandListener {
         sender.sendPluginTDMessage("§sCreating server...");
 
         Tuple<ServerSetupResult, ServerSetupResult> servers = Network.getServerManager()
-            .createTmpTwinServers(ServerType.LOUNGE, s -> {
+            .createTmpTwinServers(gameName, ServerType.LOUNGE, s -> {
                 },
                 ServerType.TEMP_GAME, s -> s.setTask(gameName)
                     .options(o -> o.setWorldCopyType(mapsEnabled ? CopyType.COPY : CopyType.NONE))

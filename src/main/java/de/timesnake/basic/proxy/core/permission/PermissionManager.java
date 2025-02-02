@@ -14,10 +14,13 @@ import de.timesnake.database.util.permission.DbPermission;
 import de.timesnake.database.util.user.DbUser;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.chat.Code;
+import de.timesnake.library.chat.Plugin;
 
 import java.util.UUID;
 
 public class PermissionManager {
+
+  public static final Plugin PLUGIN = new Plugin("Perm", "PSR");
 
   private final Code playerAddPerm;
   private final Code playerRemovePerm;
@@ -31,16 +34,16 @@ public class PermissionManager {
   private final Code groupInheritanceRemovePerm;
 
   public PermissionManager() {
-    this.playerAddPerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.player.add");
-    this.playerRemovePerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.player.remove");
-    this.playerGroupSetPerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.player.group.set");
-    this.playerGroupRemovePerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.player.group.remove");
-    this.groupAddPerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.group.add");
-    this.groupRemovePerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.group.remove");
-    this.groupCreatePerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.group.create");
-    this.groupDeletePerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.group.delete");
-    this.groupInheritanceSetPerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.group.inheritance.set");
-    this.groupInheritanceRemovePerm = Network.PLUGIN_PERMISSION.createPermssionCode("permission.inheritance.remove");
+    this.playerAddPerm = PermissionManager.PLUGIN.createPermssionCode("permission.player.add");
+    this.playerRemovePerm = PermissionManager.PLUGIN.createPermssionCode("permission.player.remove");
+    this.playerGroupSetPerm = PermissionManager.PLUGIN.createPermssionCode("permission.player.group.set");
+    this.playerGroupRemovePerm = PermissionManager.PLUGIN.createPermssionCode("permission.player.group.remove");
+    this.groupAddPerm = PermissionManager.PLUGIN.createPermssionCode("permission.group.add");
+    this.groupRemovePerm = PermissionManager.PLUGIN.createPermssionCode("permission.group.remove");
+    this.groupCreatePerm = PermissionManager.PLUGIN.createPermssionCode("permission.group.create");
+    this.groupDeletePerm = PermissionManager.PLUGIN.createPermssionCode("permission.group.delete");
+    this.groupInheritanceSetPerm = PermissionManager.PLUGIN.createPermssionCode("permission.group.inheritance.set");
+    this.groupInheritanceRemovePerm = PermissionManager.PLUGIN.createPermssionCode("permission.inheritance.remove");
   }
 
   public void addPlayerPermission(Sender sender, DbUser user, String permission, Status.Permission mode) {

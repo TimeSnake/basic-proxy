@@ -83,7 +83,6 @@ public class NetworkManager {
 
   private boolean isWork = false;
 
-
   public void onEnable() {
     this.timeDownParser = this.initTimeDownParser();
     this.userManager = new UserManager();

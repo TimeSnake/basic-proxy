@@ -20,11 +20,14 @@ import de.timesnake.basic.proxy.core.network.MotdManager;
 import de.timesnake.basic.proxy.core.network.ServiceWorkCmd;
 import de.timesnake.basic.proxy.core.permission.PermissionCheck;
 import de.timesnake.basic.proxy.core.permission.PermissionCmd;
+import de.timesnake.basic.proxy.core.permission.PermissionManager;
 import de.timesnake.basic.proxy.core.permission.PermissionTestCmd;
 import de.timesnake.basic.proxy.core.punishment.KickAllCmd;
 import de.timesnake.basic.proxy.core.punishment.PunishCmd;
+import de.timesnake.basic.proxy.core.punishment.PunishmentManager;
 import de.timesnake.basic.proxy.core.server.*;
 import de.timesnake.basic.proxy.core.support.SupportManagementCmd;
+import de.timesnake.basic.proxy.core.support.SupportManager;
 import de.timesnake.basic.proxy.core.support.TicketCmd;
 import de.timesnake.basic.proxy.core.user.ChatManager;
 import de.timesnake.basic.proxy.util.Network;
@@ -93,28 +96,28 @@ public class BasicProxy {
     NetworkManager.getInstance().onEnable();
 
     Network.getCommandManager().addCommand(this, "permission", List.of("perm", "perms"), new PermissionCmd(),
-        Network.PLUGIN_PERMISSION);
+        PermissionManager.PLUGIN);
 
-    Network.getCommandManager().addCommand(this, "alias", new AliasCmd(), Network.PLUGIN_ALIAS);
+    Network.getCommandManager().addCommand(this, "alias", new AliasCmd(), AliasCmd.PLUGIN);
 
     Network.getCommandManager().addCommand(this, "work", new ServiceWorkCmd(), Plugin.NETWORK);
-    Network.getCommandManager().addCommand(this, "ban", List.of("netban"), new PunishCmd(), Network.PLUGIN_PUNISH);
+    Network.getCommandManager().addCommand(this, "ban", List.of("netban"), new PunishCmd(), PunishmentManager.PLUGIN);
     Network.getCommandManager().addCommand(this, "tempban", List.of("nettempban", "tmpban", "nettmpmban"),
-        new PunishCmd(), Network.PLUGIN_PUNISH);
+        new PunishCmd(), PunishmentManager.PLUGIN);
     Network.getCommandManager().addCommand(this, "unban", List.of("netunban", "pardon"), new PunishCmd(),
-        Network.PLUGIN_PUNISH);
-    Network.getCommandManager().addCommand(this, "mute", List.of("netmute"), new PunishCmd(), Network.PLUGIN_PUNISH);
+        PunishmentManager.PLUGIN);
+    Network.getCommandManager().addCommand(this, "mute", List.of("netmute"), new PunishCmd(), PunishmentManager.PLUGIN);
     Network.getCommandManager().addCommand(this, "unmute", List.of("netunmute"), new PunishCmd(),
-        Network.PLUGIN_PUNISH);
-    Network.getCommandManager().addCommand(this, "kick", List.of("netkick"), new PunishCmd(), Network.PLUGIN_PUNISH);
-    Network.getCommandManager().addCommand(this, "jail", List.of("netjail"), new PunishCmd(), Network.PLUGIN_PUNISH);
+        PunishmentManager.PLUGIN);
+    Network.getCommandManager().addCommand(this, "kick", List.of("netkick"), new PunishCmd(), PunishmentManager.PLUGIN);
+    Network.getCommandManager().addCommand(this, "jail", List.of("netjail"), new PunishCmd(), PunishmentManager.PLUGIN);
 
     Network.getCommandManager().addCommand(this, "start", new StartCmd(), Plugin.NETWORK);
     Network.getCommandManager().addCommand(this, "cmd", new ServerCmd(), Plugin.NETWORK);
 
     Network.getCommandManager().addCommand(this, "netmsg",
         List.of("netmessages", "networkmsg", "networkmessages", "networkmessage", "netmsgs"),
-        new NetworkMsgCmd(), Network.PLUGIN_SUPPORT);
+        new NetworkMsgCmd(), SupportManager.PLUGIN);
 
     Network.getCommandManager().addCommand(this, "timecoins", new CoinsCmd(), Plugin.TIME_COINS);
 
@@ -149,9 +152,9 @@ public class BasicProxy {
     Network.getCommandManager().addCommand(this, "game", new GameCmd(), Plugin.NETWORK);
 
     Network.getCommandManager().addCommand(this, "supportmanager", List.of("sm", "tm", "ticketmanager"),
-        new SupportManagementCmd(), Network.PLUGIN_SUPPORT);
+        new SupportManagementCmd(), SupportManager.PLUGIN);
     Network.getCommandManager().addCommand(this, "ticket", List.of("report", "support"), new TicketCmd(),
-        Network.PLUGIN_SUPPORT);
+        SupportManager.PLUGIN);
 
     Network.getCommandManager().addCommand(this, "serverdebug", new ServerDebugCmd(), Plugin.NETWORK);
 

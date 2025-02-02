@@ -20,6 +20,7 @@ import de.timesnake.library.basic.util.PunishType;
 import de.timesnake.library.basic.util.Punishment;
 import de.timesnake.library.chat.Chat;
 import de.timesnake.library.chat.ChatColor;
+import de.timesnake.library.chat.Plugin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,8 @@ import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
 public class PunishmentManager implements ChannelListener {
+
+  public static final Plugin PLUGIN = new Plugin("Punish", "PSP");
 
   private final Logger logger = LogManager.getLogger("punish.manager");
 
@@ -118,7 +121,7 @@ public class PunishmentManager implements ChannelListener {
       user.getPunishment().delete();
       this.logger.info("Unbanned player '{}' by system", uuid.toString());
 
-      Network.broadcastTDMessage(Network.PLUGIN_PUNISH, "§v" + user.getName() + "§w was unbanned");
+      Network.broadcastTDMessage(PunishmentManager.PLUGIN, "§v" + user.getName() + "§w was unbanned");
     }
   }
 
@@ -150,7 +153,7 @@ public class PunishmentManager implements ChannelListener {
       if (sender != null) {
         sender.sendPluginTDMessage("§sUnbanned player §v" + user.getName());
       }
-      Network.broadcastTDMessage(Network.PLUGIN_PUNISH, "§v" + user.getName() + "§w was unbanned");
+      Network.broadcastTDMessage(PunishmentManager.PLUGIN, "§v" + user.getName() + "§w was unbanned");
     }
   }
 
@@ -186,7 +189,7 @@ public class PunishmentManager implements ChannelListener {
       sender.sendPluginTDMessage("§sBanned §v" + name + "§s with reason: §s" + punishment.getReason());
     }
 
-    Network.broadcastTDMessage(Network.PLUGIN_PUNISH,
+    Network.broadcastTDMessage(PunishmentManager.PLUGIN,
         "§v" + user.getName() + "§w was banned with reason: §v" + punishment.getReason());
   }
 
@@ -244,7 +247,7 @@ public class PunishmentManager implements ChannelListener {
       sender.sendPluginTDMessage("§sBanned §v" + name + "§s with reason: §v" + punishment.getReason() + "§s for §v"
           + Chat.getTimeString(punishment.getDuration()));
     }
-    Network.broadcastTDMessage(Network.PLUGIN_PUNISH, "§v" + user.getName() + "§w was banned for §v"
+    Network.broadcastTDMessage(PunishmentManager.PLUGIN, "§v" + user.getName() + "§w was banned for §v"
         + Chat.getTimeString(punishment.getDuration()) + "§w with reason: §v" + punishment.getReason());
   }
 
@@ -255,7 +258,7 @@ public class PunishmentManager implements ChannelListener {
 
     user.getPlayer().disconnect(text(ChatColor.WARNING + "You were kicked with reason: " + ChatColor.VALUE + reason));
     sender.sendPluginTDMessage("§sKicked " + user.getChatName() + "§s with reason: §v" + reason);
-    Network.broadcastTDMessage(Network.PLUGIN_PUNISH,
+    Network.broadcastTDMessage(PunishmentManager.PLUGIN,
         "§v" + user.getChatName() + "§w was kicked with reason: §v" + reason);
   }
 
@@ -279,7 +282,7 @@ public class PunishmentManager implements ChannelListener {
     if (sender != null) {
       sender.sendPluginTDMessage("§sMuted §v" + name + "§s with reason: §v" + punishment.getReason());
     }
-    Network.broadcastTDMessage(Network.PLUGIN_PUNISH,
+    Network.broadcastTDMessage(PunishmentManager.PLUGIN,
         "§v" + user.getName() + "§w was muted with reason: §v" + punishment.getReason());
   }
 
@@ -305,7 +308,7 @@ public class PunishmentManager implements ChannelListener {
           + "§s with reason: §v" + punishment.getReason());
     }
 
-    Network.broadcastTDMessage(Network.PLUGIN_PUNISH, "§v" + user.getName() + "§w was muted for §v" +
+    Network.broadcastTDMessage(PunishmentManager.PLUGIN, "§v" + user.getName() + "§w was muted for §v" +
         Chat.getTimeString(punishment.getDuration()) + "§w with reason: §v" + punishment.getReason());
   }
 
@@ -327,7 +330,7 @@ public class PunishmentManager implements ChannelListener {
     if (sender != null) {
       sender.sendPluginTDMessage("§sUnmuted §v" + user.getName());
     }
-    Network.broadcastTDMessage(Network.PLUGIN_PUNISH, "§v" + user.getName() + "§w was unmuted");
+    Network.broadcastTDMessage(PunishmentManager.PLUGIN, "§v" + user.getName() + "§w was unmuted");
   }
 
   public void jailPlayer(@Nullable Sender sender, DbUser dbUser, Punishment punishment) {
@@ -352,7 +355,7 @@ public class PunishmentManager implements ChannelListener {
           + "§s with reason: " + punishment.getReason());
     }
 
-    Network.broadcastTDMessage(Network.PLUGIN_PUNISH, "§p" + dbUser.getName() + "§w was jailed for §v"
+    Network.broadcastTDMessage(PunishmentManager.PLUGIN, "§p" + dbUser.getName() + "§w was jailed for §v"
         + Chat.getTimeString(punishment.getDuration()) + "§w with reason: §v" + punishment.getReason());
 
     User user = Network.getUser(dbUser.getUniqueId());

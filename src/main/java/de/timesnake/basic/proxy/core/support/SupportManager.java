@@ -9,6 +9,7 @@ import de.timesnake.database.util.Database;
 import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.UserSet;
+import de.timesnake.library.chat.Plugin;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,6 +17,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class SupportManager {
+
+  public static final Plugin PLUGIN = new Plugin("Support", "PSS");
 
   public static String formatDateTime(LocalDateTime dateTime) {
     return DateTimeFormatter.ofPattern("dd.MM.yy HH:mm:ss").format(dateTime.atZone(ZoneId.systemDefault()));

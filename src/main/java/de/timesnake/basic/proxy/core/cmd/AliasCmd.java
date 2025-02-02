@@ -20,6 +20,8 @@ import de.timesnake.library.commands.simple.Arguments;
 
 public class AliasCmd implements CommandListener {
 
+  public static final Plugin PLUGIN = new Plugin("Alias", "PSA");
+
   private final Code perm = Plugin.NETWORK.createPermssionCode("alias");
 
   public static void setAlias(Sender sender, DbUser user, Argument type, Argument name) {

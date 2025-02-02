@@ -29,10 +29,10 @@ import de.timesnake.basic.proxy.core.support.TicketCmd;
 import de.timesnake.basic.proxy.core.user.ChatManager;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.NetworkManager;
-import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.channel.proxy.main.ChannelProxy;
 import de.timesnake.database.util.Database;
 import de.timesnake.library.basic.util.logger.LogConfig;
+import de.timesnake.library.chat.Plugin;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -93,27 +93,28 @@ public class BasicProxy {
     NetworkManager.getInstance().onEnable();
 
     Network.getCommandManager().addCommand(this, "permission", List.of("perm", "perms"), new PermissionCmd(),
-        Plugin.PERMISSION);
+        Network.PLUGIN_PERMISSION);
 
-    Network.getCommandManager().addCommand(this, "alias", new AliasCmd(), Plugin.ALIAS);
+    Network.getCommandManager().addCommand(this, "alias", new AliasCmd(), Network.PLUGIN_ALIAS);
 
     Network.getCommandManager().addCommand(this, "work", new ServiceWorkCmd(), Plugin.NETWORK);
-    Network.getCommandManager().addCommand(this, "ban", List.of("netban"), new PunishCmd(), Plugin.PUNISH);
+    Network.getCommandManager().addCommand(this, "ban", List.of("netban"), new PunishCmd(), Network.PLUGIN_PUNISH);
     Network.getCommandManager().addCommand(this, "tempban", List.of("nettempban", "tmpban", "nettmpmban"),
-        new PunishCmd(), Plugin.PUNISH);
+        new PunishCmd(), Network.PLUGIN_PUNISH);
     Network.getCommandManager().addCommand(this, "unban", List.of("netunban", "pardon"), new PunishCmd(),
-        Plugin.PUNISH);
-    Network.getCommandManager().addCommand(this, "mute", List.of("netmute"), new PunishCmd(), Plugin.PUNISH);
-    Network.getCommandManager().addCommand(this, "unmute", List.of("netunmute"), new PunishCmd(), Plugin.PUNISH);
-    Network.getCommandManager().addCommand(this, "kick", List.of("netkick"), new PunishCmd(), Plugin.PUNISH);
-    Network.getCommandManager().addCommand(this, "jail", List.of("netjail"), new PunishCmd(), Plugin.PUNISH);
+        Network.PLUGIN_PUNISH);
+    Network.getCommandManager().addCommand(this, "mute", List.of("netmute"), new PunishCmd(), Network.PLUGIN_PUNISH);
+    Network.getCommandManager().addCommand(this, "unmute", List.of("netunmute"), new PunishCmd(),
+        Network.PLUGIN_PUNISH);
+    Network.getCommandManager().addCommand(this, "kick", List.of("netkick"), new PunishCmd(), Network.PLUGIN_PUNISH);
+    Network.getCommandManager().addCommand(this, "jail", List.of("netjail"), new PunishCmd(), Network.PLUGIN_PUNISH);
 
     Network.getCommandManager().addCommand(this, "start", new StartCmd(), Plugin.NETWORK);
     Network.getCommandManager().addCommand(this, "cmd", new ServerCmd(), Plugin.NETWORK);
 
     Network.getCommandManager().addCommand(this, "netmsg",
         List.of("netmessages", "networkmsg", "networkmessages", "networkmessage", "netmsgs"),
-        new NetworkMsgCmd(), Plugin.SUPPORT);
+        new NetworkMsgCmd(), Network.PLUGIN_SUPPORT);
 
     Network.getCommandManager().addCommand(this, "timecoins", new CoinsCmd(), Plugin.TIME_COINS);
 
@@ -148,9 +149,9 @@ public class BasicProxy {
     Network.getCommandManager().addCommand(this, "game", new GameCmd(), Plugin.NETWORK);
 
     Network.getCommandManager().addCommand(this, "supportmanager", List.of("sm", "tm", "ticketmanager"),
-        new SupportManagementCmd(), Plugin.SUPPORT);
+        new SupportManagementCmd(), Network.PLUGIN_SUPPORT);
     Network.getCommandManager().addCommand(this, "ticket", List.of("report", "support"), new TicketCmd(),
-        Plugin.SUPPORT);
+        Network.PLUGIN_SUPPORT);
 
     Network.getCommandManager().addCommand(this, "serverdebug", new ServerDebugCmd(), Plugin.NETWORK);
 

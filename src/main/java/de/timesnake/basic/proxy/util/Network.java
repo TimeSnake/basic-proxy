@@ -33,6 +33,12 @@ import java.util.concurrent.CompletableFuture;
 
 public class Network implements de.timesnake.library.basic.util.server.Server {
 
+  public static final Plugin PLUGIN_GAME = new Plugin("Game", "PSG");
+  public static final Plugin PLUGIN_SUPPORT = new Plugin("Support", "PSS");
+  public static final Plugin PLUGIN_PUNISH = new Plugin("Punish", "PSP");
+  public static final Plugin PLUGIN_PERMISSION = new Plugin("Perm", "PSR");
+  public static final Plugin PLUGIN_ALIAS = new Plugin("Alias", "PSA");
+
   public static final int PORT_BASE = 25100;
   public static final int DEBUGGING_PORT_OFFSET = 2000;
   public static final String TMP_SERVER_SUFFIX = "_tmp";

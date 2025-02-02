@@ -20,18 +20,16 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static de.timesnake.basic.proxy.util.Network.PLUGIN_PUNISH;
-
 public class PunishCmd implements CommandListener {
 
-  private final Code punishPerm = PLUGIN_PUNISH.createPermssionCode("punish");
-  private final Code mutePerm = PLUGIN_PUNISH.createPermssionCode("punish.netmute");
-  private final Code kickPerm = PLUGIN_PUNISH.createPermssionCode("punish.netunmute");
-  private final Code unmutePerm = PLUGIN_PUNISH.createPermssionCode("punish.kick");
-  private final Code tempbanPerm = PLUGIN_PUNISH.createPermssionCode("punish.tempban");
-  private final Code banPerm = PLUGIN_PUNISH.createPermssionCode("punish.ban");
-  private final Code unbanPerm = PLUGIN_PUNISH.createPermssionCode("punish.unban");
-  private final Code jailPerm = PLUGIN_PUNISH.createPermssionCode("punish.jail");
+  private final Code punishPerm = PunishmentManager.PLUGIN.createPermssionCode("punish");
+  private final Code mutePerm = PunishmentManager.PLUGIN.createPermssionCode("punish.netmute");
+  private final Code kickPerm = PunishmentManager.PLUGIN.createPermssionCode("punish.netunmute");
+  private final Code unmutePerm = PunishmentManager.PLUGIN.createPermssionCode("punish.kick");
+  private final Code tempbanPerm = PunishmentManager.PLUGIN.createPermssionCode("punish.tempban");
+  private final Code banPerm = PunishmentManager.PLUGIN.createPermssionCode("punish.ban");
+  private final Code unbanPerm = PunishmentManager.PLUGIN.createPermssionCode("punish.unban");
+  private final Code jailPerm = PunishmentManager.PLUGIN.createPermssionCode("punish.jail");
 
   @Override
   public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {

@@ -19,11 +19,11 @@ import java.util.Arrays;
 
 public class SupportManagementCmd implements CommandListener {
 
-  private final Code perm = Network.PLUGIN_SUPPORT.createPermssionCode("support.manage");
-  private final Code showPerm = Network.PLUGIN_SUPPORT.createPermssionCode("support.show");
-  private final Code statusPerm = Network.PLUGIN_SUPPORT.createPermssionCode("support.status");
-  private final Code answerPerm = Network.PLUGIN_SUPPORT.createPermssionCode("support.answer");
-  private final Code notifyPerm = Network.PLUGIN_SUPPORT.createPermssionCode("support.notify");
+  private final Code perm = SupportManager.PLUGIN.createPermssionCode("support.manage");
+  private final Code showPerm = SupportManager.PLUGIN.createPermssionCode("support.show");
+  private final Code statusPerm = SupportManager.PLUGIN.createPermssionCode("support.status");
+  private final Code answerPerm = SupportManager.PLUGIN.createPermssionCode("support.answer");
+  private final Code notifyPerm = SupportManager.PLUGIN.createPermssionCode("support.notify");
 
   @Override
   public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {

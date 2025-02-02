@@ -15,7 +15,7 @@ import de.timesnake.library.commands.simple.Arguments;
 
 public class TicketCmd implements CommandListener {
 
-  private final Code perm = Network.PLUGIN_SUPPORT.createPermssionCode("support.ticket");
+  private final Code perm = SupportManager.PLUGIN.createPermssionCode("support.ticket");
 
   @Override
   public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {

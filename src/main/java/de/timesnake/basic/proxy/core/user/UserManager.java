@@ -15,6 +15,7 @@ import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
+import de.timesnake.basic.proxy.core.support.SupportManager;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.server.Server;
 import de.timesnake.basic.proxy.util.user.PreUser;
@@ -250,7 +251,7 @@ public class UserManager {
     }
 
     if (player.hasPermission("support.opentickets")) {
-      user.sendPluginMessage(Network.PLUGIN_SUPPORT,
+      user.sendPluginMessage(SupportManager.PLUGIN,
           Component.text(Database.getSupport().getTickets().size(), ExTextColor.VALUE)
               .append(Component.text(" open tickets", ExTextColor.PERSONAL)));
     }
@@ -276,28 +277,28 @@ public class UserManager {
       }
 
       if (open > 0) {
-        player.sendMessage(Chat.getSenderPlugin(Network.PLUGIN_SUPPORT)
+        player.sendMessage(Chat.getSenderPlugin(SupportManager.PLUGIN)
             .append(Component.text(open, ExTextColor.VALUE))
             .append(Component.text(" of your ticket(s) is/are open.",
                 ExTextColor.PERSONAL)));
       }
 
       if (inProcess > 0) {
-        player.sendMessage(Chat.getSenderPlugin(Network.PLUGIN_SUPPORT)
+        player.sendMessage(Chat.getSenderPlugin(SupportManager.PLUGIN)
             .append(Component.text(inProcess, ExTextColor.VALUE))
             .append(Component.text(" of your ticket(s) is/are in process.",
                 ExTextColor.PERSONAL)));
       }
 
       if (solved > 0) {
-        player.sendMessage(Chat.getSenderPlugin(Network.PLUGIN_SUPPORT)
+        player.sendMessage(Chat.getSenderPlugin(SupportManager.PLUGIN)
             .append(Component.text(solved, ExTextColor.VALUE))
             .append(Component.text(" of your ticket(s) is/are solved.",
                 ExTextColor.PERSONAL)));
       }
 
       if (admin > 0) {
-        player.sendMessage(Chat.getSenderPlugin(Network.PLUGIN_SUPPORT)
+        player.sendMessage(Chat.getSenderPlugin(SupportManager.PLUGIN)
             .append(Component.text(solved, ExTextColor.VALUE))
             .append(Component.text(
                 " of your ticket(s) is/are forwarded to " + "an admin.",
@@ -305,7 +306,7 @@ public class UserManager {
       }
 
       if (open + inProcess + solved + admin > 0) {
-        player.sendMessage(Chat.getSenderPlugin(Network.PLUGIN_SUPPORT)
+        player.sendMessage(Chat.getSenderPlugin(SupportManager.PLUGIN)
             .append(Component.text("User ", ExTextColor.PERSONAL))
             .append(Component.text("/ticket(s) ", ExTextColor.VALUE))
             .append(Component.text("to manage your tickets", ExTextColor.PERSONAL)));

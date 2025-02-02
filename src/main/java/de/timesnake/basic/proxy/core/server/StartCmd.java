@@ -323,7 +323,7 @@ public class StartCmd implements CommandListener {
     String gameName = game.getName();
     Availability gameKitAvailability = game.getKitAvailability();
     Availability gameMapAvailability = game.getMapAvailability();
-    Collection<Integer> gameTeamAmounts = game.getTeamSizes();
+    Collection<Integer> gameTeamAmounts = game.getTeamAmounts();
     Integer gameMaxPlayers = game.getMaxPlayers();
     Integer gameMinPlayers = game.getMinPlayerNumber();
     Availability gameMergeTeams = game.getTeamMergeAvailability();

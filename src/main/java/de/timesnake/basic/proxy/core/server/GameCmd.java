@@ -120,18 +120,18 @@ public class GameCmd extends IncCommandListener {
 
   private boolean checkTeamsSizes(Sender sender, IncCommandContext context) {
     if (context.getOption(GAME) instanceof DbTmpGame game) {
-      LinkedList<String> sizes = new LinkedList<>();
+      LinkedList<String> playersPerTeamList = new LinkedList<>();
 
-      List<Integer> teams = new ArrayList<>(game.getTeamSizes());
-      teams.sort(Integer::compareTo);
-      teams.sort(Comparator.reverseOrder());
+      List<Integer> dbTeamAmounts = new ArrayList<>(game.getTeamAmounts());
+      dbTeamAmounts.sort(Integer::compareTo);
+      dbTeamAmounts.sort(Comparator.reverseOrder());
 
-      if (teams.isEmpty()) {
+      if (dbTeamAmounts.isEmpty()) {
         context.addOption(PLAYERS_PER_TEAM, null);
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
-      } else if (teams.size() == 1) {
-        context.addOption(TEAM_AMOUNT, teams.getFirst());
+      } else if (dbTeamAmounts.size() == 1) {
+        context.addOption(TEAM_AMOUNT, dbTeamAmounts.getFirst());
         context.addOption(PLAYERS_PER_TEAM, null);
         context.addOption(TEAM_MERGE, false);
         return this.checkOldPvP(sender, context);
@@ -139,22 +139,22 @@ public class GameCmd extends IncCommandListener {
 
       int max = context.getOption(MAX_PLAYERS);
 
-      if (teams.contains(0)) {
-        sizes.add("solo");
-        teams.remove(((Integer) 0));
+      if (dbTeamAmounts.contains(0)) {
+        playersPerTeamList.add("solo");
+        dbTeamAmounts.remove(((Integer) 0));
       }
 
-      for (Integer teamNumber : teams) {
-        int teamSize = max / teamNumber;
+      for (Integer teamAmount : dbTeamAmounts) {
+        int playersPerTeam = max / teamAmount;
 
-        if (teamSize >= 2 && !sizes.contains(String.valueOf(teamSize))) {
-          sizes.add(String.valueOf(teamSize));
+        if (playersPerTeam >= 1 && !playersPerTeamList.contains(String.valueOf(playersPerTeam))) {
+          playersPerTeamList.add(String.valueOf(playersPerTeam));
         }
       }
 
       context.addOption(TEAM_MERGE, true);
 
-      this.sendSelectionTo(sender, this.createSelection(PLAYERS_PER_TEAM).addValues(sizes));
+      this.sendSelectionTo(sender, this.createSelection(PLAYERS_PER_TEAM).addValues(playersPerTeamList));
     } else if (context.getOption(GAME) instanceof DbNonTmpGame) {
       return this.checkOldPvP(sender, context);
     }
@@ -182,9 +182,9 @@ public class GameCmd extends IncCommandListener {
       String gameName = game.getInfo().getName();
       Boolean mapsEnabled = context.getOption(MAPS);
       Boolean kitsEnabled = context.getOption(KITS);
-      Integer maxServerPlayers = context.getOption(MAX_PLAYERS);
-      Integer teamSize = context.getOption(PLAYERS_PER_TEAM);
-      Integer teamAmount = teamSize != null ? (int) Math.ceil(maxServerPlayers / ((double) teamSize)) :
+      Integer maxPlayers = context.getOption(MAX_PLAYERS);
+      Integer playersPerTeam = context.getOption(PLAYERS_PER_TEAM);
+      Integer teamAmount = playersPerTeam != null ? (int) Math.ceil(maxPlayers / ((double) playersPerTeam)) :
           context.getOption(TEAM_AMOUNT);
       Boolean teamMerging = context.getOption(TEAM_MERGE);
       Boolean oldPvP = context.getOption(OLD_PVP);
@@ -221,16 +221,16 @@ public class GameCmd extends IncCommandListener {
         TmpGameServer tmpGameServer = (TmpGameServer) ((ServerSetupResult.Success) gameServerResult).getServer();
 
         loungeServer.setTaskSynchronized(gameName);
-        loungeServer.setMaxPlayers(maxServerPlayers);
+        loungeServer.setMaxPlayers(maxPlayers);
 
         tmpGameServer.setTaskSynchronized(gameName);
         tmpGameServer.setMapsEnabled(mapsEnabled);
         tmpGameServer.setKitsEnabled(kitsEnabled);
-        tmpGameServer.setMaxPlayers(maxServerPlayers);
+        tmpGameServer.setMaxPlayers(maxPlayers);
         tmpGameServer.setTeamAmount(teamAmount);
         tmpGameServer.setMapsEnabled(mapsEnabled);
         tmpGameServer.setTeamMerging(teamMerging);
-        tmpGameServer.setMaxPlayersPerTeam(teamSize);
+        tmpGameServer.setMaxPlayersPerTeam(playersPerTeam);
         tmpGameServer.setPvP(oldPvP);
         tmpGameServer.setTwinServer((DbLoungeServer) loungeServer.getDatabase());
 
@@ -240,24 +240,24 @@ public class GameCmd extends IncCommandListener {
                   Network.getTimeDownParser().parse2Component(
                       "§sGame server: §v" + tmpGameServer.getName() + "\n" +
                       "§sLounge server: §v" + loungeServer.getName() + "\n" +
-                      "§sMax players: §v" + maxServerPlayers + "\n" +
+                      "§sMax players: §v" + maxPlayers + "\n" +
                       "§sMaps: §v" + mapsEnabled + "\n" +
                       "§sKits: §v" + kitsEnabled + "\n" +
                       "§sTeam amount: §v" + teamAmount + "\n" +
                       "§sTeam merging: §v" + teamMerging + "\n" +
-                      "§sPlayer per Team: §v" + teamSize + "\n" +
+                      "§sPlayer per Team: §v" + playersPerTeam + "\n" +
                       "§sOld PvP: §v" + oldPvP
                   ))));
         } else {
           sender.sendPluginTDMessage("§sStarted game §v" + gameName);
           sender.sendPluginTDMessage("§sGame server: §v" + tmpGameServer.getName());
           sender.sendPluginTDMessage("§sLounge server: §v" + loungeServer.getName());
-          sender.sendPluginTDMessage("§sMax players: §v" + maxServerPlayers);
+          sender.sendPluginTDMessage("§sMax players: §v" + maxPlayers);
           sender.sendPluginTDMessage("§sMaps: §v" + mapsEnabled);
           sender.sendPluginTDMessage("§sKits: §v" + kitsEnabled);
           sender.sendPluginTDMessage("§sTeam amount: §v" + teamAmount);
           sender.sendPluginTDMessage("§sTeam merging: §v" + teamMerging);
-          sender.sendPluginTDMessage("§sPlayer per Team: §v" + teamSize);
+          sender.sendPluginTDMessage("§sPlayer per Team: §v" + playersPerTeam);
           sender.sendPluginTDMessage("§sOld PvP: §v" + oldPvP);
         }
 

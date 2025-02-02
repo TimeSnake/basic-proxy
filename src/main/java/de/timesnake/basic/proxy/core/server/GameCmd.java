@@ -7,7 +7,6 @@ package de.timesnake.basic.proxy.core.server;
 import de.timesnake.basic.proxy.util.Network;
 import de.timesnake.basic.proxy.util.chat.Argument;
 import de.timesnake.basic.proxy.util.chat.IncCommandListener;
-import de.timesnake.basic.proxy.util.chat.Plugin;
 import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.basic.proxy.util.server.LoungeServer;
 import de.timesnake.basic.proxy.util.server.NonTmpGameServer;
@@ -22,6 +21,7 @@ import de.timesnake.library.basic.util.Availability;
 import de.timesnake.library.basic.util.ServerType;
 import de.timesnake.library.basic.util.Tuple;
 import de.timesnake.library.chat.Code;
+import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.inchat.IncCommandContext;
 import de.timesnake.library.commands.inchat.IncCommandOption;
@@ -34,7 +34,7 @@ import java.util.stream.IntStream;
 
 public class GameCmd extends IncCommandListener {
 
-  private final Code perm = Plugin.GAME.createPermssionCode("network.start.game");
+  private final Code perm = Plugin.NETWORK.createPermssionCode("network.start.game");
 
   @Override
   public IncCommandContext onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {

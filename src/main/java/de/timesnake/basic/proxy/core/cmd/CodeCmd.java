@@ -4,8 +4,12 @@
 
 package de.timesnake.basic.proxy.core.cmd;
 
-import de.timesnake.basic.proxy.util.chat.*;
+import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.ExCommandListener;
+import de.timesnake.basic.proxy.util.chat.ExCompletion;
+import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.library.chat.Code;
+import de.timesnake.library.chat.Plugin;
 import de.timesnake.library.commands.PluginCommand;
 import de.timesnake.library.commands.extended.ExArguments;
 

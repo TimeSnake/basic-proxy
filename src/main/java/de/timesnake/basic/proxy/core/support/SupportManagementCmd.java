@@ -5,7 +5,10 @@
 package de.timesnake.basic.proxy.core.support;
 
 import de.timesnake.basic.proxy.util.Network;
-import de.timesnake.basic.proxy.util.chat.*;
+import de.timesnake.basic.proxy.util.chat.Argument;
+import de.timesnake.basic.proxy.util.chat.CommandListener;
+import de.timesnake.basic.proxy.util.chat.Completion;
+import de.timesnake.basic.proxy.util.chat.Sender;
 import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.chat.Code;
@@ -16,11 +19,11 @@ import java.util.Arrays;
 
 public class SupportManagementCmd implements CommandListener {
 
-  private final Code perm = Plugin.SUPPORT.createPermssionCode("support.manage");
-  private final Code showPerm = Plugin.SUPPORT.createPermssionCode("support.show");
-  private final Code statusPerm = Plugin.SUPPORT.createPermssionCode("support.status");
-  private final Code answerPerm = Plugin.SUPPORT.createPermssionCode("support.answer");
-  private final Code notifyPerm = Plugin.SUPPORT.createPermssionCode("support.notify");
+  private final Code perm = Network.PLUGIN_SUPPORT.createPermssionCode("support.manage");
+  private final Code showPerm = Network.PLUGIN_SUPPORT.createPermssionCode("support.show");
+  private final Code statusPerm = Network.PLUGIN_SUPPORT.createPermssionCode("support.status");
+  private final Code answerPerm = Network.PLUGIN_SUPPORT.createPermssionCode("support.answer");
+  private final Code notifyPerm = Network.PLUGIN_SUPPORT.createPermssionCode("support.notify");
 
   @Override
   public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {

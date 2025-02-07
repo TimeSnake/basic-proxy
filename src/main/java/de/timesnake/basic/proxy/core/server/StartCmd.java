@@ -52,11 +52,11 @@ public class StartCmd implements CommandListener {
         }
         case "own_game" -> {
           sender.hasPermissionElseExit(this.ownGamePerm);
-          this.handleStartOwnGameServer(sender, args);
+          this.handleLoadPrivateGameSave(sender, args);
         }
         case "public_game" -> {
           sender.hasPermissionElseExit(this.publicGamePerm);
-          this.handleStartPublicGameServer(sender, args);
+          this.handleLoadPublicGameSave(sender, args);
         }
         case "game" -> {
           sender.hasPermissionElseExit(this.gamePerm);
@@ -112,7 +112,7 @@ public class StartCmd implements CommandListener {
     }
   }
 
-  private void handleStartOwnGameServer(Sender sender, Arguments<Argument> args) {
+  private void handleLoadPrivateGameSave(Sender sender, Arguments<Argument> args) {
     sender.isPlayerElseExit(true);
 
     User user = sender.getUser();
@@ -132,37 +132,37 @@ public class StartCmd implements CommandListener {
     }
 
     if (!nonTmpGame.isOwnable()) {
-      sender.sendPluginTDMessage("§wServers of this game can not have an owner");
+      sender.sendPluginTDMessage("§wSaves of this game can not have an owner");
       return;
     }
 
     args.isLengthEqualsElseExit(3, true);
 
-    Collection<String> serverNames = Network.getNetworkUtils().getPrivateSaveNames(user.getUniqueId(),
+    Collection<String> saveNames = Network.getNetworkUtils().getPrivateSaveNames(user.getUniqueId(),
             ServerType.GAME, ((DbNonTmpGame) game).getName());
 
-    String serverName = args.getString(2);
+    String saveName = args.getString(2);
 
-    if (!serverNames.contains(serverName)) {
-      sender.sendMessageServerNameNotExist(serverName);
+    if (!saveNames.contains(saveName)) {
+      sender.sendMessageServerNameNotExist(saveName);
       return;
     }
 
     DbGame finalGame = game;
 
     Network.runTaskAsync(() -> {
-      sender.sendPluginTDMessage("§sLoading server §v" + serverName);
+      sender.sendPluginTDMessage("§sLoading save §v" + saveName);
       ServerSetupResult result =
           Network.getServerManager().loadPrivateSaveToServer(((DbNonTmpGame) finalGame).getName(),
-          user.getUniqueId(), serverName, s -> s.applyServerOptions(finalGame.getServerOptions()));
+              user.getUniqueId(), saveName, s -> s.applyServerOptions(finalGame.getServerOptions()));
 
       if (!result.isSuccessful()) {
-        sender.sendPluginTDMessage("§wError while loading server (" +
+        sender.sendPluginTDMessage("§wError while loading save (" +
                                    ((ServerSetupResult.Fail) result).getReason() + ")");
         return;
       }
 
-      sender.sendPluginTDMessage("§sLoaded server §v" + serverName + "§s, you will be moved in a few moments");
+      sender.sendPluginTDMessage("§sLoaded save §v" + saveName + "§s, you will be moved in a few moments");
 
       NonTmpGameServer server = (NonTmpGameServer) ((ServerSetupResult.Success) result).getServer();
       server.setMaxPlayers(((DbNonTmpGame) finalGame).getMaxPlayers());
@@ -178,7 +178,7 @@ public class StartCmd implements CommandListener {
     });
   }
 
-  private void handleStartPublicGameServer(Sender sender, Arguments<Argument> args) {
+  private void handleLoadPublicGameSave(Sender sender, Arguments<Argument> args) {
     String gameType = args.get(1).toLowerCase();
 
     DbGame game = Database.getGames().getGame(gameType);
@@ -196,30 +196,30 @@ public class StartCmd implements CommandListener {
 
     args.isLengthEqualsElseExit(3, true);
 
-    Collection<String> serverNames = Network.getNetworkUtils()
+    Collection<String> saveNames = Network.getNetworkUtils()
         .getPublicSaveNames(ServerType.GAME, ((DbNonTmpGame) game).getName());
 
-    String serverName = args.getString(2);
+    String saveName = args.getString(2);
 
-    if (!serverNames.contains(serverName)) {
-      sender.sendMessageServerNameNotExist(serverName);
+    if (!saveNames.contains(saveName)) {
+      sender.sendMessageServerNameNotExist(saveName);
       return;
     }
 
     DbGame finalGame = game;
 
     Network.runTaskAsync(() -> {
-      sender.sendPluginTDMessage("§sLoading server §v" + serverName);
+      sender.sendPluginTDMessage("§sLoading save §v" + saveName);
       ServerSetupResult result = Network.getServerManager().loadPublicSaveToServer(((DbNonTmpGame) finalGame).getName(),
-          serverName, s -> s.applyServerOptions(finalGame.getServerOptions()));
+          saveName, s -> s.applyServerOptions(finalGame.getServerOptions()));
 
       if (!result.isSuccessful()) {
-        sender.sendPluginTDMessage("§wError while loading server (" +
+        sender.sendPluginTDMessage("§wError while loading save (" +
                                    ((ServerSetupResult.Fail) result).getReason() + ")");
         return;
       }
 
-      sender.sendPluginTDMessage("§sLoaded server §v" + serverName + "§s, you will be moved in a few moments");
+      sender.sendPluginTDMessage("§sLoaded save §v" + saveName + "§s, you will be moved in a few moments");
 
       NonTmpGameServer server = (NonTmpGameServer) ((ServerSetupResult.Success) result).getServer();
       server.setMaxPlayers(((DbNonTmpGame) finalGame).getMaxPlayers());

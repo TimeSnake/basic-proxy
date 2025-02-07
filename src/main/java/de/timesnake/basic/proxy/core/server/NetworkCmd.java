@@ -27,22 +27,22 @@ import static de.timesnake.library.chat.ExTextColor.WARNING;
 
 public class NetworkCmd implements CommandListener {
 
-  private final Code perm = Plugin.INFO.createPermssionCode("network.create.game");
-  private final Code serverAlreadyExists = Plugin.NETWORK.createHelpCode("Server name already exists");
-  private final Code createOwnPerm = Plugin.NETWORK.createPermssionCode("network.create.own_game");
-  private final Code createPublicGame = Plugin.NETWORK.createPermssionCode("network.create.public_game");
+  private final Code perm = Plugin.INFO.createPermssionCode("network.create.save");
+  private final Code serverAlreadyExists = Plugin.NETWORK.createHelpCode("Save name already exists");
+  private final Code createOwnPerm = Plugin.NETWORK.createPermssionCode("network.create.save.private");
+  private final Code createPublicGame = Plugin.NETWORK.createPermssionCode("network.create.save.public");
 
   @Override
   public void onCommand(Sender sender, PluginCommand cmd, Arguments<Argument> args) {
     args.isLengthHigherEqualsElseExit(1, true);
 
     switch (args.getString(0).toLowerCase()) {
-      case "create_own_game" -> this.handleCreateOwnGameCmd(sender, args);
-      case "create_public_game" -> this.handleCreatePublicGameCmd(sender, args);
+      case "create_private_save" -> this.handleCreatePrivateGameSaveCmd(sender, args);
+      case "create_public_save" -> this.handleCreatePublicGameSaveCmd(sender, args);
     }
   }
 
-  private void handleCreatePublicGameCmd(Sender sender, Arguments<Argument> args) {
+  private void handleCreatePublicGameSaveCmd(Sender sender, Arguments<Argument> args) {
     sender.hasPermissionElseExit(this.createPublicGame);
     args.isLengthHigherEqualsElseExit(3, true);
 
@@ -56,27 +56,27 @@ public class NetworkCmd implements CommandListener {
     Collection<String> serverNames = Network.getNetworkUtils().getPublicSaveNames(ServerType.GAME,
         nonTmpGame.getName());
 
-    String serverName = args.get(2).toLowerCase();
+    String saveName = args.get(2).toLowerCase();
 
-    if (serverNames.contains(serverName)) {
-      sender.sendMessageAlreadyExist(serverName, this.serverAlreadyExists, "server");
+    if (serverNames.contains(saveName)) {
+      sender.sendMessageAlreadyExist(saveName, this.serverAlreadyExists, "save");
       return;
     }
 
     ServerInitResult result = Network.getServerManager().createPublicSave(ServerType.GAME,
         ((DbNonTmpGame) game).getName(),
-        serverName);
+        saveName);
 
     if (!result.isSuccessful()) {
-      sender.sendPluginTDMessage("§wError while creating server (" + ((ServerInitResult.Fail) result).getReason() +
+      sender.sendPluginTDMessage("§wError while creating save (" + ((ServerInitResult.Fail) result).getReason() +
                                  ")");
       return;
     }
 
-    sender.sendPluginTDMessage("§sCreated server §v" + serverName);
+    sender.sendPluginTDMessage("§sCreated save §v" + saveName);
   }
 
-  private void handleCreateOwnGameCmd(Sender sender, Arguments<Argument> args) {
+  private void handleCreatePrivateGameSaveCmd(Sender sender, Arguments<Argument> args) {
     sender.hasPermissionElseExit(this.createOwnPerm);
     args.isLengthEqualsElseExit(4, true);
 
@@ -88,7 +88,7 @@ public class NetworkCmd implements CommandListener {
     }
 
     if (!nonTmpGame.isOwnable()) {
-      sender.sendPluginTDMessage("§wServers of this game can not have an owner");
+      sender.sendPluginTDMessage("§wSaves of this game can not have an owner");
       return;
     }
 
@@ -103,23 +103,24 @@ public class NetworkCmd implements CommandListener {
     Collection<String> serverNames = Network.getNetworkUtils().getPrivateSaveNames(user.getUniqueId(), ServerType.GAME,
         ((DbNonTmpGame) game).getName());
 
-    String serverName = args.get(2).toLowerCase();
+    String saveName = args.get(2).toLowerCase();
 
-    if (serverNames.contains(user.getUniqueId().hashCode() + serverName)) {
-      sender.sendMessageAlreadyExist(serverName, this.serverAlreadyExists, "server");
+    if (serverNames.contains(user.getUniqueId().hashCode() + saveName)) {
+      sender.sendMessageAlreadyExist(saveName, this.serverAlreadyExists, "save");
       return;
     }
 
     ServerInitResult result = Network.getServerManager().createPrivateSave(user.getUniqueId(), ServerType.GAME,
-        ((DbNonTmpGame) game).getName(), user.getUniqueId().hashCode() + serverName);
+        ((DbNonTmpGame) game).getName(), user.getUniqueId().hashCode() + saveName);
 
     if (!result.isSuccessful()) {
-      sender.sendPluginTDMessage("§wError while creating server §v" + serverName + "§w: §v" +
+      sender.sendPluginTDMessage("§wError while creating save §v" + saveName + "§w: §v" +
                                  ((ServerInitResult.Fail) result).getReason());
       return;
     }
 
-    sender.sendPluginTDMessage("§sCreated server §v" + serverName + "§q (" + user.getUniqueId().hashCode() + serverName + ")");
+    sender.sendPluginTDMessage("§sCreated save §v" + saveName + "§q (" + user.getUniqueId().hashCode() + saveName +
+                               ")");
   }
 
   @Override

@@ -111,7 +111,7 @@ public class ServerCmd implements CommandListener {
   public Completion getTabCompletion() {
     return new Completion(this.perm)
         .addArgument(Completion.ofServerNames()
-            .addArgument(new Completion("start", "stop", "password", "<cmd>")));
+            .addArgument(new Completion("start", "stop", "password", "<cmd>").allowAny()));
   }
 
   @Override

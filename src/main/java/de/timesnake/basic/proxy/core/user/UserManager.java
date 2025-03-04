@@ -229,7 +229,7 @@ public class UserManager {
           .append(Component.text(serverInfo.getName(), ExTextColor.VALUE)));
     }
 
-    Network.runTaskLater(() -> user.runJoinCommands(s), Duration.ofSeconds(3));
+    Network.runTaskLater(() -> user.runJoinCommands(s), Duration.ofSeconds(2));
   }
 
   private void sendJoinMessages(Player player, User user) {

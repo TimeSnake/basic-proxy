@@ -23,7 +23,7 @@ public class ExCompletion extends Completion<ExCompletion, Sender, Argument, ExA
     super(values);
   }
 
-  public ExCompletion(CmdFunction<Sender, Argument, ExArguments<Argument>, Collection<String>> valuesProvider) {
+  public ExCompletion(CompleteSupplier<Sender, Argument, ExArguments<Argument>, Collection<String>> valuesProvider) {
     super(valuesProvider);
   }
 
@@ -31,7 +31,8 @@ public class ExCompletion extends Completion<ExCompletion, Sender, Argument, ExA
     super(permission, values);
   }
 
-  public ExCompletion(Code permission, CmdFunction<Sender, Argument, ExArguments<Argument>, Collection<String>> valuesProvider) {
+  public ExCompletion(Code permission,
+                      CompleteSupplier<Sender, Argument, ExArguments<Argument>, Collection<String>> valuesProvider) {
     super(permission, valuesProvider);
   }
 }

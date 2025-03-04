@@ -102,11 +102,11 @@ public class SupportManagementCmd implements CommandListener {
         .addArgument(new Completion(this.showPerm, "show"))
         .addArgument(new Completion(this.notifyPerm, "notify", "msg"))
         .addArgument(new Completion(this.statusPerm, "status")
-            .addArgument(new Completion("<ticket id>")
+            .addArgument(new Completion("<ticket id>").allowAny()
                 .addArgument(new Completion(Arrays.stream(Status.Ticket.values()).map(Status.Ticket::getName).toList()))))
         .addArgument(new Completion(this.answerPerm, "answer", "response")
-            .addArgument(new Completion("<ticket id>")
-                .addArgument(new Completion("<answer>"))));
+            .addArgument(new Completion("<ticket id>").allowAny()
+                .addArgument(new Completion("<answer>").allowAny())));
   }
 
   @Override

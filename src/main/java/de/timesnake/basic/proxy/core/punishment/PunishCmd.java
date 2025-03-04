@@ -121,10 +121,10 @@ public class PunishCmd implements CommandListener {
     return new Completion(this.punishPerm)
         .addArgument(Completion.ofPlayerNames()
             .addArgument((sender, cmd, args) -> List.of("tmpban", "tempban", "jail", "tmpmute").contains(cmd),
-                new Completion("10", "10*60", "5*60")
-                    .addArgument(new Completion("<reason>")))
+                new Completion("10", "10*60", "5*60").allowAny()
+                    .addArgument(new Completion("<reason>").allowAny()))
             .addArgument((sender, cmd, args) -> List.of("ban", "kick").contains(cmd),
-                new Completion("<reason>")));
+                new Completion("<reason>").allowAny()));
   }
 
   @Override

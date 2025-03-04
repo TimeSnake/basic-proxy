@@ -54,7 +54,7 @@ public class Completion extends de.timesnake.library.commands.Completion<Complet
     super(values);
   }
 
-  public Completion(CmdFunction<Sender, Argument, Arguments<Argument>, Collection<String>> valuesProvider) {
+  public Completion(CompleteSupplier<Sender, Argument, Arguments<Argument>, Collection<String>> valuesProvider) {
     super(valuesProvider);
   }
 

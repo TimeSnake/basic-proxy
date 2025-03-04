@@ -18,7 +18,7 @@ import java.util.Random;
 
 public class MotdManager {
 
-  private static final String VERSION = "1.20.1";
+  private static final String VERSION = "1.21.1";
   private static final List<Component> MOTDS = List.of(
       Component.text("     The time is running!", ExTextColor.DARK_PURPLE)
           .append(Component.text("   tick", ExTextColor.WHITE))

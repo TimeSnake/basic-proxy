@@ -56,7 +56,7 @@ public class CoinsCmd implements CommandListener {
     return new Completion(this.perm)
         .addArgument(Completion.ofPlayerNames()
             .addArgument(new Completion("add", "remove", "set", "reset")
-                .addArgument(new Completion("0", "1", "10", "100"))));
+                .addArgument(new Completion("0", "1", "10", "100").allowAny())));
   }
 
   @Override

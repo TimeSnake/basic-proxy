@@ -128,7 +128,7 @@ public class NetworkCmd implements CommandListener {
     return new Completion(this.perm)
         .addArgument(new Completion("create_own_game", "create_public_game")
             .addArgument(Completion.ofGameNames()
-                .addArgument(new Completion("<name>")
+                .addArgument(new Completion("<name>").allowAny()
                     .addArgument(Completion.ofPlayerNames()))));
   }
 

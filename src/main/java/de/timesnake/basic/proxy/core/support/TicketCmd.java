@@ -32,7 +32,7 @@ public class TicketCmd implements CommandListener {
   @Override
   public Completion getTabCompletion() {
     return new Completion(this.perm)
-        .addArgument(new Completion("<message>"));
+        .addArgument(new Completion("<message>").allowAny());
   }
 
   @Override

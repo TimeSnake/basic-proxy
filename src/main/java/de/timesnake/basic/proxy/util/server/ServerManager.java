@@ -178,7 +178,7 @@ public class ServerManager implements ChannelListener {
       if (networkServer.getType().equals(ServerType.LOBBY)) {
         result = Network.getNetworkUtils().createServer(networkServer
             .options(o -> o
-                .setWorldCopyType(CopyType.SYNC)
+                .setWorldCopyType(CopyType.COPY)
                 .setSyncPlayerData(false)
                 .setSyncLogs(true)));
 

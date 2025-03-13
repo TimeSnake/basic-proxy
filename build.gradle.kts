@@ -8,7 +8,7 @@ plugins {
 
 
 group = "de.timesnake"
-version = "2.0.0"
+version = "3.0.0"
 var projectId = 19
 
 repositories {
@@ -24,57 +24,56 @@ repositories {
     }
 }
 
+val pluginImplementation: Configuration by configurations.creating
+val pluginFile = layout.buildDirectory.file("libs/${project.name}-${project.version}-plugin.jar")
+val pluginArtifact = artifacts.add("pluginImplementation", pluginFile.get().asFile) {
+    builtBy("pluginJar")
+}
+
 dependencies {
-    compileOnly("de.timesnake:database-proxy:4.+")
-    compileOnly("de.timesnake:database-api:4.+")
+    pluginImplementation("de.timesnake:library-network:3.+") { isTransitive = false }
+    pluginImplementation("org.freemarker:freemarker:2.3.31")
+    pluginImplementation("commons-io:commons-io:2.14.0")
 
-    compileOnly("de.timesnake:channel-proxy:5.+")
-    compileOnly("de.timesnake:channel-api:5.+")
+    pluginImplementation("de.timesnake:library-commands:3.+") { isTransitive = false }
+    pluginImplementation("de.timesnake:library-permissions:3.+") { isTransitive = false }
+    pluginImplementation("de.timesnake:library-basic:3.+") { isTransitive = false }
 
-    implementation("de.timesnake:library-network:2.+")
-    implementation("de.timesnake:library-commands:2.+")
-    implementation("de.timesnake:library-permissions:2.+")
-    implementation("de.timesnake:library-basic:2.+")
-    implementation("de.timesnake:library-chat:2.+")
+    pluginImplementation("de.timesnake:library-chat:3.+") { isTransitive = false }
+    pluginImplementation("net.kyori:adventure-api:4.11.0")
+    pluginImplementation("net.kyori:adventure-text-serializer-legacy:4.12.0")
+    pluginImplementation("net.kyori:adventure-text-serializer-plain:4.12.0")
 
-    compileOnly("org.apache.logging.log4j:log4j-api:2.22.1")
-    compileOnly("org.apache.logging.log4j:log4j-core:2.22.1")
+    api("de.timesnake:library-network:3.+")
+    api("de.timesnake:library-commands:3.+")
+    api("de.timesnake:library-permissions:3.+")
+    api("de.timesnake:library-basic:3.+")
+    api("de.timesnake:library-chat:3.+")
+
+    api("de.timesnake:database-proxy:5.+")
+    api("de.timesnake:channel-proxy:6.+")
+
+    api("org.apache.logging.log4j:log4j-api:2.22.1")
+    api("org.apache.logging.log4j:log4j-core:2.22.1")
+
+    api("commons-io:commons-io:2.14.0")
+    api("org.freemarker:freemarker:2.3.31")
 
     annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
-    compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
-
-    compileOnly("commons-io:commons-io:2.11.0")
-    compileOnly("org.freemarker:freemarker:2.3.31")
+    implementation("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
 }
 
-configurations.configureEach {
-    resolutionStrategy.dependencySubstitution {
-        if (project.parent != null) {
-            substitute(module("de.timesnake:database-proxy")).using(project(":database:database-proxy"))
-            substitute(module("de.timesnake:database-api")).using(project(":database:database-api"))
-
-            substitute(module("de.timesnake:channel-proxy")).using(project(":channel:channel-proxy"))
-            substitute(module("de.timesnake:channel-api")).using(project(":channel:channel-api"))
-
-            substitute(module("de.timesnake:library-network")).using(project(":libraries:library-network"))
-            substitute(module("de.timesnake:library-commands")).using(project(":libraries:library-commands"))
-            substitute(module("de.timesnake:library-permissions")).using(project(":libraries:library-permissions"))
-            substitute(module("de.timesnake:library-basic")).using(project(":libraries:library-basic"))
-            substitute(module("de.timesnake:library-chat")).using(project(":libraries:library-chat"))
+configurations.all {
+    resolutionStrategy.dependencySubstitution.all {
+        requested.let {
+            if (it is ModuleComponentSelector && it.group == "de.timesnake") {
+                val targetProject = findProject(":${it.module}")
+                if (targetProject != null) {
+                    useTarget(targetProject)
+                }
+            }
         }
     }
-}
-
-
-tasks.register<Copy>("exportAsPlugin") {
-    from(layout.buildDirectory.file("libs/${project.name}-${project.version}-all.jar"))
-    into(findProperty("timesnakePluginDir") ?: "")
-
-    dependsOn("shadowJar")
-}
-
-tasks.withType<PublishToMavenRepository> {
-    dependsOn("shadowJar")
 }
 
 publishing {
@@ -90,7 +89,28 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["java"])
         }
+        create<MavenPublication>("plugin") {
+            artifact(pluginArtifact)
+        }
     }
+}
+
+tasks.register<Jar>("pluginJar") {
+    from(pluginImplementation.map { if (it.isDirectory) it else zipTree(it) })
+    with(tasks.jar.get() as CopySpec)
+    archiveClassifier = "plugin"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn("shadowJar", "assemble")
+}
+
+tasks.register<Copy>("exportPluginJar") {
+    from(pluginFile)
+    into(findProperty("timesnakePluginDir") ?: "")
+    dependsOn("pluginJar")
+}
+
+tasks.withType<PublishToMavenRepository> {
+    dependsOn("shadowJar", "pluginJar")
 }
 
 tasks {
